@@ -1,9 +1,10 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { Coins, Hexagon, LogOut, User, Zap } from "lucide-react";
+import { Coins, Hexagon, LogOut, Shield, User, Zap } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { meStatsQuery, settingsQuery, collectionsQuery, inventoryQuery } from "@/lib/queries";
 import { supabase } from "@/integrations/supabase/client";
+import { useIsAdmin } from "@/lib/admin";
 
 export const Route = createFileRoute("/_authenticated/profile")({
   component: Profile,
@@ -17,6 +18,7 @@ function Profile() {
   const { data: settings } = useQuery(settingsQuery);
   const { data: collections = [] } = useQuery(collectionsQuery);
   const { data: inv = [] } = useQuery({ ...inventoryQuery(uid), enabled: !!uid });
+  const { isAdmin } = useIsAdmin();
 
   async function signOut() {
     await supabase.auth.signOut();
@@ -65,6 +67,12 @@ function Profile() {
         <Row label="Packs opened" value={stats?.packs_opened ?? 0} />
         <Row label="Joined" value={stats ? new Date(stats.joined_at).toLocaleDateString() : "—"} />
       </section>
+
+      {isAdmin && (
+        <Link to="/admin" className="btn-gold flex w-full items-center justify-center gap-2 py-3 text-sm">
+          <Shield className="h-4 w-4" /> Open Admin CMS
+        </Link>
+      )}
 
       <button onClick={signOut} className="flex w-full items-center justify-center gap-2 rounded-md border border-border bg-surface-2 py-3 text-sm font-semibold">
         <LogOut className="h-4 w-4" /> Sign out
