@@ -9,7 +9,7 @@ import { RarityBadge } from "@/components/RarityBadge";
 import type { Asset, Rarity } from "@/lib/types";
 
 export const Route = createFileRoute("/_authenticated/admin/assets")({
-  component: AssetsAdmin;
+  component: AssetsAdmin,
 });
 
 const RARITIES: Rarity[] = ["common", "rare", "epic", "legendary"];
