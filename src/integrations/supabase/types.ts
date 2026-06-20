@@ -298,6 +298,27 @@ export type Database = {
           },
         ]
       }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_stats: {
         Row: {
           collections_completed: number
@@ -360,9 +381,17 @@ export type Database = {
         }
       }
       dig_tile: { Args: { p_user: string }; Returns: Json }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
       open_pack: { Args: { p_pack_id: string; p_user: string }; Returns: Json }
     }
     Enums: {
+      app_role: "admin" | "moderator" | "user"
       rarity: "common" | "rare" | "epic" | "legendary"
       tile_reward_type: "credits" | "xp" | "asset" | "pack" | "empty"
     }
@@ -492,6 +521,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      app_role: ["admin", "moderator", "user"],
       rarity: ["common", "rare", "epic", "legendary"],
       tile_reward_type: ["credits", "xp", "asset", "pack", "empty"],
     },
