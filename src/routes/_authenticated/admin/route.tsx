@@ -7,7 +7,7 @@ export const Route = createFileRoute("/_authenticated/admin")({
 });
 
 const TABS = [
-  { to: "/admin", label: "Dashboard", Icon: Gauge, exact: true },
+  { to: "/admin", label: "Dashboard", Icon: Gauge },
   { to: "/admin/assets", label: "Assets", Icon: Boxes },
   { to: "/admin/collections", label: "Collections", Icon: Library },
   { to: "/admin/packs", label: "Packs", Icon: Package },
@@ -40,8 +40,8 @@ function AdminLayout() {
       </header>
 
       <nav className="-mx-1 flex gap-1 overflow-x-auto pb-1">
-        {TABS.map(({ to, label, Icon, exact }) => {
-          const active = exact ? pathname === to : pathname.startsWith(to);
+        {TABS.map(({ to, label, Icon }) => {
+          const active = to === "/admin" ? pathname === "/admin" : pathname.startsWith(to);
           return (
             <Link
               key={to}
