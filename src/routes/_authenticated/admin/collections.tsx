@@ -15,10 +15,15 @@ function CollectionsAdmin() {
   const qc = useQueryClient();
   const { data: collections = [] } = useQuery(collectionsQuery);
   const { data: assets = [] } = useQuery(assetsQuery);
-  const [editing, setEditing] = useState<Partial<Collection> | null>(null);
+  const [editing, setEditing] = useState<(Partial<Collection> & { bonuses_json?: string }) | null>(null);
 
   const save = useMutation({
-    mutationFn: async (row: Partial<Collection>) => {
+    mutationFn: async (row: Partial<Collection> & { bonuses_json?: string; realm_slug?: string | null }) => {
+      let bonuses = row.bonuses;
+      if (row.bonuses_json !== undefined) {
+        try { bonuses = JSON.parse(row.bonuses_json); }
+        catch { throw new Error("Bonuses is not valid JSON"); }
+      }
       const payload = {
         slug: row.slug!,
         name: row.name!,
@@ -27,12 +32,16 @@ function CollectionsAdmin() {
         reward_credits: row.reward_credits ?? 1000,
         reward_xp: row.reward_xp ?? 500,
         sort_order: row.sort_order ?? 0,
+        bonuses: bonuses ?? [],
+        realm_slug: row.realm_slug ?? null,
       };
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const sb = supabase as any;
       if (row.id) {
-        const { error } = await supabase.from("collections").update(payload).eq("id", row.id);
+        const { error } = await sb.from("collections").update(payload).eq("id", row.id);
         if (error) throw error;
       } else {
-        const { error } = await supabase.from("collections").insert(payload);
+        const { error } = await sb.from("collections").insert(payload);
         if (error) throw error;
       }
     },
@@ -87,11 +96,23 @@ function CollectionsAdmin() {
             <Field label="Name"><input className={inputCls} value={editing.name ?? ""} onChange={(e) => setEditing({ ...editing, name: e.target.value })} /></Field>
             <Field label="Description"><textarea rows={2} className={inputCls} value={editing.description ?? ""} onChange={(e) => setEditing({ ...editing, description: e.target.value })} /></Field>
             <Field label="Image URL"><input className={inputCls} value={editing.image_url ?? ""} onChange={(e) => setEditing({ ...editing, image_url: e.target.value })} /></Field>
+            <Field label="Realm Slug (unlocked at 100%)"><input className={inputCls} value={editing.realm_slug ?? ""} onChange={(e) => setEditing({ ...editing, realm_slug: e.target.value })} /></Field>
             <div className="grid grid-cols-2 gap-2">
               <Field label="Reward Credits"><input type="number" className={inputCls} value={editing.reward_credits ?? 1000} onChange={(e) => setEditing({ ...editing, reward_credits: Number(e.target.value) })} /></Field>
               <Field label="Reward XP"><input type="number" className={inputCls} value={editing.reward_xp ?? 500} onChange={(e) => setEditing({ ...editing, reward_xp: Number(e.target.value) })} /></Field>
             </div>
             <Field label="Sort order"><input type="number" className={inputCls} value={editing.sort_order ?? 0} onChange={(e) => setEditing({ ...editing, sort_order: Number(e.target.value) })} /></Field>
+            <Field label="Bonuses (JSON array)">
+              <textarea
+                rows={6}
+                className={`${inputCls} font-mono text-[11px]`}
+                value={editing.bonuses_json ?? JSON.stringify(editing.bonuses ?? [], null, 2)}
+                onChange={(e) => setEditing({ ...editing, bonuses_json: e.target.value })}
+              />
+            </Field>
+            <p className="text-[10px] text-muted-foreground">
+              Each item: <code>{`{"threshold":25,"type":"energy_max","value":5,"spin_tokens":1,"label":"…"}`}</code>
+            </p>
             <div className="flex gap-2 pt-2">
               <button onClick={() => setEditing(null)} className="flex-1 rounded-md border border-border bg-surface-2 py-2 text-xs font-semibold">Cancel</button>
               <button disabled={save.isPending || !editing.slug || !editing.name} onClick={() => save.mutate(editing)} className="btn-gold flex-1 py-2 text-xs disabled:opacity-50">

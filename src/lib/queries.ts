@@ -1,14 +1,23 @@
 import { queryOptions } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import type { Asset, Collection, GameSettings, Pack, UserStats } from "./types";
+import type {
+  Asset,
+  Collection,
+  CollectionClaim,
+  EconomyMultipliers,
+  GameSettings,
+  Pack,
+  SpinReward,
+  UserStats,
+} from "./types";
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const sb = supabase as any;
 
 export const collectionsQuery = queryOptions({
   queryKey: ["collections"],
   queryFn: async (): Promise<Collection[]> => {
-    const { data, error } = await supabase
-      .from("collections")
-      .select("*")
-      .order("sort_order");
+    const { data, error } = await sb.from("collections").select("*").order("sort_order");
     if (error) throw error;
     return (data ?? []) as Collection[];
   },
@@ -18,10 +27,7 @@ export const collectionsQuery = queryOptions({
 export const assetsQuery = queryOptions({
   queryKey: ["assets"],
   queryFn: async (): Promise<Asset[]> => {
-    const { data, error } = await supabase
-      .from("assets")
-      .select("*")
-      .order("sort_order");
+    const { data, error } = await sb.from("assets").select("*").order("sort_order");
     if (error) throw error;
     return (data ?? []) as Asset[];
   },
@@ -31,10 +37,7 @@ export const assetsQuery = queryOptions({
 export const packsQuery = queryOptions({
   queryKey: ["packs"],
   queryFn: async (): Promise<Pack[]> => {
-    const { data, error } = await supabase
-      .from("packs")
-      .select("*")
-      .order("sort_order");
+    const { data, error } = await sb.from("packs").select("*").order("sort_order");
     if (error) throw error;
     return (data ?? []) as Pack[];
   },
@@ -44,13 +47,29 @@ export const packsQuery = queryOptions({
 export const settingsQuery = queryOptions({
   queryKey: ["settings"],
   queryFn: async (): Promise<GameSettings> => {
-    const { data, error } = await supabase
-      .from("game_settings")
-      .select("*")
-      .eq("id", 1)
-      .single();
+    const { data, error } = await sb.from("game_settings").select("*").eq("id", 1).single();
     if (error) throw error;
     return data as GameSettings;
+  },
+  staleTime: 60_000,
+});
+
+export const multipliersQuery = queryOptions({
+  queryKey: ["multipliers"],
+  queryFn: async (): Promise<EconomyMultipliers> => {
+    const { data, error } = await sb.from("economy_multipliers").select("*").eq("id", 1).single();
+    if (error) throw error;
+    return data as EconomyMultipliers;
+  },
+  staleTime: 60_000,
+});
+
+export const spinRewardsQuery = queryOptions({
+  queryKey: ["spin_rewards"],
+  queryFn: async (): Promise<SpinReward[]> => {
+    const { data, error } = await sb.from("spin_rewards").select("*").order("sort_order");
+    if (error) throw error;
+    return (data ?? []) as SpinReward[];
   },
   staleTime: 60_000,
 });
@@ -59,11 +78,7 @@ export const meStatsQuery = (userId: string) =>
   queryOptions({
     queryKey: ["user_stats", userId],
     queryFn: async (): Promise<UserStats> => {
-      const { data, error } = await supabase
-        .from("user_stats")
-        .select("*")
-        .eq("user_id", userId)
-        .single();
+      const { data, error } = await sb.from("user_stats").select("*").eq("user_id", userId).single();
       if (error) throw error;
       return data as UserStats;
     },
@@ -74,7 +89,7 @@ export const inventoryQuery = (userId: string) =>
   queryOptions({
     queryKey: ["inventory", userId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await sb
         .from("user_inventory")
         .select("quantity, first_obtained_at, assets:asset_id (*)")
         .eq("user_id", userId);
@@ -88,12 +103,22 @@ export const profileQuery = (userId: string) =>
   queryOptions({
     queryKey: ["profile", userId],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", userId)
-        .single();
+      const { data, error } = await sb.from("profiles").select("*").eq("id", userId).single();
       if (error) throw error;
       return data;
     },
+  });
+
+export const collectionClaimsQuery = (userId: string) =>
+  queryOptions({
+    queryKey: ["collection_claims", userId],
+    queryFn: async (): Promise<CollectionClaim[]> => {
+      const { data, error } = await sb
+        .from("user_collection_claims")
+        .select("id, collection_id, threshold, claimed_at")
+        .eq("user_id", userId);
+      if (error) throw error;
+      return (data ?? []) as CollectionClaim[];
+    },
+    staleTime: 10_000,
   });

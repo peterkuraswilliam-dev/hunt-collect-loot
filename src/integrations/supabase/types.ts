@@ -42,35 +42,44 @@ export type Database = {
         Row: {
           collection_id: string | null
           created_at: string
+          credits_per_hour: number
           description: string | null
+          energy_per_hour: number
           id: string
           image_url: string | null
           name: string
           rarity: Database["public"]["Enums"]["rarity"]
           slug: string
           sort_order: number
+          xp_per_hour: number
         }
         Insert: {
           collection_id?: string | null
           created_at?: string
+          credits_per_hour?: number
           description?: string | null
+          energy_per_hour?: number
           id?: string
           image_url?: string | null
           name: string
           rarity?: Database["public"]["Enums"]["rarity"]
           slug: string
           sort_order?: number
+          xp_per_hour?: number
         }
         Update: {
           collection_id?: string | null
           created_at?: string
+          credits_per_hour?: number
           description?: string | null
+          energy_per_hour?: number
           id?: string
           image_url?: string | null
           name?: string
           rarity?: Database["public"]["Enums"]["rarity"]
           slug?: string
           sort_order?: number
+          xp_per_hour?: number
         }
         Relationships: [
           {
@@ -84,37 +93,73 @@ export type Database = {
       }
       collections: {
         Row: {
+          bonuses: Json
           created_at: string
           description: string | null
           id: string
           image_url: string | null
           name: string
+          realm_slug: string | null
           reward_credits: number
           reward_xp: number
           slug: string
           sort_order: number
         }
         Insert: {
+          bonuses?: Json
           created_at?: string
           description?: string | null
           id?: string
           image_url?: string | null
           name: string
+          realm_slug?: string | null
           reward_credits?: number
           reward_xp?: number
           slug: string
           sort_order?: number
         }
         Update: {
+          bonuses?: Json
           created_at?: string
           description?: string | null
           id?: string
           image_url?: string | null
           name?: string
+          realm_slug?: string | null
           reward_credits?: number
           reward_xp?: number
           slug?: string
           sort_order?: number
+        }
+        Relationships: []
+      }
+      economy_multipliers: {
+        Row: {
+          credits_multiplier: number
+          energy_production_multiplier: number
+          id: number
+          max_offline_hours: number
+          production_multiplier: number
+          spin_multiplier: number
+          xp_multiplier: number
+        }
+        Insert: {
+          credits_multiplier?: number
+          energy_production_multiplier?: number
+          id?: number
+          max_offline_hours?: number
+          production_multiplier?: number
+          spin_multiplier?: number
+          xp_multiplier?: number
+        }
+        Update: {
+          credits_multiplier?: number
+          energy_production_multiplier?: number
+          id?: number
+          max_offline_hours?: number
+          production_multiplier?: number
+          spin_multiplier?: number
+          xp_multiplier?: number
         }
         Relationships: []
       }
@@ -237,6 +282,83 @@ export type Database = {
         }
         Relationships: []
       }
+      spin_rewards: {
+        Row: {
+          active: boolean
+          asset_rarity: string | null
+          created_at: string
+          icon: string | null
+          id: string
+          kind: string
+          label: string
+          max_amount: number
+          min_amount: number
+          pack_slug: string | null
+          sort_order: number
+          weight: number
+        }
+        Insert: {
+          active?: boolean
+          asset_rarity?: string | null
+          created_at?: string
+          icon?: string | null
+          id?: string
+          kind: string
+          label: string
+          max_amount?: number
+          min_amount?: number
+          pack_slug?: string | null
+          sort_order?: number
+          weight?: number
+        }
+        Update: {
+          active?: boolean
+          asset_rarity?: string | null
+          created_at?: string
+          icon?: string | null
+          id?: string
+          kind?: string
+          label?: string
+          max_amount?: number
+          min_amount?: number
+          pack_slug?: string | null
+          sort_order?: number
+          weight?: number
+        }
+        Relationships: []
+      }
+      user_collection_claims: {
+        Row: {
+          claimed_at: string
+          collection_id: string
+          id: string
+          threshold: number
+          user_id: string
+        }
+        Insert: {
+          claimed_at?: string
+          collection_id: string
+          id?: string
+          threshold: number
+          user_id: string
+        }
+        Update: {
+          claimed_at?: string
+          collection_id?: string
+          id?: string
+          threshold?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_collection_claims_collection_id_fkey"
+            columns: ["collection_id"]
+            isOneToOne: false
+            referencedRelation: "collections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_inventory: {
         Row: {
           asset_id: string
@@ -321,6 +443,7 @@ export type Database = {
       }
       user_stats: {
         Row: {
+          bonus_energy_max: number
           collections_completed: number
           credits: number
           energy: number
@@ -328,10 +451,13 @@ export type Database = {
           joined_at: string
           level: number
           packs_opened: number
+          production_collected_at: string
+          spin_tokens: number
           user_id: string
           xp: number
         }
         Insert: {
+          bonus_energy_max?: number
           collections_completed?: number
           credits?: number
           energy?: number
@@ -339,10 +465,13 @@ export type Database = {
           joined_at?: string
           level?: number
           packs_opened?: number
+          production_collected_at?: string
+          spin_tokens?: number
           user_id: string
           xp?: number
         }
         Update: {
+          bonus_energy_max?: number
           collections_completed?: number
           credits?: number
           energy?: number
@@ -350,6 +479,8 @@ export type Database = {
           joined_at?: string
           level?: number
           packs_opened?: number
+          production_collected_at?: string
+          spin_tokens?: number
           user_id?: string
           xp?: number
         }
@@ -363,6 +494,7 @@ export type Database = {
       apply_energy_regen: {
         Args: { p_user: string }
         Returns: {
+          bonus_energy_max: number
           collections_completed: number
           credits: number
           energy: number
@@ -370,6 +502,8 @@ export type Database = {
           joined_at: string
           level: number
           packs_opened: number
+          production_collected_at: string
+          spin_tokens: number
           user_id: string
           xp: number
         }
@@ -380,6 +514,11 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      claim_collection_bonus: {
+        Args: { p_collection_id: string; p_threshold: number; p_user: string }
+        Returns: Json
+      }
+      collect_production: { Args: { p_user: string }; Returns: Json }
       dig_tile: { Args: { p_user: string }; Returns: Json }
       has_role: {
         Args: {
@@ -389,6 +528,7 @@ export type Database = {
         Returns: boolean
       }
       open_pack: { Args: { p_pack_id: string; p_user: string }; Returns: Json }
+      spin_wheel: { Args: { p_user: string }; Returns: Json }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
