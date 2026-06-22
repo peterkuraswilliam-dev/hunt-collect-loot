@@ -12,16 +12,20 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedSpinRouteImport } from './routes/_authenticated/spin'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedPlayRouteImport } from './routes/_authenticated/play'
 import { Route as AuthenticatedPacksRouteImport } from './routes/_authenticated/packs'
+import { Route as AuthenticatedMyAssetsRouteImport } from './routes/_authenticated/my-assets'
 import { Route as AuthenticatedInventoryRouteImport } from './routes/_authenticated/inventory'
 import { Route as AuthenticatedHomeRouteImport } from './routes/_authenticated/home'
 import { Route as AuthenticatedCollectionsRouteImport } from './routes/_authenticated/collections'
 import { Route as AuthenticatedAdminRouteRouteImport } from './routes/_authenticated/admin/route'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
 import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated/admin/users'
+import { Route as AuthenticatedAdminSpinRouteImport } from './routes/_authenticated/admin/spin'
 import { Route as AuthenticatedAdminPacksRouteImport } from './routes/_authenticated/admin/packs'
+import { Route as AuthenticatedAdminMultipliersRouteImport } from './routes/_authenticated/admin/multipliers'
 import { Route as AuthenticatedAdminEconomyRouteImport } from './routes/_authenticated/admin/economy'
 import { Route as AuthenticatedAdminCollectionsRouteImport } from './routes/_authenticated/admin/collections'
 import { Route as AuthenticatedAdminAssetsRouteImport } from './routes/_authenticated/admin/assets'
@@ -40,6 +44,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedSpinRoute = AuthenticatedSpinRouteImport.update({
+  id: '/spin',
+  path: '/spin',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
@@ -53,6 +62,11 @@ const AuthenticatedPlayRoute = AuthenticatedPlayRouteImport.update({
 const AuthenticatedPacksRoute = AuthenticatedPacksRouteImport.update({
   id: '/packs',
   path: '/packs',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedMyAssetsRoute = AuthenticatedMyAssetsRouteImport.update({
+  id: '/my-assets',
+  path: '/my-assets',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedInventoryRoute = AuthenticatedInventoryRouteImport.update({
@@ -86,11 +100,22 @@ const AuthenticatedAdminUsersRoute = AuthenticatedAdminUsersRouteImport.update({
   path: '/users',
   getParentRoute: () => AuthenticatedAdminRouteRoute,
 } as any)
+const AuthenticatedAdminSpinRoute = AuthenticatedAdminSpinRouteImport.update({
+  id: '/spin',
+  path: '/spin',
+  getParentRoute: () => AuthenticatedAdminRouteRoute,
+} as any)
 const AuthenticatedAdminPacksRoute = AuthenticatedAdminPacksRouteImport.update({
   id: '/packs',
   path: '/packs',
   getParentRoute: () => AuthenticatedAdminRouteRoute,
 } as any)
+const AuthenticatedAdminMultipliersRoute =
+  AuthenticatedAdminMultipliersRouteImport.update({
+    id: '/multipliers',
+    path: '/multipliers',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
 const AuthenticatedAdminEconomyRoute =
   AuthenticatedAdminEconomyRouteImport.update({
     id: '/economy',
@@ -117,13 +142,17 @@ export interface FileRoutesByFullPath {
   '/collections': typeof AuthenticatedCollectionsRoute
   '/home': typeof AuthenticatedHomeRoute
   '/inventory': typeof AuthenticatedInventoryRoute
+  '/my-assets': typeof AuthenticatedMyAssetsRoute
   '/packs': typeof AuthenticatedPacksRoute
   '/play': typeof AuthenticatedPlayRoute
   '/profile': typeof AuthenticatedProfileRoute
+  '/spin': typeof AuthenticatedSpinRoute
   '/admin/assets': typeof AuthenticatedAdminAssetsRoute
   '/admin/collections': typeof AuthenticatedAdminCollectionsRoute
   '/admin/economy': typeof AuthenticatedAdminEconomyRoute
+  '/admin/multipliers': typeof AuthenticatedAdminMultipliersRoute
   '/admin/packs': typeof AuthenticatedAdminPacksRoute
+  '/admin/spin': typeof AuthenticatedAdminSpinRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
 }
@@ -133,13 +162,17 @@ export interface FileRoutesByTo {
   '/collections': typeof AuthenticatedCollectionsRoute
   '/home': typeof AuthenticatedHomeRoute
   '/inventory': typeof AuthenticatedInventoryRoute
+  '/my-assets': typeof AuthenticatedMyAssetsRoute
   '/packs': typeof AuthenticatedPacksRoute
   '/play': typeof AuthenticatedPlayRoute
   '/profile': typeof AuthenticatedProfileRoute
+  '/spin': typeof AuthenticatedSpinRoute
   '/admin/assets': typeof AuthenticatedAdminAssetsRoute
   '/admin/collections': typeof AuthenticatedAdminCollectionsRoute
   '/admin/economy': typeof AuthenticatedAdminEconomyRoute
+  '/admin/multipliers': typeof AuthenticatedAdminMultipliersRoute
   '/admin/packs': typeof AuthenticatedAdminPacksRoute
+  '/admin/spin': typeof AuthenticatedAdminSpinRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
 }
@@ -152,13 +185,17 @@ export interface FileRoutesById {
   '/_authenticated/collections': typeof AuthenticatedCollectionsRoute
   '/_authenticated/home': typeof AuthenticatedHomeRoute
   '/_authenticated/inventory': typeof AuthenticatedInventoryRoute
+  '/_authenticated/my-assets': typeof AuthenticatedMyAssetsRoute
   '/_authenticated/packs': typeof AuthenticatedPacksRoute
   '/_authenticated/play': typeof AuthenticatedPlayRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
+  '/_authenticated/spin': typeof AuthenticatedSpinRoute
   '/_authenticated/admin/assets': typeof AuthenticatedAdminAssetsRoute
   '/_authenticated/admin/collections': typeof AuthenticatedAdminCollectionsRoute
   '/_authenticated/admin/economy': typeof AuthenticatedAdminEconomyRoute
+  '/_authenticated/admin/multipliers': typeof AuthenticatedAdminMultipliersRoute
   '/_authenticated/admin/packs': typeof AuthenticatedAdminPacksRoute
+  '/_authenticated/admin/spin': typeof AuthenticatedAdminSpinRoute
   '/_authenticated/admin/users': typeof AuthenticatedAdminUsersRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
 }
@@ -171,13 +208,17 @@ export interface FileRouteTypes {
     | '/collections'
     | '/home'
     | '/inventory'
+    | '/my-assets'
     | '/packs'
     | '/play'
     | '/profile'
+    | '/spin'
     | '/admin/assets'
     | '/admin/collections'
     | '/admin/economy'
+    | '/admin/multipliers'
     | '/admin/packs'
+    | '/admin/spin'
     | '/admin/users'
     | '/admin/'
   fileRoutesByTo: FileRoutesByTo
@@ -187,13 +228,17 @@ export interface FileRouteTypes {
     | '/collections'
     | '/home'
     | '/inventory'
+    | '/my-assets'
     | '/packs'
     | '/play'
     | '/profile'
+    | '/spin'
     | '/admin/assets'
     | '/admin/collections'
     | '/admin/economy'
+    | '/admin/multipliers'
     | '/admin/packs'
+    | '/admin/spin'
     | '/admin/users'
     | '/admin'
   id:
@@ -205,13 +250,17 @@ export interface FileRouteTypes {
     | '/_authenticated/collections'
     | '/_authenticated/home'
     | '/_authenticated/inventory'
+    | '/_authenticated/my-assets'
     | '/_authenticated/packs'
     | '/_authenticated/play'
     | '/_authenticated/profile'
+    | '/_authenticated/spin'
     | '/_authenticated/admin/assets'
     | '/_authenticated/admin/collections'
     | '/_authenticated/admin/economy'
+    | '/_authenticated/admin/multipliers'
     | '/_authenticated/admin/packs'
+    | '/_authenticated/admin/spin'
     | '/_authenticated/admin/users'
     | '/_authenticated/admin/'
   fileRoutesById: FileRoutesById
@@ -245,6 +294,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/spin': {
+      id: '/_authenticated/spin'
+      path: '/spin'
+      fullPath: '/spin'
+      preLoaderRoute: typeof AuthenticatedSpinRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/profile': {
       id: '/_authenticated/profile'
       path: '/profile'
@@ -264,6 +320,13 @@ declare module '@tanstack/react-router' {
       path: '/packs'
       fullPath: '/packs'
       preLoaderRoute: typeof AuthenticatedPacksRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/my-assets': {
+      id: '/_authenticated/my-assets'
+      path: '/my-assets'
+      fullPath: '/my-assets'
+      preLoaderRoute: typeof AuthenticatedMyAssetsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/inventory': {
@@ -308,11 +371,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminUsersRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
+    '/_authenticated/admin/spin': {
+      id: '/_authenticated/admin/spin'
+      path: '/spin'
+      fullPath: '/admin/spin'
+      preLoaderRoute: typeof AuthenticatedAdminSpinRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
     '/_authenticated/admin/packs': {
       id: '/_authenticated/admin/packs'
       path: '/packs'
       fullPath: '/admin/packs'
       preLoaderRoute: typeof AuthenticatedAdminPacksRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/multipliers': {
+      id: '/_authenticated/admin/multipliers'
+      path: '/multipliers'
+      fullPath: '/admin/multipliers'
+      preLoaderRoute: typeof AuthenticatedAdminMultipliersRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
     '/_authenticated/admin/economy': {
@@ -343,7 +420,9 @@ interface AuthenticatedAdminRouteRouteChildren {
   AuthenticatedAdminAssetsRoute: typeof AuthenticatedAdminAssetsRoute
   AuthenticatedAdminCollectionsRoute: typeof AuthenticatedAdminCollectionsRoute
   AuthenticatedAdminEconomyRoute: typeof AuthenticatedAdminEconomyRoute
+  AuthenticatedAdminMultipliersRoute: typeof AuthenticatedAdminMultipliersRoute
   AuthenticatedAdminPacksRoute: typeof AuthenticatedAdminPacksRoute
+  AuthenticatedAdminSpinRoute: typeof AuthenticatedAdminSpinRoute
   AuthenticatedAdminUsersRoute: typeof AuthenticatedAdminUsersRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
 }
@@ -353,7 +432,9 @@ const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren
     AuthenticatedAdminAssetsRoute: AuthenticatedAdminAssetsRoute,
     AuthenticatedAdminCollectionsRoute: AuthenticatedAdminCollectionsRoute,
     AuthenticatedAdminEconomyRoute: AuthenticatedAdminEconomyRoute,
+    AuthenticatedAdminMultipliersRoute: AuthenticatedAdminMultipliersRoute,
     AuthenticatedAdminPacksRoute: AuthenticatedAdminPacksRoute,
+    AuthenticatedAdminSpinRoute: AuthenticatedAdminSpinRoute,
     AuthenticatedAdminUsersRoute: AuthenticatedAdminUsersRoute,
     AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
   }
@@ -368,9 +449,11 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedCollectionsRoute: typeof AuthenticatedCollectionsRoute
   AuthenticatedHomeRoute: typeof AuthenticatedHomeRoute
   AuthenticatedInventoryRoute: typeof AuthenticatedInventoryRoute
+  AuthenticatedMyAssetsRoute: typeof AuthenticatedMyAssetsRoute
   AuthenticatedPacksRoute: typeof AuthenticatedPacksRoute
   AuthenticatedPlayRoute: typeof AuthenticatedPlayRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
+  AuthenticatedSpinRoute: typeof AuthenticatedSpinRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -378,9 +461,11 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedCollectionsRoute: AuthenticatedCollectionsRoute,
   AuthenticatedHomeRoute: AuthenticatedHomeRoute,
   AuthenticatedInventoryRoute: AuthenticatedInventoryRoute,
+  AuthenticatedMyAssetsRoute: AuthenticatedMyAssetsRoute,
   AuthenticatedPacksRoute: AuthenticatedPacksRoute,
   AuthenticatedPlayRoute: AuthenticatedPlayRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
+  AuthenticatedSpinRoute: AuthenticatedSpinRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =

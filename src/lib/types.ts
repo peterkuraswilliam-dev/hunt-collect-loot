@@ -1,4 +1,4 @@
-export type Rarity = "common" | "uncommon" | "rare" | "epic" | "legendary";
+export type Rarity = "common" | "rare" | "epic" | "legendary";
 
 export interface Asset {
   id: string;
