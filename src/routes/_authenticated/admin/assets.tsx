@@ -30,12 +30,17 @@ function AssetsAdmin() {
         rarity: (row.rarity ?? "common") as Rarity,
         collection_id: row.collection_id ?? null,
         sort_order: row.sort_order ?? 0,
+        energy_per_hour: row.energy_per_hour ?? 0,
+        credits_per_hour: row.credits_per_hour ?? 0,
+        xp_per_hour: row.xp_per_hour ?? 0,
       };
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const sb = supabase as any;
       if (row.id) {
-        const { error } = await supabase.from("assets").update(payload).eq("id", row.id);
+        const { error } = await sb.from("assets").update(payload).eq("id", row.id);
         if (error) throw error;
       } else {
-        const { error } = await supabase.from("assets").insert(payload);
+        const { error } = await sb.from("assets").insert(payload);
         if (error) throw error;
       }
     },
@@ -108,6 +113,14 @@ function AssetsAdmin() {
               </Field>
             </div>
             <Field label="Sort order"><input type="number" className={inputCls} value={editing.sort_order ?? 0} onChange={(e) => setEditing({ ...editing, sort_order: Number(e.target.value) })} /></Field>
+            <div className="border-t border-border pt-2">
+              <p className="mb-1 text-[10px] uppercase tracking-widest text-primary">Production (per hour, per copy)</p>
+              <div className="grid grid-cols-3 gap-2">
+                <Field label="Credits"><input type="number" step="0.1" className={inputCls} value={editing.credits_per_hour ?? 0} onChange={(e) => setEditing({ ...editing, credits_per_hour: Number(e.target.value) })} /></Field>
+                <Field label="Energy"><input type="number" step="0.1" className={inputCls} value={editing.energy_per_hour ?? 0} onChange={(e) => setEditing({ ...editing, energy_per_hour: Number(e.target.value) })} /></Field>
+                <Field label="XP"><input type="number" step="0.1" className={inputCls} value={editing.xp_per_hour ?? 0} onChange={(e) => setEditing({ ...editing, xp_per_hour: Number(e.target.value) })} /></Field>
+              </div>
+            </div>
             <div className="flex gap-2 pt-2">
               <button onClick={() => setEditing(null)} className="flex-1 rounded-md border border-border bg-surface-2 py-2 text-xs font-semibold">Cancel</button>
               <button disabled={save.isPending || !editing.slug || !editing.name} onClick={() => save.mutate(editing)} className="btn-gold flex-1 py-2 text-xs disabled:opacity-50">
