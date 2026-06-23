@@ -29,6 +29,7 @@ import { Route as AuthenticatedAdminMultipliersRouteImport } from './routes/_aut
 import { Route as AuthenticatedAdminEconomyRouteImport } from './routes/_authenticated/admin/economy'
 import { Route as AuthenticatedAdminCollectionsRouteImport } from './routes/_authenticated/admin/collections'
 import { Route as AuthenticatedAdminAssetsRouteImport } from './routes/_authenticated/admin/assets'
+import { Route as AuthenticatedAdminModulesSlugRouteImport } from './routes/_authenticated/admin/modules.$slug'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -134,6 +135,12 @@ const AuthenticatedAdminAssetsRoute =
     path: '/assets',
     getParentRoute: () => AuthenticatedAdminRouteRoute,
   } as any)
+const AuthenticatedAdminModulesSlugRoute =
+  AuthenticatedAdminModulesSlugRouteImport.update({
+    id: '/modules/$slug',
+    path: '/modules/$slug',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -155,6 +162,7 @@ export interface FileRoutesByFullPath {
   '/admin/spin': typeof AuthenticatedAdminSpinRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
+  '/admin/modules/$slug': typeof AuthenticatedAdminModulesSlugRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -175,6 +183,7 @@ export interface FileRoutesByTo {
   '/admin/spin': typeof AuthenticatedAdminSpinRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
+  '/admin/modules/$slug': typeof AuthenticatedAdminModulesSlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -198,6 +207,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/spin': typeof AuthenticatedAdminSpinRoute
   '/_authenticated/admin/users': typeof AuthenticatedAdminUsersRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
+  '/_authenticated/admin/modules/$slug': typeof AuthenticatedAdminModulesSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -221,6 +231,7 @@ export interface FileRouteTypes {
     | '/admin/spin'
     | '/admin/users'
     | '/admin/'
+    | '/admin/modules/$slug'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -241,6 +252,7 @@ export interface FileRouteTypes {
     | '/admin/spin'
     | '/admin/users'
     | '/admin'
+    | '/admin/modules/$slug'
   id:
     | '__root__'
     | '/'
@@ -263,6 +275,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/spin'
     | '/_authenticated/admin/users'
     | '/_authenticated/admin/'
+    | '/_authenticated/admin/modules/$slug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -413,6 +426,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminAssetsRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
+    '/_authenticated/admin/modules/$slug': {
+      id: '/_authenticated/admin/modules/$slug'
+      path: '/modules/$slug'
+      fullPath: '/admin/modules/$slug'
+      preLoaderRoute: typeof AuthenticatedAdminModulesSlugRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
   }
 }
 
@@ -425,6 +445,7 @@ interface AuthenticatedAdminRouteRouteChildren {
   AuthenticatedAdminSpinRoute: typeof AuthenticatedAdminSpinRoute
   AuthenticatedAdminUsersRoute: typeof AuthenticatedAdminUsersRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
+  AuthenticatedAdminModulesSlugRoute: typeof AuthenticatedAdminModulesSlugRoute
 }
 
 const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren =
@@ -437,6 +458,7 @@ const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren
     AuthenticatedAdminSpinRoute: AuthenticatedAdminSpinRoute,
     AuthenticatedAdminUsersRoute: AuthenticatedAdminUsersRoute,
     AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
+    AuthenticatedAdminModulesSlugRoute: AuthenticatedAdminModulesSlugRoute,
   }
 
 const AuthenticatedAdminRouteRouteWithChildren =

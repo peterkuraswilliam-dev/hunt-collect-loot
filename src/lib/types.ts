@@ -12,6 +12,9 @@ export interface Asset {
   energy_per_hour: number;
   credits_per_hour: number;
   xp_per_hour: number;
+  created_at: string;
+  asset_type_id?: string | null;
+  status?: string;
 }
 
 export interface CollectionBonus {
