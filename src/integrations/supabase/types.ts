@@ -38,8 +38,102 @@ export type Database = {
         }
         Relationships: []
       }
+      asset_rarities: {
+        Row: {
+          color: string
+          created_at: string
+          is_system: boolean
+          name: string
+          slug: string
+          sort_order: number
+          weight: number
+        }
+        Insert: {
+          color?: string
+          created_at?: string
+          is_system?: boolean
+          name: string
+          slug: string
+          sort_order?: number
+          weight?: number
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          is_system?: boolean
+          name?: string
+          slug?: string
+          sort_order?: number
+          weight?: number
+        }
+        Relationships: []
+      }
+      asset_tags: {
+        Row: {
+          asset_id: string
+          created_at: string
+          tag_id: string
+        }
+        Insert: {
+          asset_id: string
+          created_at?: string
+          tag_id: string
+        }
+        Update: {
+          asset_id?: string
+          created_at?: string
+          tag_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "asset_tags_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "assets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "asset_tags_tag_id_fkey"
+            columns: ["tag_id"]
+            isOneToOne: false
+            referencedRelation: "tags"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      asset_types: {
+        Row: {
+          created_at: string
+          icon: string | null
+          id: string
+          is_system: boolean
+          name: string
+          slug: string
+          sort_order: number
+        }
+        Insert: {
+          created_at?: string
+          icon?: string | null
+          id?: string
+          is_system?: boolean
+          name: string
+          slug: string
+          sort_order?: number
+        }
+        Update: {
+          created_at?: string
+          icon?: string | null
+          id?: string
+          is_system?: boolean
+          name?: string
+          slug?: string
+          sort_order?: number
+        }
+        Relationships: []
+      }
       assets: {
         Row: {
+          asset_type_id: string | null
           collection_id: string | null
           created_at: string
           credits_per_hour: number
@@ -51,9 +145,11 @@ export type Database = {
           rarity: Database["public"]["Enums"]["rarity"]
           slug: string
           sort_order: number
+          status: string
           xp_per_hour: number
         }
         Insert: {
+          asset_type_id?: string | null
           collection_id?: string | null
           created_at?: string
           credits_per_hour?: number
@@ -65,9 +161,11 @@ export type Database = {
           rarity?: Database["public"]["Enums"]["rarity"]
           slug: string
           sort_order?: number
+          status?: string
           xp_per_hour?: number
         }
         Update: {
+          asset_type_id?: string | null
           collection_id?: string | null
           created_at?: string
           credits_per_hour?: number
@@ -79,9 +177,17 @@ export type Database = {
           rarity?: Database["public"]["Enums"]["rarity"]
           slug?: string
           sort_order?: number
+          status?: string
           xp_per_hour?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "assets_asset_type_id_fkey"
+            columns: ["asset_type_id"]
+            isOneToOne: false
+            referencedRelation: "asset_types"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "assets_collection_id_fkey"
             columns: ["collection_id"]
@@ -90,6 +196,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      automation_rules: {
+        Row: {
+          action: Json
+          created_at: string
+          enabled: boolean
+          id: string
+          module: string
+          name: string
+          trigger: Json
+          updated_at: string
+        }
+        Insert: {
+          action?: Json
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          module?: string
+          name: string
+          trigger?: Json
+          updated_at?: string
+        }
+        Update: {
+          action?: Json
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          module?: string
+          name?: string
+          trigger?: Json
+          updated_at?: string
+        }
+        Relationships: []
       }
       collections: {
         Row: {
@@ -190,6 +329,48 @@ export type Database = {
           id?: number
           treasure_rewards?: Json
           xp_per_level?: number
+        }
+        Relationships: []
+      }
+      module_permissions: {
+        Row: {
+          capability: string
+          created_at: string
+          id: string
+          module: string
+          role: Database["public"]["Enums"]["app_role"]
+        }
+        Insert: {
+          capability: string
+          created_at?: string
+          id?: string
+          module: string
+          role: Database["public"]["Enums"]["app_role"]
+        }
+        Update: {
+          capability?: string
+          created_at?: string
+          id?: string
+          module?: string
+          role?: Database["public"]["Enums"]["app_role"]
+        }
+        Relationships: []
+      }
+      module_settings: {
+        Row: {
+          module: string
+          settings: Json
+          updated_at: string
+        }
+        Insert: {
+          module: string
+          settings?: Json
+          updated_at?: string
+        }
+        Update: {
+          module?: string
+          settings?: Json
+          updated_at?: string
         }
         Relationships: []
       }
@@ -326,6 +507,47 @@ export type Database = {
           weight?: number
         }
         Relationships: []
+      }
+      tags: {
+        Row: {
+          color: string | null
+          created_at: string
+          description: string | null
+          icon: string | null
+          id: string
+          name: string
+          parent_id: string | null
+          slug: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          name: string
+          parent_id?: string | null
+          slug: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          name?: string
+          parent_id?: string | null
+          slug?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tags_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "tags"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_collection_claims: {
         Row: {
@@ -491,6 +713,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      apply_automation_rules: {
+        Args: { p_asset_id: string }
+        Returns: undefined
+      }
       apply_energy_regen: {
         Args: { p_user: string }
         Returns: {
