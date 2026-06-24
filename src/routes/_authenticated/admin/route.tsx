@@ -1,5 +1,5 @@
 import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-router";
-import { Boxes, Coins, Gauge, Layers, Library, Package, ShieldAlert, Sparkles, TrendingUp, Users } from "lucide-react";
+import { Coins, Gauge, Layers, Library, Package, ShieldAlert, Sparkles, TrendingUp, Users } from "lucide-react";
 import { useIsAdmin } from "@/lib/admin";
 
 export const Route = createFileRoute("/_authenticated/admin")({
@@ -8,9 +8,8 @@ export const Route = createFileRoute("/_authenticated/admin")({
 
 const TABS = [
   { to: "/admin", label: "Dashboard", Icon: Gauge },
-  { to: "/admin/modules/assets", label: "Assets Module", Icon: Layers },
-  { to: "/admin/assets", label: "Assets", Icon: Boxes },
-  { to: "/admin/collections", label: "Collections", Icon: Library },
+  { to: "/admin/modules/assets", label: "Assets", Icon: Layers },
+  { to: "/admin/modules/collections", label: "Collections", Icon: Library },
   { to: "/admin/packs", label: "Packs", Icon: Package },
   { to: "/admin/economy", label: "Economy", Icon: Coins },
   { to: "/admin/spin", label: "Spin", Icon: Sparkles },
