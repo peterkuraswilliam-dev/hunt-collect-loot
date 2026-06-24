@@ -1,17 +1,7 @@
 import type { LucideIcon } from "lucide-react";
 import type { ComponentType } from "react";
 
-export type ModuleSectionKey =
-  | "dashboard"
-  | "management"
-  | "types"
-  | "rarities"
-  | "tags"
-  | "utility"
-  | "analytics"
-  | "automation"
-  | "settings"
-  | "permissions";
+export type ModuleSectionKey = string;
 
 export interface ModuleSection {
   key: ModuleSectionKey;

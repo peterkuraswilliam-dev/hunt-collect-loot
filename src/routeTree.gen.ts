@@ -27,8 +27,6 @@ import { Route as AuthenticatedAdminSpinRouteImport } from './routes/_authentica
 import { Route as AuthenticatedAdminPacksRouteImport } from './routes/_authenticated/admin/packs'
 import { Route as AuthenticatedAdminMultipliersRouteImport } from './routes/_authenticated/admin/multipliers'
 import { Route as AuthenticatedAdminEconomyRouteImport } from './routes/_authenticated/admin/economy'
-import { Route as AuthenticatedAdminCollectionsRouteImport } from './routes/_authenticated/admin/collections'
-import { Route as AuthenticatedAdminAssetsRouteImport } from './routes/_authenticated/admin/assets'
 import { Route as AuthenticatedAdminModulesSlugRouteImport } from './routes/_authenticated/admin/modules.$slug'
 
 const AuthRoute = AuthRouteImport.update({
@@ -123,18 +121,6 @@ const AuthenticatedAdminEconomyRoute =
     path: '/economy',
     getParentRoute: () => AuthenticatedAdminRouteRoute,
   } as any)
-const AuthenticatedAdminCollectionsRoute =
-  AuthenticatedAdminCollectionsRouteImport.update({
-    id: '/collections',
-    path: '/collections',
-    getParentRoute: () => AuthenticatedAdminRouteRoute,
-  } as any)
-const AuthenticatedAdminAssetsRoute =
-  AuthenticatedAdminAssetsRouteImport.update({
-    id: '/assets',
-    path: '/assets',
-    getParentRoute: () => AuthenticatedAdminRouteRoute,
-  } as any)
 const AuthenticatedAdminModulesSlugRoute =
   AuthenticatedAdminModulesSlugRouteImport.update({
     id: '/modules/$slug',
@@ -154,8 +140,6 @@ export interface FileRoutesByFullPath {
   '/play': typeof AuthenticatedPlayRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/spin': typeof AuthenticatedSpinRoute
-  '/admin/assets': typeof AuthenticatedAdminAssetsRoute
-  '/admin/collections': typeof AuthenticatedAdminCollectionsRoute
   '/admin/economy': typeof AuthenticatedAdminEconomyRoute
   '/admin/multipliers': typeof AuthenticatedAdminMultipliersRoute
   '/admin/packs': typeof AuthenticatedAdminPacksRoute
@@ -175,8 +159,6 @@ export interface FileRoutesByTo {
   '/play': typeof AuthenticatedPlayRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/spin': typeof AuthenticatedSpinRoute
-  '/admin/assets': typeof AuthenticatedAdminAssetsRoute
-  '/admin/collections': typeof AuthenticatedAdminCollectionsRoute
   '/admin/economy': typeof AuthenticatedAdminEconomyRoute
   '/admin/multipliers': typeof AuthenticatedAdminMultipliersRoute
   '/admin/packs': typeof AuthenticatedAdminPacksRoute
@@ -199,8 +181,6 @@ export interface FileRoutesById {
   '/_authenticated/play': typeof AuthenticatedPlayRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/spin': typeof AuthenticatedSpinRoute
-  '/_authenticated/admin/assets': typeof AuthenticatedAdminAssetsRoute
-  '/_authenticated/admin/collections': typeof AuthenticatedAdminCollectionsRoute
   '/_authenticated/admin/economy': typeof AuthenticatedAdminEconomyRoute
   '/_authenticated/admin/multipliers': typeof AuthenticatedAdminMultipliersRoute
   '/_authenticated/admin/packs': typeof AuthenticatedAdminPacksRoute
@@ -223,8 +203,6 @@ export interface FileRouteTypes {
     | '/play'
     | '/profile'
     | '/spin'
-    | '/admin/assets'
-    | '/admin/collections'
     | '/admin/economy'
     | '/admin/multipliers'
     | '/admin/packs'
@@ -244,8 +222,6 @@ export interface FileRouteTypes {
     | '/play'
     | '/profile'
     | '/spin'
-    | '/admin/assets'
-    | '/admin/collections'
     | '/admin/economy'
     | '/admin/multipliers'
     | '/admin/packs'
@@ -267,8 +243,6 @@ export interface FileRouteTypes {
     | '/_authenticated/play'
     | '/_authenticated/profile'
     | '/_authenticated/spin'
-    | '/_authenticated/admin/assets'
-    | '/_authenticated/admin/collections'
     | '/_authenticated/admin/economy'
     | '/_authenticated/admin/multipliers'
     | '/_authenticated/admin/packs'
@@ -412,20 +386,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminEconomyRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
-    '/_authenticated/admin/collections': {
-      id: '/_authenticated/admin/collections'
-      path: '/collections'
-      fullPath: '/admin/collections'
-      preLoaderRoute: typeof AuthenticatedAdminCollectionsRouteImport
-      parentRoute: typeof AuthenticatedAdminRouteRoute
-    }
-    '/_authenticated/admin/assets': {
-      id: '/_authenticated/admin/assets'
-      path: '/assets'
-      fullPath: '/admin/assets'
-      preLoaderRoute: typeof AuthenticatedAdminAssetsRouteImport
-      parentRoute: typeof AuthenticatedAdminRouteRoute
-    }
     '/_authenticated/admin/modules/$slug': {
       id: '/_authenticated/admin/modules/$slug'
       path: '/modules/$slug'
@@ -437,8 +397,6 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedAdminRouteRouteChildren {
-  AuthenticatedAdminAssetsRoute: typeof AuthenticatedAdminAssetsRoute
-  AuthenticatedAdminCollectionsRoute: typeof AuthenticatedAdminCollectionsRoute
   AuthenticatedAdminEconomyRoute: typeof AuthenticatedAdminEconomyRoute
   AuthenticatedAdminMultipliersRoute: typeof AuthenticatedAdminMultipliersRoute
   AuthenticatedAdminPacksRoute: typeof AuthenticatedAdminPacksRoute
@@ -450,8 +408,6 @@ interface AuthenticatedAdminRouteRouteChildren {
 
 const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren =
   {
-    AuthenticatedAdminAssetsRoute: AuthenticatedAdminAssetsRoute,
-    AuthenticatedAdminCollectionsRoute: AuthenticatedAdminCollectionsRoute,
     AuthenticatedAdminEconomyRoute: AuthenticatedAdminEconomyRoute,
     AuthenticatedAdminMultipliersRoute: AuthenticatedAdminMultipliersRoute,
     AuthenticatedAdminPacksRoute: AuthenticatedAdminPacksRoute,
