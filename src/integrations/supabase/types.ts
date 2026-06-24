@@ -230,47 +230,153 @@ export type Database = {
         }
         Relationships: []
       }
+      collection_assets: {
+        Row: {
+          added_at: string
+          asset_id: string
+          collection_id: string
+        }
+        Insert: {
+          added_at?: string
+          asset_id: string
+          collection_id: string
+        }
+        Update: {
+          added_at?: string
+          asset_id?: string
+          collection_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "collection_assets_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "assets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "collection_assets_collection_id_fkey"
+            columns: ["collection_id"]
+            isOneToOne: false
+            referencedRelation: "collections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      collection_sets: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          parent_id: string | null
+          slug: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          parent_id?: string | null
+          slug: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          parent_id?: string | null
+          slug?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "collection_sets_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "collection_sets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       collections: {
         Row: {
           bonuses: Json
           created_at: string
           description: string | null
+          exclude_tags: string[]
           id: string
           image_url: string | null
+          include_tags: string[]
+          match_mode: string
           name: string
           realm_slug: string | null
           reward_credits: number
           reward_xp: number
+          rewards: Json
+          set_id: string | null
           slug: string
           sort_order: number
+          status: string
+          type: string | null
+          updated_at: string
         }
         Insert: {
           bonuses?: Json
           created_at?: string
           description?: string | null
+          exclude_tags?: string[]
           id?: string
           image_url?: string | null
+          include_tags?: string[]
+          match_mode?: string
           name: string
           realm_slug?: string | null
           reward_credits?: number
           reward_xp?: number
+          rewards?: Json
+          set_id?: string | null
           slug: string
           sort_order?: number
+          status?: string
+          type?: string | null
+          updated_at?: string
         }
         Update: {
           bonuses?: Json
           created_at?: string
           description?: string | null
+          exclude_tags?: string[]
           id?: string
           image_url?: string | null
+          include_tags?: string[]
+          match_mode?: string
           name?: string
           realm_slug?: string | null
           reward_credits?: number
           reward_xp?: number
+          rewards?: Json
+          set_id?: string | null
           slug?: string
           sort_order?: number
+          status?: string
+          type?: string | null
+          updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "collections_set_id_fkey"
+            columns: ["set_id"]
+            isOneToOne: false
+            referencedRelation: "collection_sets"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       economy_multipliers: {
         Row: {
@@ -754,6 +860,11 @@ export type Database = {
         Returns: boolean
       }
       open_pack: { Args: { p_pack_id: string; p_user: string }; Returns: Json }
+      recompute_all_collections: { Args: never; Returns: undefined }
+      recompute_collection: {
+        Args: { p_collection_id: string }
+        Returns: number
+      }
       spin_wheel: { Args: { p_user: string }; Returns: Json }
     }
     Enums: {
