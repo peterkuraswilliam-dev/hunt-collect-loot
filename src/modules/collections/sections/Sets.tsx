@@ -45,7 +45,7 @@ export function Sets() {
     if (!byParent.has(k)) byParent.set(k, []);
     byParent.get(k)!.push(s);
   }
-  const renderNode = (node: CollectionSet, depth: number): JSX.Element => {
+  const renderNode = (node: CollectionSet, depth: number) => {
     const children = byParent.get(node.id) ?? [];
     const owned = collections.filter((c) => c.set_id === node.id);
     return (
