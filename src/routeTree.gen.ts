@@ -23,8 +23,6 @@ import { Route as AuthenticatedCollectionsRouteImport } from './routes/_authenti
 import { Route as AuthenticatedAdminRouteRouteImport } from './routes/_authenticated/admin/route'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
 import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated/admin/users'
-import { Route as AuthenticatedAdminSpinRouteImport } from './routes/_authenticated/admin/spin'
-import { Route as AuthenticatedAdminPacksRouteImport } from './routes/_authenticated/admin/packs'
 import { Route as AuthenticatedAdminMultipliersRouteImport } from './routes/_authenticated/admin/multipliers'
 import { Route as AuthenticatedAdminEconomyRouteImport } from './routes/_authenticated/admin/economy'
 import { Route as AuthenticatedAdminModulesSlugRouteImport } from './routes/_authenticated/admin/modules.$slug'
@@ -99,16 +97,6 @@ const AuthenticatedAdminUsersRoute = AuthenticatedAdminUsersRouteImport.update({
   path: '/users',
   getParentRoute: () => AuthenticatedAdminRouteRoute,
 } as any)
-const AuthenticatedAdminSpinRoute = AuthenticatedAdminSpinRouteImport.update({
-  id: '/spin',
-  path: '/spin',
-  getParentRoute: () => AuthenticatedAdminRouteRoute,
-} as any)
-const AuthenticatedAdminPacksRoute = AuthenticatedAdminPacksRouteImport.update({
-  id: '/packs',
-  path: '/packs',
-  getParentRoute: () => AuthenticatedAdminRouteRoute,
-} as any)
 const AuthenticatedAdminMultipliersRoute =
   AuthenticatedAdminMultipliersRouteImport.update({
     id: '/multipliers',
@@ -142,8 +130,6 @@ export interface FileRoutesByFullPath {
   '/spin': typeof AuthenticatedSpinRoute
   '/admin/economy': typeof AuthenticatedAdminEconomyRoute
   '/admin/multipliers': typeof AuthenticatedAdminMultipliersRoute
-  '/admin/packs': typeof AuthenticatedAdminPacksRoute
-  '/admin/spin': typeof AuthenticatedAdminSpinRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/admin/modules/$slug': typeof AuthenticatedAdminModulesSlugRoute
@@ -161,8 +147,6 @@ export interface FileRoutesByTo {
   '/spin': typeof AuthenticatedSpinRoute
   '/admin/economy': typeof AuthenticatedAdminEconomyRoute
   '/admin/multipliers': typeof AuthenticatedAdminMultipliersRoute
-  '/admin/packs': typeof AuthenticatedAdminPacksRoute
-  '/admin/spin': typeof AuthenticatedAdminSpinRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/admin/modules/$slug': typeof AuthenticatedAdminModulesSlugRoute
@@ -183,8 +167,6 @@ export interface FileRoutesById {
   '/_authenticated/spin': typeof AuthenticatedSpinRoute
   '/_authenticated/admin/economy': typeof AuthenticatedAdminEconomyRoute
   '/_authenticated/admin/multipliers': typeof AuthenticatedAdminMultipliersRoute
-  '/_authenticated/admin/packs': typeof AuthenticatedAdminPacksRoute
-  '/_authenticated/admin/spin': typeof AuthenticatedAdminSpinRoute
   '/_authenticated/admin/users': typeof AuthenticatedAdminUsersRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/admin/modules/$slug': typeof AuthenticatedAdminModulesSlugRoute
@@ -205,8 +187,6 @@ export interface FileRouteTypes {
     | '/spin'
     | '/admin/economy'
     | '/admin/multipliers'
-    | '/admin/packs'
-    | '/admin/spin'
     | '/admin/users'
     | '/admin/'
     | '/admin/modules/$slug'
@@ -224,8 +204,6 @@ export interface FileRouteTypes {
     | '/spin'
     | '/admin/economy'
     | '/admin/multipliers'
-    | '/admin/packs'
-    | '/admin/spin'
     | '/admin/users'
     | '/admin'
     | '/admin/modules/$slug'
@@ -245,8 +223,6 @@ export interface FileRouteTypes {
     | '/_authenticated/spin'
     | '/_authenticated/admin/economy'
     | '/_authenticated/admin/multipliers'
-    | '/_authenticated/admin/packs'
-    | '/_authenticated/admin/spin'
     | '/_authenticated/admin/users'
     | '/_authenticated/admin/'
     | '/_authenticated/admin/modules/$slug'
@@ -358,20 +334,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminUsersRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
-    '/_authenticated/admin/spin': {
-      id: '/_authenticated/admin/spin'
-      path: '/spin'
-      fullPath: '/admin/spin'
-      preLoaderRoute: typeof AuthenticatedAdminSpinRouteImport
-      parentRoute: typeof AuthenticatedAdminRouteRoute
-    }
-    '/_authenticated/admin/packs': {
-      id: '/_authenticated/admin/packs'
-      path: '/packs'
-      fullPath: '/admin/packs'
-      preLoaderRoute: typeof AuthenticatedAdminPacksRouteImport
-      parentRoute: typeof AuthenticatedAdminRouteRoute
-    }
     '/_authenticated/admin/multipliers': {
       id: '/_authenticated/admin/multipliers'
       path: '/multipliers'
@@ -399,8 +361,6 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedAdminRouteRouteChildren {
   AuthenticatedAdminEconomyRoute: typeof AuthenticatedAdminEconomyRoute
   AuthenticatedAdminMultipliersRoute: typeof AuthenticatedAdminMultipliersRoute
-  AuthenticatedAdminPacksRoute: typeof AuthenticatedAdminPacksRoute
-  AuthenticatedAdminSpinRoute: typeof AuthenticatedAdminSpinRoute
   AuthenticatedAdminUsersRoute: typeof AuthenticatedAdminUsersRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
   AuthenticatedAdminModulesSlugRoute: typeof AuthenticatedAdminModulesSlugRoute
@@ -410,8 +370,6 @@ const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren
   {
     AuthenticatedAdminEconomyRoute: AuthenticatedAdminEconomyRoute,
     AuthenticatedAdminMultipliersRoute: AuthenticatedAdminMultipliersRoute,
-    AuthenticatedAdminPacksRoute: AuthenticatedAdminPacksRoute,
-    AuthenticatedAdminSpinRoute: AuthenticatedAdminSpinRoute,
     AuthenticatedAdminUsersRoute: AuthenticatedAdminUsersRoute,
     AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
     AuthenticatedAdminModulesSlugRoute: AuthenticatedAdminModulesSlugRoute,
