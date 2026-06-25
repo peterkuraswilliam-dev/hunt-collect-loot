@@ -514,36 +514,48 @@ export type Database = {
           assets_per_pack: number
           created_at: string
           description: string | null
+          exclude_tags: string[]
           id: string
           image_url: string | null
+          include_tags: string[]
+          match_mode: string
           name: string
           price_credits: number
           slug: string
           sort_order: number
+          status: string
           tier: string
         }
         Insert: {
           assets_per_pack?: number
           created_at?: string
           description?: string | null
+          exclude_tags?: string[]
           id?: string
           image_url?: string | null
+          include_tags?: string[]
+          match_mode?: string
           name: string
           price_credits?: number
           slug: string
           sort_order?: number
+          status?: string
           tier?: string
         }
         Update: {
           assets_per_pack?: number
           created_at?: string
           description?: string | null
+          exclude_tags?: string[]
           id?: string
           image_url?: string | null
+          include_tags?: string[]
+          match_mode?: string
           name?: string
           price_credits?: number
           slug?: string
           sort_order?: number
+          status?: string
           tier?: string
         }
         Relationships: []
@@ -569,6 +581,138 @@ export type Database = {
         }
         Relationships: []
       }
+      reward_bundles: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          rewards: Json
+          slug: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          rewards?: Json
+          slug: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          rewards?: Json
+          slug?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      reward_log: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          kind: string
+          payload: Json
+          ref_id: string | null
+          source: string
+          user_id: string
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          id?: string
+          kind: string
+          payload?: Json
+          ref_id?: string | null
+          source: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          kind?: string
+          payload?: Json
+          ref_id?: string | null
+          source?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      reward_sources: {
+        Row: {
+          created_at: string
+          enabled: boolean
+          icon: string | null
+          id: string
+          name: string
+          slug: string
+          sort_order: number
+        }
+        Insert: {
+          created_at?: string
+          enabled?: boolean
+          icon?: string | null
+          id?: string
+          name: string
+          slug: string
+          sort_order?: number
+        }
+        Update: {
+          created_at?: string
+          enabled?: boolean
+          icon?: string | null
+          id?: string
+          name?: string
+          slug?: string
+          sort_order?: number
+        }
+        Relationships: []
+      }
+      reward_types: {
+        Row: {
+          created_at: string
+          description: string | null
+          icon: string | null
+          id: string
+          is_system: boolean
+          kind: string
+          name: string
+          slug: string
+          sort_order: number
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          is_system?: boolean
+          kind: string
+          name: string
+          slug: string
+          sort_order?: number
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          is_system?: boolean
+          kind?: string
+          name?: string
+          slug?: string
+          sort_order?: number
+        }
+        Relationships: []
+      }
       spin_rewards: {
         Row: {
           active: boolean
@@ -582,6 +726,7 @@ export type Database = {
           min_amount: number
           pack_slug: string | null
           sort_order: number
+          spin_id: string | null
           weight: number
         }
         Insert: {
@@ -596,6 +741,7 @@ export type Database = {
           min_amount?: number
           pack_slug?: string | null
           sort_order?: number
+          spin_id?: string | null
           weight?: number
         }
         Update: {
@@ -610,7 +756,52 @@ export type Database = {
           min_amount?: number
           pack_slug?: string | null
           sort_order?: number
+          spin_id?: string | null
           weight?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "spin_rewards_spin_id_fkey"
+            columns: ["spin_id"]
+            isOneToOne: false
+            referencedRelation: "spins"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      spins: {
+        Row: {
+          cooldown_seconds: number
+          created_at: string
+          daily_limit: number
+          description: string | null
+          id: string
+          name: string
+          slug: string
+          sort_order: number
+          status: string
+        }
+        Insert: {
+          cooldown_seconds?: number
+          created_at?: string
+          daily_limit?: number
+          description?: string | null
+          id?: string
+          name: string
+          slug: string
+          sort_order?: number
+          status?: string
+        }
+        Update: {
+          cooldown_seconds?: number
+          created_at?: string
+          daily_limit?: number
+          description?: string | null
+          id?: string
+          name?: string
+          slug?: string
+          sort_order?: number
+          status?: string
         }
         Relationships: []
       }
@@ -860,6 +1051,31 @@ export type Database = {
         Returns: boolean
       }
       open_pack: { Args: { p_pack_id: string; p_user: string }; Returns: Json }
+      pick_pack_asset: {
+        Args: { p_pack_id: string }
+        Returns: {
+          asset_type_id: string | null
+          collection_id: string | null
+          created_at: string
+          credits_per_hour: number
+          description: string | null
+          energy_per_hour: number
+          id: string
+          image_url: string | null
+          name: string
+          rarity: Database["public"]["Enums"]["rarity"]
+          slug: string
+          sort_order: number
+          status: string
+          xp_per_hour: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "assets"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       recompute_all_collections: { Args: never; Returns: undefined }
       recompute_collection: {
         Args: { p_collection_id: string }
