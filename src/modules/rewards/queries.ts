@@ -86,9 +86,9 @@ export type RewardLogRow = {
   created_at: string;
 };
 
-const opt = <T,>(key: unknown[], from: string, order = "sort_order"): ReturnType<typeof queryOptions<T[]>> =>
-  queryOptions({
-    queryKey: key,
+function listQuery<T>(key: string, from: string, order = "sort_order") {
+  return queryOptions({
+    queryKey: [key],
     queryFn: async (): Promise<T[]> => {
       const { data, error } = await sb.from(from).select("*").order(order);
       if (error) throw error;
@@ -96,13 +96,14 @@ const opt = <T,>(key: unknown[], from: string, order = "sort_order"): ReturnType
     },
     staleTime: 30_000,
   });
+}
 
-export const rewardTypesQuery = opt<RewardType>(["reward_types"], "reward_types");
-export const packsAdminQuery = opt<PackRow>(["packs_admin"], "packs");
-export const spinsQuery = opt<SpinWheel>(["spins"], "spins");
-export const spinRewardsAllQuery = opt<SpinRewardRow>(["spin_rewards_all"], "spin_rewards");
-export const rewardBundlesQuery = opt<RewardBundle>(["reward_bundles"], "reward_bundles", "name");
-export const rewardSourcesQuery = opt<RewardSource>(["reward_sources"], "reward_sources");
+export const rewardTypesQuery = listQuery<RewardType>("reward_types", "reward_types");
+export const packsAdminQuery = listQuery<PackRow>("packs_admin", "packs");
+export const spinsQuery = listQuery<SpinWheel>("spins", "spins");
+export const spinRewardsAllQuery = listQuery<SpinRewardRow>("spin_rewards_all", "spin_rewards");
+export const rewardBundlesQuery = listQuery<RewardBundle>("reward_bundles", "reward_bundles", "name");
+export const rewardSourcesQuery = listQuery<RewardSource>("reward_sources", "reward_sources");
 
 export const rewardLogRecentQuery = queryOptions({
   queryKey: ["reward_log_recent"],
