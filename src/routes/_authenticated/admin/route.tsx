@@ -1,5 +1,5 @@
 import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-router";
-import { Coins, Gauge, Gift, Layers, Library, ShieldAlert, TrendingUp, Users } from "lucide-react";
+import { Coins, Gauge, Gift, Layers, Library, ShieldAlert, Users } from "lucide-react";
 import { useIsAdmin } from "@/lib/admin";
 
 export const Route = createFileRoute("/_authenticated/admin")({
