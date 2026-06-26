@@ -378,6 +378,48 @@ export type Database = {
           },
         ]
       }
+      currencies: {
+        Row: {
+          created_at: string
+          description: string | null
+          enabled: boolean
+          icon: string | null
+          id: string
+          is_system: boolean
+          name: string
+          slug: string
+          sort_order: number
+          symbol: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          enabled?: boolean
+          icon?: string | null
+          id?: string
+          is_system?: boolean
+          name: string
+          slug: string
+          sort_order?: number
+          symbol?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          enabled?: boolean
+          icon?: string | null
+          id?: string
+          is_system?: boolean
+          name?: string
+          slug?: string
+          sort_order?: number
+          symbol?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       economy_multipliers: {
         Row: {
           credits_multiplier: number
