@@ -32,17 +32,16 @@ export const userStatsTotalsQuery = queryOptions({
     const { data, error } = await sb.from("user_stats").select("credits, xp, energy, packs_opened, spin_tokens");
     if (error) throw error;
     const rows = (data ?? []) as Array<{ credits: number; xp: number; energy: number; packs_opened: number; spin_tokens: number }>;
-    return rows.reduce(
-      (acc, r) => ({
-        credits: acc.credits + (r.credits ?? 0),
-        xp: acc.xp + (r.xp ?? 0),
-        energy: acc.energy + (r.energy ?? 0),
-        packs_opened: acc.packs_opened + (r.packs_opened ?? 0),
-        spin_tokens: acc.spin_tokens + (r.spin_tokens ?? 0),
-        users: acc.users + 1,
-      }),
-      { credits: 0, xp: 0, energy: 0, packs_opened: 0, spin_tokens: 0, users: 0 },
-    );
+    const acc = { credits: 0, xp: 0, energy: 0, packs_opened: 0, spin_tokens: 0, users: 0 };
+    for (const r of rows) {
+      acc.credits += r.credits ?? 0;
+      acc.xp += r.xp ?? 0;
+      acc.energy += r.energy ?? 0;
+      acc.packs_opened += r.packs_opened ?? 0;
+      acc.spin_tokens += r.spin_tokens ?? 0;
+      acc.users += 1;
+    }
+    return acc;
   },
   staleTime: 30_000,
 });
