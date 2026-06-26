@@ -11,8 +11,7 @@ const TABS = [
   { to: "/admin/modules/assets", label: "Assets", Icon: Layers },
   { to: "/admin/modules/collections", label: "Collections", Icon: Library },
   { to: "/admin/modules/rewards", label: "Rewards", Icon: Gift },
-  { to: "/admin/economy", label: "Economy", Icon: Coins },
-  { to: "/admin/multipliers", label: "Multipliers", Icon: TrendingUp },
+  { to: "/admin/modules/economy", label: "Economy", Icon: Coins },
   { to: "/admin/users", label: "Users", Icon: Users },
 ] as const;
 
