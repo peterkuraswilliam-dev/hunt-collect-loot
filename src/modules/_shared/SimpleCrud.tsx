@@ -15,7 +15,7 @@ export type CrudField = {
   options?: Array<{ value: string; label: string }>;
 };
 
-export function SimpleCrud<T extends { id: string; name?: string; slug?: string }>({
+export function SimpleCrud<T extends { id: string }>({
   table,
   queryKey,
   title,
@@ -26,7 +26,7 @@ export function SimpleCrud<T extends { id: string; name?: string; slug?: string 
   queryKey: string;
   title: string;
   fields: CrudField[];
-  defaults?: Partial<T>;
+  defaults?: Record<string, unknown>;
 }) {
   const qc = useQueryClient();
   const { data: rows = [] } = useQuery({
@@ -37,10 +37,10 @@ export function SimpleCrud<T extends { id: string; name?: string; slug?: string 
       return (data ?? []) as T[];
     },
   });
-  const [editing, setEditing] = useState<Partial<T> | null>(null);
+  const [editing, setEditing] = useState<Record<string, unknown> | null>(null);
 
   const save = useMutation({
-    mutationFn: async (row: Partial<T>) => {
+    mutationFn: async (row: Record<string, unknown>) => {
       const { id, ...rest } = row as { id?: string } & Record<string, unknown>;
       if (id) {
         const { error } = await sb.from(table).update(rest).eq("id", id);
