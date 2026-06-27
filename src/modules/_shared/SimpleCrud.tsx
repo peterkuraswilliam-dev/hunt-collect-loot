@@ -92,7 +92,7 @@ export function SimpleCrud<T extends { id: string }>({
             <h3 className="font-display text-base font-bold">{(editing as { id?: string }).id ? "Edit" : "New"}</h3>
             {fields.map((f) => {
               const v = (editing as Record<string, unknown>)[f.key] ?? "";
-              const onChange = (val: unknown) => setEditing({ ...editing, [f.key]: val } as Partial<T>);
+              const onChange = (val: unknown) => setEditing({ ...editing, [f.key]: val });
               if (f.type === "textarea") return <Field key={f.key} label={f.label}><textarea className={inputCls} rows={3} value={String(v)} onChange={(e) => onChange(e.target.value)} /></Field>;
               if (f.type === "number") return <Field key={f.key} label={f.label}><input type="number" className={inputCls} value={String(v ?? 0)} onChange={(e) => onChange(Number(e.target.value))} /></Field>;
               if (f.type === "select") return <Field key={f.key} label={f.label}><select className={inputCls} value={String(v)} onChange={(e) => onChange(e.target.value)}>{(f.options ?? []).map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}</select></Field>;
