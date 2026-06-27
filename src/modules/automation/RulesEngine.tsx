@@ -4,12 +4,12 @@ import { Pencil, Plus, Power, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { collectionsQuery } from "@/lib/queries";
 import { AdminTable, Field, inputCls } from "@/components/admin/AdminTable";
-import { automationRulesQuery, tagsQuery, type AutomationRule } from "../queries";
+import { automationRulesQuery, tagsQuery, type AutomationRule } from "@/modules/assets/queries";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const sb = supabase as any;
 
-export function Automation() {
+export function RulesEngine() {
   const qc = useQueryClient();
   const { data: rules = [] } = useQuery(automationRulesQuery);
   const { data: tags = [] } = useQuery(tagsQuery);

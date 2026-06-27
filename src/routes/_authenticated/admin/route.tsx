@@ -1,19 +1,11 @@
 import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-router";
-import { Coins, Gauge, Gift, Layers, Library, ShieldAlert, Users } from "lucide-react";
+import { Gauge, ShieldAlert } from "lucide-react";
 import { useIsAdmin } from "@/lib/admin";
+import { modules } from "@/modules/registry";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   component: AdminLayout,
 });
-
-const TABS = [
-  { to: "/admin", label: "Dashboard", Icon: Gauge },
-  { to: "/admin/modules/assets", label: "Assets", Icon: Layers },
-  { to: "/admin/modules/collections", label: "Collections", Icon: Library },
-  { to: "/admin/modules/rewards", label: "Rewards", Icon: Gift },
-  { to: "/admin/modules/economy", label: "Economy", Icon: Coins },
-  { to: "/admin/users", label: "Users", Icon: Users },
-] as const;
 
 function AdminLayout() {
   const { isAdmin, loading } = useIsAdmin();
@@ -34,26 +26,39 @@ function AdminLayout() {
     <div className="space-y-3">
       <header className="panel-gold flex items-center justify-between px-4 py-3">
         <div>
-          <p className="text-[10px] uppercase tracking-[0.25em] text-muted-foreground">Super Admin</p>
+          <p className="text-[10px] uppercase tracking-[0.25em] text-muted-foreground">Asset OS</p>
           <h1 className="font-display text-lg font-extrabold tracking-wide">CMS Console</h1>
         </div>
       </header>
 
       <nav className="-mx-1 flex gap-1 overflow-x-auto pb-1">
-        {TABS.map(({ to, label, Icon }) => {
-          const active = to === "/admin" ? pathname === "/admin" : pathname.startsWith(to);
+        <Link
+          to="/admin"
+          className={`flex shrink-0 items-center gap-1.5 rounded-md border px-3 py-1.5 text-xs font-semibold uppercase tracking-wider transition ${
+            pathname === "/admin"
+              ? "border-primary bg-primary/10 text-primary"
+              : "border-border bg-surface-2 text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          <Gauge className="h-3.5 w-3.5" />
+          Dashboard
+        </Link>
+        {modules.map((m) => {
+          const to = `/admin/modules/${m.slug}`;
+          const active = pathname.startsWith(to);
           return (
             <Link
-              key={to}
-              to={to}
+              key={m.slug}
+              to="/admin/modules/$slug"
+              params={{ slug: m.slug }}
               className={`flex shrink-0 items-center gap-1.5 rounded-md border px-3 py-1.5 text-xs font-semibold uppercase tracking-wider transition ${
                 active
                   ? "border-primary bg-primary/10 text-primary"
                   : "border-border bg-surface-2 text-muted-foreground hover:text-foreground"
               }`}
             >
-              <Icon className="h-3.5 w-3.5" />
-              {label}
+              <m.icon className="h-3.5 w-3.5" />
+              {m.name}
             </Link>
           );
         })}

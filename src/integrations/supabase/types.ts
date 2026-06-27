@@ -450,6 +450,27 @@ export type Database = {
         }
         Relationships: []
       }
+      feature_toggles: {
+        Row: {
+          description: string | null
+          enabled: boolean
+          key: string
+          updated_at: string
+        }
+        Insert: {
+          description?: string | null
+          enabled?: boolean
+          key: string
+          updated_at?: string
+        }
+        Update: {
+          description?: string | null
+          enabled?: boolean
+          key?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       game_settings: {
         Row: {
           dig_energy_cost: number
@@ -479,6 +500,148 @@ export type Database = {
           xp_per_level?: number
         }
         Relationships: []
+      }
+      games: {
+        Row: {
+          created_at: string
+          description: string | null
+          enabled_modules: string[]
+          exclude_tags: string[]
+          icon: string | null
+          id: string
+          include_tags: string[]
+          name: string
+          slug: string
+          sort_order: number
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          enabled_modules?: string[]
+          exclude_tags?: string[]
+          icon?: string | null
+          id?: string
+          include_tags?: string[]
+          name: string
+          slug: string
+          sort_order?: number
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          enabled_modules?: string[]
+          exclude_tags?: string[]
+          icon?: string | null
+          id?: string
+          include_tags?: string[]
+          name?: string
+          slug?: string
+          sort_order?: number
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      locations: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          lat: number | null
+          lng: number | null
+          name: string
+          realm_id: string | null
+          slug: string
+          sort_order: number
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          lat?: number | null
+          lng?: number | null
+          name: string
+          realm_id?: string | null
+          slug: string
+          sort_order?: number
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          lat?: number | null
+          lng?: number | null
+          name?: string
+          realm_id?: string | null
+          slug?: string
+          sort_order?: number
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "locations_realm_id_fkey"
+            columns: ["realm_id"]
+            isOneToOne: false
+            referencedRelation: "realms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mini_games: {
+        Row: {
+          config: Json
+          created_at: string
+          description: string | null
+          game_id: string | null
+          id: string
+          name: string
+          slug: string
+          sort_order: number
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          config?: Json
+          created_at?: string
+          description?: string | null
+          game_id?: string | null
+          id?: string
+          name: string
+          slug: string
+          sort_order?: number
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          config?: Json
+          created_at?: string
+          description?: string | null
+          game_id?: string | null
+          id?: string
+          name?: string
+          slug?: string
+          sort_order?: number
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mini_games_game_id_fkey"
+            columns: ["game_id"]
+            isOneToOne: false
+            referencedRelation: "games"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       module_permissions: {
         Row: {
@@ -622,6 +785,53 @@ export type Database = {
           username?: string | null
         }
         Relationships: []
+      }
+      realms: {
+        Row: {
+          created_at: string
+          description: string | null
+          game_id: string | null
+          id: string
+          image_url: string | null
+          name: string
+          slug: string
+          sort_order: number
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          game_id?: string | null
+          id?: string
+          image_url?: string | null
+          name: string
+          slug: string
+          sort_order?: number
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          game_id?: string | null
+          id?: string
+          image_url?: string | null
+          name?: string
+          slug?: string
+          sort_order?: number
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "realms_game_id_fkey"
+            columns: ["game_id"]
+            isOneToOne: false
+            referencedRelation: "games"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       reward_bundles: {
         Row: {
