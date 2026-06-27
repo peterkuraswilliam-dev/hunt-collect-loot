@@ -1,9 +1,9 @@
-import { Users as UsersIcon, Gauge, Database, Wallet, Package, TrendingUp, BarChart3, Settings, ShieldCheck } from "lucide-react";
+import { Users as UsersIcon, Gauge, Database, Wallet, Package, TrendingUp, BarChart3, Settings, ShieldCheck, Shield, ShieldOff } from "lucide-react";
 import type { AssetOSModule } from "../contract";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { AdminTable } from "@/components/admin/AdminTable";
 import { ModuleSettingsPanel, ModulePermissionsPanel } from "../_shared/ModuleSettings";
-import UsersPage from "@/routes/_authenticated/admin/users";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const sb = supabase as any;
