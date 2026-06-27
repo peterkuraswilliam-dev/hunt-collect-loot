@@ -124,6 +124,50 @@ function Progression() {
 
 const Analytics = () => <div className="panel p-3 text-xs text-muted-foreground">Cohort & retention analytics coming soon.</div>;
 
+function Management() {
+  const qc = useQueryClient();
+  const { data: users = [] } = useQuery({
+    queryKey: ["admin_users"],
+    queryFn: async () => {
+      const [{ data: profiles }, { data: stats }, { data: roles }] = await Promise.all([
+        sb.from("profiles").select("id, username, avatar_url"),
+        sb.from("user_stats").select("*"),
+        sb.from("user_roles").select("user_id, role"),
+      ]);
+      return ((profiles ?? []) as Array<{ id: string; username: string | null }>).map((p) => {
+        const s = ((stats ?? []) as Array<{ user_id: string; credits: number; xp: number; level: number; packs_opened: number }>).find((x) => x.user_id === p.id);
+        const isAdmin = ((roles ?? []) as Array<{ user_id: string; role: string }>).some((r) => r.user_id === p.id && r.role === "admin");
+        return { id: p.id, username: p.username, credits: s?.credits ?? 0, xp: s?.xp ?? 0, level: s?.level ?? 1, packs_opened: s?.packs_opened ?? 0, isAdmin };
+      });
+    },
+  });
+  const toggleAdmin = useMutation({
+    mutationFn: async ({ userId, isAdmin }: { userId: string; isAdmin: boolean }) => {
+      if (isAdmin) await sb.from("user_roles").delete().eq("user_id", userId).eq("role", "admin");
+      else await sb.from("user_roles").insert({ user_id: userId, role: "admin" });
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["admin_users"] }),
+  });
+  return (
+    <AdminTable
+      rows={users}
+      empty="No users yet."
+      columns={[
+        { key: "user", label: "User", render: (r) => <div><div className="font-semibold">{r.username ?? "—"}</div><div className="text-[10px] text-muted-foreground">{r.id.slice(0, 8)}…</div></div> },
+        { key: "level", label: "Lv", render: (r) => r.level },
+        { key: "credits", label: "Credits", render: (r) => r.credits },
+        { key: "packs", label: "Packs", render: (r) => r.packs_opened },
+        { key: "role", label: "Role", render: (r) => <span className={`rounded px-1.5 py-0.5 text-[10px] font-bold uppercase ${r.isAdmin ? "bg-primary/20 text-primary" : "bg-surface-2 text-muted-foreground"}`}>{r.isAdmin ? "Admin" : "Player"}</span> },
+        { key: "actions", label: "", className: "text-right", render: (r) => (
+          <button onClick={() => toggleAdmin.mutate({ userId: r.id, isAdmin: r.isAdmin })} className="inline-flex items-center gap-1 rounded-md border border-border bg-surface-2 px-2 py-1 text-[10px] font-semibold uppercase tracking-wider hover:text-foreground">
+            {r.isAdmin ? <><ShieldOff className="h-3 w-3" /> Revoke</> : <><Shield className="h-3 w-3" /> Promote</>}
+          </button>
+        ) },
+      ]}
+    />
+  );
+}
+
 export const usersModule: AssetOSModule = {
   slug: "users",
   name: "Users",
@@ -131,7 +175,7 @@ export const usersModule: AssetOSModule = {
   icon: UsersIcon,
   sections: [
     { key: "dashboard", label: "Dashboard", icon: Gauge, component: Dashboard },
-    { key: "management", label: "Users", icon: Database, component: UsersPage },
+    { key: "management", label: "Users", icon: Database, component: Management },
     { key: "wallet", label: "Wallet", icon: Wallet, component: Wallets },
     { key: "inventory", label: "Inventory", icon: Package, component: Inventory },
     { key: "progression", label: "Progression", icon: TrendingUp, component: Progression },
