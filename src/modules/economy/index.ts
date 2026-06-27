@@ -1,8 +1,7 @@
-import { Coins, Gauge, Banknote, Zap, TrendingUp, Scale, Wrench, BarChart3, Settings, ShieldCheck, Factory } from "lucide-react";
+import { Coins, Gauge, Banknote, Zap, TrendingUp, Scale, Wrench, BarChart3, Settings, ShieldCheck } from "lucide-react";
 import type { AssetOSModule } from "../contract";
 import { Dashboard } from "./sections/Dashboard";
 import { Currencies } from "./sections/Currencies";
-import { Production } from "./sections/Production";
 import { Energy } from "./sections/Energy";
 import { Multipliers } from "./sections/Multipliers";
 import { Balancing } from "./sections/Balancing";
@@ -14,12 +13,11 @@ import { Permissions } from "./sections/Permissions";
 export const economyModule: AssetOSModule = {
   slug: "economy",
   name: "Economy",
-  description: "CMS-driven economy: currencies, production, multipliers, balancing & bulk utility.",
+  description: "Currencies, energy, multipliers, balancing & bulk utility.",
   icon: Coins,
   sections: [
     { key: "dashboard", label: "Dashboard", icon: Gauge, component: Dashboard },
     { key: "currencies", label: "Currencies", icon: Banknote, component: Currencies },
-    { key: "production", label: "Production", icon: Factory, component: Production },
     { key: "energy", label: "Energy", icon: Zap, component: Energy },
     { key: "multipliers", label: "Multipliers", icon: TrendingUp, component: Multipliers },
     { key: "balancing", label: "Balancing", icon: Scale, component: Balancing },
