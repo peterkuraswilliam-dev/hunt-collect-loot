@@ -1,6 +1,6 @@
 import { Workflow, Gauge, Zap, GitBranch, Activity, Link2, BarChart3, Settings, ShieldCheck } from "lucide-react";
 import type { AssetOSModule } from "../contract";
-import { Automation as AssetAutomation } from "../assets/sections/Automation";
+import { RulesEngine } from "./RulesEngine";
 import { useQuery } from "@tanstack/react-query";
 import { automationRulesQuery } from "../assets/queries";
 import { ModuleSettingsPanel, ModulePermissionsPanel } from "../_shared/ModuleSettings";
@@ -57,7 +57,7 @@ export const automationModule: AssetOSModule = {
   icon: Workflow,
   sections: [
     { key: "dashboard", label: "Dashboard", icon: Gauge, component: Dashboard },
-    { key: "rules", label: "Rules Engine", icon: Zap, component: AssetAutomation },
+    { key: "rules", label: "Rules Engine", icon: Zap, component: RulesEngine },
     { key: "triggers", label: "Triggers", icon: Activity, component: Triggers },
     { key: "workflows", label: "Workflows", icon: GitBranch, component: Workflows },
     { key: "relationships", label: "Relationships", icon: Link2, component: Relationships },
