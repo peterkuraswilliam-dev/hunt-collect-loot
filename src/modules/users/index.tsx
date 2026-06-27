@@ -49,14 +49,14 @@ function Dashboard() {
 function Wallets() {
   const { data: rows = [] } = useQuery({
     queryKey: ["users_wallets"],
-    queryFn: async () => {
+    queryFn: async (): Promise<Array<{ id: string; username: string | null; credits: number; energy: number; xp: number; spin_tokens: number }>> => {
       const [{ data: profiles }, { data: stats }] = await Promise.all([
         sb.from("profiles").select("id, username"),
         sb.from("user_stats").select("user_id, credits, energy, xp, spin_tokens"),
       ]);
       return (profiles ?? []).map((p: { id: string; username: string | null }) => {
-        const s = (stats ?? []).find((x: { user_id: string }) => x.user_id === p.id);
-        return { id: p.id, username: p.username, ...s };
+        const s = ((stats ?? []) as Array<{ user_id: string; credits: number; energy: number; xp: number; spin_tokens: number }>).find((x) => x.user_id === p.id);
+        return { id: p.id, username: p.username, credits: s?.credits ?? 0, energy: s?.energy ?? 0, xp: s?.xp ?? 0, spin_tokens: s?.spin_tokens ?? 0 };
       });
     },
   });
