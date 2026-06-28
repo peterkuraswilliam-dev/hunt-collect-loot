@@ -473,30 +473,21 @@ export type Database = {
       }
       game_settings: {
         Row: {
-          dig_energy_cost: number
           energy_max: number
           energy_regen_seconds: number
-          grid_size: number
           id: number
-          treasure_rewards: Json
           xp_per_level: number
         }
         Insert: {
-          dig_energy_cost?: number
           energy_max?: number
           energy_regen_seconds?: number
-          grid_size?: number
           id?: number
-          treasure_rewards?: Json
           xp_per_level?: number
         }
         Update: {
-          dig_energy_cost?: number
           energy_max?: number
           energy_regen_seconds?: number
-          grid_size?: number
           id?: number
-          treasure_rewards?: Json
           xp_per_level?: number
         }
         Relationships: []
@@ -1294,7 +1285,6 @@ export type Database = {
         Returns: Json
       }
       collect_production: { Args: { p_user: string }; Returns: Json }
-      dig_tile: { Args: { p_user: string }; Returns: Json }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
