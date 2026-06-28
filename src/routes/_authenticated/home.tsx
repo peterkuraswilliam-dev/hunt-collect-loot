@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Coins, Hexagon, Pickaxe, Sparkles, Ticket, Zap } from "lucide-react";
+import { Coins, Hexagon, Package, Sparkles, Ticket, Zap } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import {
   collectionsQuery,
@@ -48,9 +48,9 @@ function Home() {
         <div className="relative px-4 py-5">
           <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground">Welcome back</p>
           <h1 className="mt-1 font-display text-2xl font-extrabold tracking-wide">ASSET HUNTER</h1>
-          <p className="mt-1 text-xs text-primary">Collect. Play. Own. Earn while away.</p>
-          <Link to="/play" className="btn-gold mt-4 inline-flex items-center gap-2 px-4 py-2 text-xs">
-            <Pickaxe className="h-4 w-4" /> Play Mini Game
+          <p className="mt-1 text-xs text-primary">Collect. Own. Earn while away.</p>
+          <Link to="/packs" className="btn-gold mt-4 inline-flex items-center gap-2 px-4 py-2 text-xs">
+            <Package className="h-4 w-4" /> Open Packs
           </Link>
         </div>
       </section>

@@ -1,9 +1,8 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Home, Pickaxe, Package, Library, Archive, Sparkles, User } from "lucide-react";
+import { Home, Package, Library, Archive, Sparkles, User } from "lucide-react";
 
 const ITEMS = [
   { to: "/home", label: "Home", Icon: Home },
-  { to: "/play", label: "Hunt", Icon: Pickaxe },
   { to: "/packs", label: "Packs", Icon: Package },
   { to: "/collections", label: "Sets", Icon: Library },
   { to: "/my-assets", label: "Assets", Icon: Archive },
@@ -15,7 +14,7 @@ export function BottomNav() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   return (
     <nav
-      className="sticky bottom-0 z-30 mt-4 grid grid-cols-7 gap-0.5 border-t border-border bg-surface/95 px-1 pb-[env(safe-area-inset-bottom)] pt-2 backdrop-blur"
+      className="sticky bottom-0 z-30 mt-4 grid grid-cols-6 gap-0.5 border-t border-border bg-surface/95 px-1 pb-[env(safe-area-inset-bottom)] pt-2 backdrop-blur"
       aria-label="Primary"
     >
       {ITEMS.map(({ to, label, Icon }) => {
