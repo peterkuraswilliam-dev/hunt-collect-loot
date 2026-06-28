@@ -69,10 +69,7 @@ export interface GameSettings {
   id: number;
   energy_max: number;
   energy_regen_seconds: number;
-  dig_energy_cost: number;
-  grid_size: number;
   xp_per_level: number;
-  treasure_rewards: unknown;
 }
 
 export interface EconomyMultipliers {
@@ -106,13 +103,6 @@ export interface CollectionClaim {
   claimed_at: string;
 }
 
-export type DigResult =
-  | { type: "empty" }
-  | { type: "credits"; amount: number }
-  | { type: "xp"; amount: number }
-  | { type: "asset"; asset: Asset }
-  | { type: "pack"; pack: Pack }
-  | { error: string };
 
 export interface OpenPackResult {
   pack?: Pack;

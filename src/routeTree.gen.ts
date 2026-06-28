@@ -14,7 +14,6 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedSpinRouteImport } from './routes/_authenticated/spin'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
-import { Route as AuthenticatedPlayRouteImport } from './routes/_authenticated/play'
 import { Route as AuthenticatedPacksRouteImport } from './routes/_authenticated/packs'
 import { Route as AuthenticatedMyAssetsRouteImport } from './routes/_authenticated/my-assets'
 import { Route as AuthenticatedInventoryRouteImport } from './routes/_authenticated/inventory'
@@ -47,11 +46,6 @@ const AuthenticatedSpinRoute = AuthenticatedSpinRouteImport.update({
 const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedPlayRoute = AuthenticatedPlayRouteImport.update({
-  id: '/play',
-  path: '/play',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedPacksRoute = AuthenticatedPacksRouteImport.update({
@@ -111,7 +105,6 @@ export interface FileRoutesByFullPath {
   '/inventory': typeof AuthenticatedInventoryRoute
   '/my-assets': typeof AuthenticatedMyAssetsRoute
   '/packs': typeof AuthenticatedPacksRoute
-  '/play': typeof AuthenticatedPlayRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/spin': typeof AuthenticatedSpinRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
@@ -126,7 +119,6 @@ export interface FileRoutesByTo {
   '/inventory': typeof AuthenticatedInventoryRoute
   '/my-assets': typeof AuthenticatedMyAssetsRoute
   '/packs': typeof AuthenticatedPacksRoute
-  '/play': typeof AuthenticatedPlayRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/spin': typeof AuthenticatedSpinRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
@@ -144,7 +136,6 @@ export interface FileRoutesById {
   '/_authenticated/inventory': typeof AuthenticatedInventoryRoute
   '/_authenticated/my-assets': typeof AuthenticatedMyAssetsRoute
   '/_authenticated/packs': typeof AuthenticatedPacksRoute
-  '/_authenticated/play': typeof AuthenticatedPlayRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/spin': typeof AuthenticatedSpinRoute
   '/_authenticated/admin/users': typeof AuthenticatedAdminUsersRoute
@@ -162,7 +153,6 @@ export interface FileRouteTypes {
     | '/inventory'
     | '/my-assets'
     | '/packs'
-    | '/play'
     | '/profile'
     | '/spin'
     | '/admin/users'
@@ -177,7 +167,6 @@ export interface FileRouteTypes {
     | '/inventory'
     | '/my-assets'
     | '/packs'
-    | '/play'
     | '/profile'
     | '/spin'
     | '/admin/users'
@@ -194,7 +183,6 @@ export interface FileRouteTypes {
     | '/_authenticated/inventory'
     | '/_authenticated/my-assets'
     | '/_authenticated/packs'
-    | '/_authenticated/play'
     | '/_authenticated/profile'
     | '/_authenticated/spin'
     | '/_authenticated/admin/users'
@@ -243,13 +231,6 @@ declare module '@tanstack/react-router' {
       path: '/profile'
       fullPath: '/profile'
       preLoaderRoute: typeof AuthenticatedProfileRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/play': {
-      id: '/_authenticated/play'
-      path: '/play'
-      fullPath: '/play'
-      preLoaderRoute: typeof AuthenticatedPlayRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/packs': {
@@ -343,7 +324,6 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedInventoryRoute: typeof AuthenticatedInventoryRoute
   AuthenticatedMyAssetsRoute: typeof AuthenticatedMyAssetsRoute
   AuthenticatedPacksRoute: typeof AuthenticatedPacksRoute
-  AuthenticatedPlayRoute: typeof AuthenticatedPlayRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedSpinRoute: typeof AuthenticatedSpinRoute
 }
@@ -355,7 +335,6 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedInventoryRoute: AuthenticatedInventoryRoute,
   AuthenticatedMyAssetsRoute: AuthenticatedMyAssetsRoute,
   AuthenticatedPacksRoute: AuthenticatedPacksRoute,
-  AuthenticatedPlayRoute: AuthenticatedPlayRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedSpinRoute: AuthenticatedSpinRoute,
 }

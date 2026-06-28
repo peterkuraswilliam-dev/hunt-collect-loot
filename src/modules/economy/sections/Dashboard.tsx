@@ -28,10 +28,10 @@ export function Dashboard() {
     .filter((r) => r.kind === "collect_production" || r.kind === "spin")
     .reduce((s, r) => s + Number((r.payload as { energy?: number }).energy ?? 0), 0);
   const xpToday = todays
-    .filter((r) => r.kind === "collect_production" || r.kind === "spin" || r.kind === "dig")
-    .reduce((s, r) => s + Number((r.payload as { xp?: number; amount?: number }).xp ?? ((r.payload as { type?: string; amount?: number }).type === "xp" ? (r.payload as { amount?: number }).amount ?? 0 : 0)), 0);
+    .filter((r) => r.kind === "collect_production" || r.kind === "spin")
+    .reduce((s, r) => s + Number((r.payload as { xp?: number; amount?: number }).xp ?? 0), 0);
   const packsOpenedToday = todays.filter((r) => r.kind === "open_pack").length;
-  const assetsCollectedToday = todays.filter((r) => r.kind === "dig" && (r.payload as { type?: string }).type === "asset").length;
+  const assetsCollectedToday = todays.filter((r) => r.kind === "open_pack").reduce((s, r) => s + ((r.payload as { drops?: unknown[] }).drops?.length ?? 0), 0);
 
   const health =
     !mult ? "—" :

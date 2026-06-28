@@ -11,11 +11,11 @@ const sb = supabase as any;
 export function Energy() {
   const qc = useQueryClient();
   const { data } = useQuery(settingsQuery);
-  const [form, setForm] = useState<{ energy_max: number; energy_regen_seconds: number; dig_energy_cost: number } | null>(null);
+  const [form, setForm] = useState<{ energy_max: number; energy_regen_seconds: number } | null>(null);
 
   useEffect(() => {
     if (data && !form) setForm({
-      energy_max: data.energy_max, energy_regen_seconds: data.energy_regen_seconds, dig_energy_cost: data.dig_energy_cost,
+      energy_max: data.energy_max, energy_regen_seconds: data.energy_regen_seconds,
     });
   }, [data, form]);
 
@@ -34,10 +34,9 @@ export function Energy() {
     <div className="space-y-3">
       <section className="panel space-y-3 p-4">
         <h3 className="font-display text-sm font-bold uppercase tracking-wider text-primary">Energy economy</h3>
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+        <div className="grid grid-cols-2 gap-2">
           <Field label="Max energy"><input type="number" className={inputCls} value={form.energy_max} onChange={(e) => setForm({ ...form, energy_max: Number(e.target.value) })} /></Field>
           <Field label="Regen seconds / point"><input type="number" className={inputCls} value={form.energy_regen_seconds} onChange={(e) => setForm({ ...form, energy_regen_seconds: Number(e.target.value) })} /></Field>
-          <Field label="Energy per dig"><input type="number" className={inputCls} value={form.dig_energy_cost} onChange={(e) => setForm({ ...form, dig_energy_cost: Number(e.target.value) })} /></Field>
         </div>
         <p className="text-[11px] text-muted-foreground">
           Refill costs and energy rewards are configured via the Rewards module (spin rewards, bundles) and pack pricing in Balancing.
