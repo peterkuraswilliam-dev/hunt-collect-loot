@@ -8,7 +8,7 @@ import { spinsQuery, spinRewardsAllQuery, type SpinWheel, type SpinRewardRow } f
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const sb = supabase as any;
 
-const KINDS = ["credits", "energy", "xp", "pack", "asset"] as const;
+const KINDS = ["credits", "energy", "pack", "asset"] as const;
 
 function WheelRewards({ spinId, rows }: { spinId: string; rows: SpinRewardRow[] }) {
   const qc = useQueryClient();

@@ -69,14 +69,12 @@ export interface GameSettings {
   id: number;
   energy_max: number;
   energy_regen_seconds: number;
-  xp_per_level: number;
 }
 
 export interface EconomyMultipliers {
   id: number;
   production_multiplier: number;
   credits_multiplier: number;
-  xp_multiplier: number;
   energy_production_multiplier: number;
   spin_multiplier: number;
   max_offline_hours: number;
@@ -85,7 +83,7 @@ export interface EconomyMultipliers {
 export interface SpinReward {
   id: string;
   label: string;
-  kind: "credits" | "energy" | "xp" | "pack" | "asset";
+  kind: "credits" | "energy" | "pack" | "asset";
   min_amount: number;
   max_amount: number;
   pack_slug: string | null;

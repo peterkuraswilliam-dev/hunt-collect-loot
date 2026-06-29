@@ -9,7 +9,7 @@ import { collectionsAllQuery } from "../queries";
 const sb = supabase as any;
 
 const THRESHOLDS = [25, 50, 75, 100];
-const KINDS = ["credits", "energy", "xp", "pack", "asset", "spins", "unlock"] as const;
+const KINDS = ["credits", "energy", "pack", "asset", "spins", "unlock"] as const;
 
 type Reward = { threshold: number; type: string; value?: number; pack_slug?: string; asset_rarity?: string };
 

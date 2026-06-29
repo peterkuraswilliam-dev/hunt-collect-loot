@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { Coins, Zap, Sparkles, Package, Layers, Activity, Heart } from "lucide-react";
+import { Coins, Zap, Package, Layers, Activity, Heart, Sparkles } from "lucide-react";
 import { userStatsTotalsQuery, activityRecentQuery, currenciesQuery } from "../queries";
 import { assetsQuery, multipliersQuery } from "@/lib/queries";
 
@@ -27,15 +27,12 @@ export function Dashboard() {
   const energyToday = todays
     .filter((r) => r.kind === "collect_production" || r.kind === "spin")
     .reduce((s, r) => s + Number((r.payload as { energy?: number }).energy ?? 0), 0);
-  const xpToday = todays
-    .filter((r) => r.kind === "collect_production" || r.kind === "spin")
-    .reduce((s, r) => s + Number((r.payload as { xp?: number; amount?: number }).xp ?? 0), 0);
   const packsOpenedToday = todays.filter((r) => r.kind === "open_pack").length;
   const assetsCollectedToday = todays.filter((r) => r.kind === "open_pack").reduce((s, r) => s + ((r.payload as { drops?: unknown[] }).drops?.length ?? 0), 0);
 
   const health =
     !mult ? "—" :
-    mult.production_multiplier >= 1 && mult.credits_multiplier >= 1 && mult.xp_multiplier >= 1
+    mult.production_multiplier >= 1 && mult.credits_multiplier >= 1
       ? "Stable" : "Tuning";
 
   return (
@@ -43,12 +40,12 @@ export function Dashboard() {
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
         <Stat icon={Coins} label="Credits in circulation" value={(totals?.credits ?? 0).toLocaleString()} />
         <Stat icon={Zap} label="Energy generated today" value={energyToday.toLocaleString()} />
-        <Stat icon={Sparkles} label="XP earned today" value={xpToday.toLocaleString()} />
+        <Stat icon={Sparkles} label="Progression" value="Coming soon" />
         <Stat icon={Package} label="Packs opened today" value={packsOpenedToday} />
         <Stat icon={Layers} label="Assets collected today" value={assetsCollectedToday} />
         <Stat icon={Heart} label="Economy health" value={health} />
         <Stat icon={Coins} label="Currencies" value={currencies.length} />
-        <Stat icon={Layers} label="Producing assets" value={assets.filter((a) => (a.credits_per_hour ?? 0) + (a.energy_per_hour ?? 0) + (a.xp_per_hour ?? 0) > 0).length} />
+        <Stat icon={Layers} label="Producing assets" value={assets.filter((a) => (a.credits_per_hour ?? 0) + (a.energy_per_hour ?? 0) > 0).length} />
       </div>
 
       <div className="panel p-3">

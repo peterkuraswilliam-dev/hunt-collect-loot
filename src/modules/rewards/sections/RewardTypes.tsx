@@ -8,7 +8,7 @@ import { rewardTypesQuery, type RewardType } from "../queries";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const sb = supabase as any;
 
-const KINDS = ["asset", "credits", "energy", "xp", "ic", "pack", "spin", "unlock", "bundle"];
+const KINDS = ["asset", "credits", "energy", "ic", "pack", "spin", "unlock", "bundle"];
 
 export function RewardTypes() {
   const qc = useQueryClient();

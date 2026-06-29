@@ -41,7 +41,6 @@ function Dashboard() {
     { label: "Packs", value: counts?.packs ?? 0, Icon: Package },
     { label: "Users", value: counts?.users ?? 0, Icon: Users },
     { label: "Total Credits", value: counts?.credits ?? 0, Icon: Coins },
-    { label: "Total XP", value: counts?.xp ?? 0, Icon: Zap },
     { label: "Packs Opened", value: counts?.packsOpened ?? 0, Icon: Package },
     { label: "Actions Logged", value: counts?.activity ?? 0, Icon: Zap },
   ];

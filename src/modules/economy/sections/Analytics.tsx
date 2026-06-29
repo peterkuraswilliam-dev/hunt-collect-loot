@@ -21,37 +21,34 @@ export function Analytics() {
         id: a.id, name: a.name,
         credits_hr: (a.credits_per_hour ?? 0) * owned,
         energy_hr: (a.energy_per_hour ?? 0) * owned,
-        xp_hr: (a.xp_per_hour ?? 0) * owned,
         owned,
       };
     })
-    .sort((a, b) => (b.credits_hr + b.energy_hr + b.xp_hr) - (a.credits_hr + a.energy_hr + a.xp_hr))
+    .sort((a, b) => (b.credits_hr + b.energy_hr) - (a.credits_hr + a.energy_hr))
     .slice(0, 15), [assets, ownedById]);
 
   const topCollections = useMemo(() => {
-    const map = new Map<string, { id: string; name: string; credits: number; energy: number; xp: number }>();
+    const map = new Map<string, { id: string; name: string; credits: number; energy: number }>();
     for (const a of assets) {
       if (!a.collection_id) continue;
       const c = collections.find((x) => x.id === a.collection_id);
       if (!c) continue;
       const owned = ownedById.get(a.id) ?? 0;
-      const cur = map.get(c.id) ?? { id: c.id, name: c.name, credits: 0, energy: 0, xp: 0 };
+      const cur = map.get(c.id) ?? { id: c.id, name: c.name, credits: 0, energy: 0 };
       cur.credits += (a.credits_per_hour ?? 0) * owned;
       cur.energy += (a.energy_per_hour ?? 0) * owned;
-      cur.xp += (a.xp_per_hour ?? 0) * owned;
       map.set(c.id, cur);
     }
-    return Array.from(map.values()).sort((a, b) => (b.credits + b.energy + b.xp) - (a.credits + a.energy + a.xp)).slice(0, 10);
+    return Array.from(map.values()).sort((a, b) => (b.credits + b.energy) - (a.credits + a.energy)).slice(0, 10);
   }, [assets, collections, ownedById]);
 
   const flow = useMemo(() => {
-    const day = new Map<string, { date: string; credits: number; xp: number; energy: number }>();
+    const day = new Map<string, { date: string; credits: number; energy: number }>();
     for (const r of recent) {
       const d = new Date(r.created_at).toLocaleDateString();
-      const cur = day.get(d) ?? { date: d, credits: 0, xp: 0, energy: 0 };
-      const p = r.payload as { credits?: number; xp?: number; energy?: number; amount?: number; type?: string };
+      const cur = day.get(d) ?? { date: d, credits: 0, energy: 0 };
+      const p = r.payload as { credits?: number; energy?: number; amount?: number; type?: string };
       cur.credits += Number(p.credits ?? (p.type === "credits" ? p.amount ?? 0 : 0));
-      cur.xp += Number(p.xp ?? (p.type === "xp" ? p.amount ?? 0 : 0));
       cur.energy += Number(p.energy ?? 0);
       day.set(d, cur);
     }
@@ -64,8 +61,8 @@ export function Analytics() {
         {[
           ["Players", totals?.users ?? 0],
           ["Total credits", totals?.credits ?? 0],
-          ["Total XP", totals?.xp ?? 0],
           ["Total energy", totals?.energy ?? 0],
+          ["Packs opened", totals?.packs_opened ?? 0],
         ].map(([l, v]) => (
           <div key={l as string} className="panel px-3 py-3">
             <div className="text-[10px] uppercase tracking-widest text-muted-foreground">{l}</div>
@@ -84,7 +81,6 @@ export function Analytics() {
             { key: "owned", label: "Owned", render: (r) => r.owned },
             { key: "c", label: "Credits/hr (all)", render: (r) => r.credits_hr.toFixed(1) },
             { key: "e", label: "Energy/hr (all)", render: (r) => r.energy_hr.toFixed(1) },
-            { key: "x", label: "XP/hr (all)", render: (r) => r.xp_hr.toFixed(1) },
           ]}
         />
       </section>
@@ -98,7 +94,6 @@ export function Analytics() {
             { key: "name", label: "Collection", render: (r) => <span className="font-semibold">{r.name}</span> },
             { key: "c", label: "Credits/hr", render: (r) => r.credits.toFixed(1) },
             { key: "e", label: "Energy/hr", render: (r) => r.energy.toFixed(1) },
-            { key: "x", label: "XP/hr", render: (r) => r.xp.toFixed(1) },
           ]}
         />
       </section>
@@ -111,7 +106,6 @@ export function Analytics() {
           columns={[
             { key: "d", label: "Date", render: (r) => r.date },
             { key: "c", label: "Credits", render: (r) => r.credits },
-            { key: "x", label: "XP", render: (r) => r.xp },
             { key: "e", label: "Energy", render: (r) => r.energy },
           ]}
         />
