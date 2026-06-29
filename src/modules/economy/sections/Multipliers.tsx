@@ -20,7 +20,6 @@ export function Multipliers() {
       const { error } = await sb.from("economy_multipliers").update({
         production_multiplier: form.production_multiplier,
         credits_multiplier: form.credits_multiplier,
-        xp_multiplier: form.xp_multiplier,
         energy_production_multiplier: form.energy_production_multiplier,
         spin_multiplier: form.spin_multiplier,
         max_offline_hours: form.max_offline_hours,
@@ -44,7 +43,6 @@ export function Multipliers() {
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
           <Field label="Global Production">{num("production_multiplier")}</Field>
           <Field label="Credits">{num("credits_multiplier")}</Field>
-          <Field label="XP">{num("xp_multiplier")}</Field>
           <Field label="Energy Production">{num("energy_production_multiplier")}</Field>
           <Field label="Spin">{num("spin_multiplier")}</Field>
           <Field label="Max Offline Hours">{num("max_offline_hours")}</Field>

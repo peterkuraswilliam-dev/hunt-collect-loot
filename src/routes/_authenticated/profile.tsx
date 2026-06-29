@@ -25,9 +25,6 @@ function Profile() {
     navigate({ to: "/auth" });
   }
 
-  const xpInLevel = stats ? stats.xp % (settings?.xp_per_level ?? 500) : 0;
-  const xpPct = settings ? Math.round((xpInLevel / settings.xp_per_level) * 100) : 0;
-
   return (
     <div className="space-y-4">
       <section className="panel-gold p-5">
@@ -44,14 +41,9 @@ function Profile() {
             <div className="font-display text-2xl font-extrabold">{stats?.level ?? 1}</div>
           </div>
         </div>
-        <div className="mt-3">
-          <div className="flex justify-between text-[10px] uppercase tracking-widest text-muted-foreground">
-            <span>XP</span><span>{xpInLevel} / {settings?.xp_per_level ?? 500}</span>
-          </div>
-          <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-muted">
-            <div className="h-full bg-gradient-to-r from-violet-400 to-violet-600" style={{ width: `${xpPct}%` }} />
-          </div>
-        </div>
+        <p className="mt-3 text-[10px] uppercase tracking-widest text-muted-foreground">
+          Experience &amp; Progression module coming soon
+        </p>
       </section>
 
       <section className="grid grid-cols-3 gap-2 text-center">

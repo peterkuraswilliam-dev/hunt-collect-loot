@@ -1,9 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
-import { Save } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { packsQuery, settingsQuery, spinRewardsQuery } from "@/lib/queries";
-import { AdminTable, Field, inputCls } from "@/components/admin/AdminTable";
+import { packsQuery, spinRewardsQuery } from "@/lib/queries";
+import { AdminTable, inputCls } from "@/components/admin/AdminTable";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const sb = supabase as any;
@@ -12,9 +10,6 @@ export function Balancing() {
   const qc = useQueryClient();
   const { data: packs = [] } = useQuery(packsQuery);
   const { data: spinRewards = [] } = useQuery(spinRewardsQuery);
-  const { data: settings } = useQuery(settingsQuery);
-  const [xpCurve, setXpCurve] = useState<number | null>(null);
-  useEffect(() => { if (settings && xpCurve == null) setXpCurve(settings.xp_per_level); }, [settings, xpCurve]);
 
   const updatePack = useMutation({
     mutationFn: async ({ id, patch }: { id: string; patch: { price_credits?: number; assets_per_pack?: number } }) => {
@@ -30,14 +25,6 @@ export function Balancing() {
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["spin_rewards"] }),
-  });
-
-  const saveXp = useMutation({
-    mutationFn: async () => {
-      const { error } = await sb.from("game_settings").update({ xp_per_level: xpCurve }).eq("id", 1);
-      if (error) throw error;
-    },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["settings"] }),
   });
 
   return (
@@ -86,18 +73,8 @@ export function Balancing() {
         />
       </section>
 
-      <section className="panel space-y-2 p-4">
-        <h3 className="font-display text-xs font-bold uppercase tracking-wider text-primary">XP curve</h3>
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-          <Field label="XP per level"><input type="number" className={inputCls} value={xpCurve ?? 0} onChange={(e) => setXpCurve(Number(e.target.value))} /></Field>
-        </div>
-        <button onClick={() => saveXp.mutate()} disabled={saveXp.isPending} className="btn-gold inline-flex items-center gap-1 px-3 py-1.5 text-xs disabled:opacity-50">
-          <Save className="h-3.5 w-3.5" /> {saveXp.isPending ? "Saving…" : "Save XP curve"}
-        </button>
-      </section>
-
       <p className="text-[11px] text-muted-foreground">
-        Currency inflation is monitored on the Dashboard (credits in circulation). Production rates are edited in the <strong>Production</strong> and <strong>Bulk Utility</strong> tabs.
+        XP and player progression are no longer managed here — see the <strong>Progression</strong> tab for the upcoming Experience &amp; Progression module.
       </p>
     </div>
   );

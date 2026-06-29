@@ -9,7 +9,7 @@ import { collectionsAllQuery } from "../queries";
 const sb = supabase as any;
 
 const THRESHOLDS = [25, 50, 75, 100];
-const TYPES = ["energy_max", "energy_regen", "production_multiplier", "credits_multiplier", "xp_multiplier", "realm_unlock"];
+const TYPES = ["energy_max", "energy_regen", "production_multiplier", "credits_multiplier", "realm_unlock"];
 
 type Bonus = { threshold: number; type: string; value?: number; spin_tokens?: number };
 

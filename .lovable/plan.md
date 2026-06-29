@@ -1,68 +1,72 @@
-## Assets Module — Asset OS Foundation
+## Phase 1 — Remove Legacy XP System (cleanup only)
 
-Build the first self-contained Asset OS module under `/admin/modules/assets`, following a reusable Module Contract (Dashboard, Management, Types, Rarities, Tags, Utility, Analytics, Automation, Settings, Permissions). The existing `/admin/assets` editor is upgraded into this module; nothing in the player app changes.
+Goal: strip all hardcoded XP curve / level logic and legacy XP surfaces so the codebase is ready for a future CMS-driven Experience & Progression module. **No new system built in this phase.** Player XP/level columns are preserved for later migration.
 
-### 1. Database (one migration)
+---
 
-New tables (all with GRANTs + RLS, admin-write via `has_role`, authenticated read):
-- `asset_types` — `slug`, `name`, `icon`, `sort_order`, `is_system`. Seed: landmark, character, vehicle, building, animal, product, business, event.
-- `asset_rarities` — `slug` (PK text), `name`, `color`, `weight`, `sort_order`, `is_system`. Seed from existing `rarity` enum (common/rare/epic/legendary). Keep the enum for back-compat; rarities table drives the CMS UI.
-- `tags` — `slug`, `name`, `color`, `icon`, `parent_id` (self-FK), `description`. Unlimited per asset.
-- `asset_tags` — join (`asset_id`, `tag_id`).
-- `automation_rules` — `name`, `enabled`, `trigger` (jsonb: `{event:'asset_tagged', match_tags:[...], match_mode:'all|any'}`), `action` (jsonb: `{type:'add_to_collection', collection_id}` etc.), `module` text default `assets`.
-- `module_settings` — `module` (PK text), `settings` jsonb. Generic per-module key-value.
-- `module_permissions` — `module`, `role` (app_role), `capability` (`view|manage|configure`), unique.
+### 1. Database (single migration)
 
-`assets` table additions: `asset_type_id` (FK, nullable), `status` (text default 'active': active/draft/archived), `description` already exists, keep `rarity` enum column.
+Strip XP awards and level recompute from DB functions, drop the legacy curve setting. **Keep `user_stats.xp` and `user_stats.level` data intact.**
 
-Seed `app_role` enum with `business_owner` (in addition to existing admin/user).
+- `game_settings`: drop column `xp_per_level` (the only hardcoded curve knob).
+- `economy_multipliers`: drop column `xp_multiplier` (legacy XP scaler — production_multiplier stays for credits/energy).
+- `collect_production(p_user)`: remove `total_xp` calculation, remove `xp` / `level` updates, remove `xp` from activity payload. Still returns `xp: 0` in JSON for backward compat with the client until callers are updated in the same phase.
+- `spin_wheel(p_user)`: remove the `WHEN 'xp'` branch entirely. If a legacy `spin_rewards` row with `kind='xp'` is rolled, treat as no-op (log + return reward with `amount: 0`). Also delete existing `spin_rewards` rows where `kind='xp'` so the wheel no longer offers it.
+- `spin_rewards.kind` check constraint: drop `'xp'` from the allowed set.
+- `reward_types` / `reward_log` / `reward_bundles`: remove any seeded rows referencing kind `xp` so the Rewards module no longer offers XP as a reward type.
+- Leave `user_stats.xp` and `user_stats.level` columns + data untouched.
 
-Helper RPC `apply_automation_rules(p_asset_id)` — runs on asset tag changes; iterates enabled rules and applies actions (e.g. inserts into a `collection_assets` mapping or sets `collection_id`). Triggered from `asset_tags` insert/delete trigger.
+### 2. Server-side types regeneration
 
-### 2. Module Contract (shared scaffold)
+After the migration runs, `src/integrations/supabase/types.ts` regenerates automatically — no manual edit.
 
-`src/modules/contract.ts` — TypeScript interface:
-```ts
-interface AssetOSModule {
-  slug: string; name: string; icon: LucideIcon;
-  sections: { dashboard, management, tags, analytics, automation, settings, permissions }
-}
-```
-`src/modules/registry.ts` — array of registered modules (Assets is first; future modules plug in here).
+### 3. Frontend code removal / decoupling
 
-### 3. Assets Module UI
+**Delete:**
+- `src/modules/economy/sections/Balancing.tsx` — the "XP curve" card and `xp_per_level` save mutation. The Pack prices + Spin reward tables in this file stay; only the XP curve `<section>` is removed. (File kept, section deleted.)
+- The `xp_multiplier` field from `src/modules/economy/sections/Multipliers.tsx` form.
+- Any `kind: 'xp'` option in `src/modules/rewards/sections/RewardTypes.tsx`, `Spins.tsx`, `Bundles.tsx` dropdowns/selects.
 
-New route tree under `src/routes/_authenticated/admin/modules/assets/`:
-- `route.tsx` — module shell with sub-tabs (Dashboard, Management, Types, Rarities, Tags, Utility, Analytics, Automation, Settings, Permissions).
-- `index.tsx` — **Dashboard**: stat cards (Total Assets, By Rarity, By Type, By Tag), Recently Created list, Most Owned (join `user_inventory`), Production totals (sum of per-hour fields). Quick Action buttons (Create Asset / Import / Create Type / Create Tag) opening dialogs.
-- `management.tsx` — Asset CRUD table with bulk select. Row fields: Name, Image, Type, Rarity, Tags (chips), Status, energy/credits/xp per hour. Bulk edit dialog for status/type/rarity/tag add-remove. Import = paste-JSON dialog.
-- `types.tsx` — CRUD for `asset_types`.
-- `rarities.tsx` — CRUD for `asset_rarities` (color swatch, weight).
-- `tags.tsx` — CRUD with parent picker, color, icon, hierarchy preview.
-- `utility.tsx` — Bulk editor for production rates (energy/credits/xp per hour) per asset or per rarity-tier preset; placeholder for future multipliers.
-- `analytics.tsx` — Charts/tables: ownership totals, most collected, production per hour ranking, growth (assets created over time using `created_at` buckets).
-- `automation.tsx` — Rule builder: trigger (tags match all/any) → action (add to collection). List, enable toggle, test-run button.
-- `settings.tsx` — Module settings form (writes `module_settings.assets`).
-- `permissions.tsx` — Matrix: role × capability checkboxes writing `module_permissions`.
+**Edit types in `src/lib/types.ts`:**
+- `GameSettings`: remove `xp_per_level`.
+- `EconomyMultipliers`: remove `xp_multiplier`.
+- `SpinReward.kind`: drop `'xp'` from the union.
 
-Shared components in `src/modules/assets/components/`: `AssetForm`, `TagPicker`, `BulkEditBar`, `StatCard`, `RuleBuilder`.
+**Edit `src/lib/queries.ts`:** ensure no select pulls the dropped columns.
 
-Data layer: `src/modules/assets/queries.ts` (typed query hooks) and `src/modules/assets/mutations.ts`.
+**Decouple XP display surfaces** (keep showing stored XP/level, no curve math):
+- `src/routes/_authenticated/profile.tsx`: remove `xpInLevel` / `xpPct` progress bar (depends on `xp_per_level`). Replace with a simple "Total XP" readout + a "Progression coming soon" note. Keep level number display (reads stored `user_stats.level`).
+- `src/components/StatBar.tsx`: keep the XP chip (it just reads total xp — no curve).
+- `src/routes/_authenticated/home.tsx`, `my-assets.tsx`, `src/lib/production.ts`: remove XP from production preview math and from any "+X XP" UI. Production preview now shows credits + energy only.
+- `src/modules/economy/sections/Dashboard.tsx`: remove "XP earned today" tile (legacy aggregate). Replaced with a small "Progression: coming soon" placeholder tile.
+- `src/routes/_authenticated/admin/index.tsx`: remove the "Total XP" tile.
 
-### 4. Admin nav
+**Imports & dead code:** delete now-unused `Hexagon` icon imports, `xp_per_level` references, and any `xp`-keyed reducers left dangling.
 
-Add a top-level "Modules" entry in `admin/route.tsx` linking to `/admin/modules/assets`. Keep existing `/admin/assets` as a redirect to the new module's Management tab so player app and previous links still work.
+### 4. Admin UI placeholder
 
-### 5. Out of scope (this slice)
+The Economy → Balancing tab currently houses the XP curve. After removal, Balancing still has Pack prices + Spin reward values, so it stays. There is no XP-exclusive admin page to replace.
 
-- Player-facing UI changes
-- Other modules (Collections, Packs, etc. stay where they are; they can be migrated into the contract later)
-- NFC, Marketplace, Realms — only Asset model is extended with tags so future modules can attach.
+Add a **new Economy section** `Progression` (placeholder only):
+- `src/modules/economy/sections/Progression.tsx` — a single panel: "Experience & Progression module coming soon."
+- Register it in `src/modules/economy/index.ts` so admins see where the new system will live.
 
-### Acceptance
+### 5. Validation checklist (run before finishing)
 
-- All 10 sub-tabs render and persist data
-- Tagging an asset triggering a rule auto-adds it to the configured collection
-- Bulk edit updates multiple assets in one call
-- Permissions row controls visibility of module tabs for the `business_owner` role
-- No hardcoded type/rarity/tag lists in code — all read from tables
+- `rg -n "xp_per_level|xp_multiplier"` → zero hits in `src/` (excluding `types.ts` auto-gen until migration runs).
+- `rg -n "kind.*['\"]xp['\"]"` → zero hits.
+- `bun run build` (or whatever the project's typecheck is) clean.
+- Manual smoke: load `/`, `/profile`, `/admin/modules/economy` — no console errors.
+
+---
+
+### Deliverables produced at end of phase
+
+1. **Removed:** XP curve setting, XP multiplier, XP spin-reward kind, XP from production payouts, XP curve admin card, XP progress bar on profile, XP tiles on dashboards, XP from reward types.
+2. **Files modified:** migration file + ~10 TS/TSX files listed above.
+3. **Still depends on future module:** stored `user_stats.xp` / `user_stats.level` (data preserved, no writer remains); `Progression` placeholder tab; XP chip in `StatBar` displays a frozen total.
+4. **Migration notes for next phase:** new module owns curve table, level recompute trigger/function, XP award sources (production, spins, packs, quests), and backfills `user_stats.level` from preserved XP.
+
+### Out of scope (explicitly NOT in this phase)
+
+New curve table, level formulas, CMS pages for progression, XP award wiring, player progression UI.

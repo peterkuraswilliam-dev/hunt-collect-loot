@@ -428,7 +428,6 @@ export type Database = {
           max_offline_hours: number
           production_multiplier: number
           spin_multiplier: number
-          xp_multiplier: number
         }
         Insert: {
           credits_multiplier?: number
@@ -437,7 +436,6 @@ export type Database = {
           max_offline_hours?: number
           production_multiplier?: number
           spin_multiplier?: number
-          xp_multiplier?: number
         }
         Update: {
           credits_multiplier?: number
@@ -446,7 +444,6 @@ export type Database = {
           max_offline_hours?: number
           production_multiplier?: number
           spin_multiplier?: number
-          xp_multiplier?: number
         }
         Relationships: []
       }
@@ -476,19 +473,16 @@ export type Database = {
           energy_max: number
           energy_regen_seconds: number
           id: number
-          xp_per_level: number
         }
         Insert: {
           energy_max?: number
           energy_regen_seconds?: number
           id?: number
-          xp_per_level?: number
         }
         Update: {
           energy_max?: number
           energy_regen_seconds?: number
           id?: number
-          xp_per_level?: number
         }
         Relationships: []
       }
