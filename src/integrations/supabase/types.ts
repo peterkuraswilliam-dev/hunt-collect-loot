@@ -771,6 +771,112 @@ export type Database = {
         }
         Relationships: []
       }
+      progression_levels: {
+        Row: {
+          created_at: string
+          icon: string | null
+          id: string
+          level_number: number
+          notes: string | null
+          progression_type_id: string | null
+          status: string
+          title: string | null
+          updated_at: string
+          xp_from_previous: number
+          xp_required: number
+        }
+        Insert: {
+          created_at?: string
+          icon?: string | null
+          id?: string
+          level_number: number
+          notes?: string | null
+          progression_type_id?: string | null
+          status?: string
+          title?: string | null
+          updated_at?: string
+          xp_from_previous?: number
+          xp_required?: number
+        }
+        Update: {
+          created_at?: string
+          icon?: string | null
+          id?: string
+          level_number?: number
+          notes?: string | null
+          progression_type_id?: string | null
+          status?: string
+          title?: string | null
+          updated_at?: string
+          xp_from_previous?: number
+          xp_required?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "progression_levels_progression_type_id_fkey"
+            columns: ["progression_type_id"]
+            isOneToOne: false
+            referencedRelation: "progression_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      progression_types: {
+        Row: {
+          created_at: string
+          default_curve_id: string | null
+          description: string | null
+          icon: string | null
+          id: string
+          max_level: number
+          name: string
+          slug: string
+          sort_order: number
+          status: string
+          updated_at: string
+          visible: boolean
+          xp_display_name: string
+        }
+        Insert: {
+          created_at?: string
+          default_curve_id?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string
+          max_level?: number
+          name: string
+          slug: string
+          sort_order?: number
+          status?: string
+          updated_at?: string
+          visible?: boolean
+          xp_display_name?: string
+        }
+        Update: {
+          created_at?: string
+          default_curve_id?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string
+          max_level?: number
+          name?: string
+          slug?: string
+          sort_order?: number
+          status?: string
+          updated_at?: string
+          visible?: boolean
+          xp_display_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "progression_types_default_curve_fk"
+            columns: ["default_curve_id"]
+            isOneToOne: false
+            referencedRelation: "xp_curves"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       realms: {
         Row: {
           created_at: string
@@ -1239,6 +1345,156 @@ export type Database = {
           spin_tokens?: number
           user_id?: string
           xp?: number
+        }
+        Relationships: []
+      }
+      xp_curves: {
+        Row: {
+          base_xp: number
+          created_at: string
+          description: string | null
+          growth_multiplier: number
+          growth_type: string
+          id: string
+          max_level: number
+          name: string
+          slug: string
+          status: string
+          updated_at: string
+          version: number
+        }
+        Insert: {
+          base_xp?: number
+          created_at?: string
+          description?: string | null
+          growth_multiplier?: number
+          growth_type?: string
+          id?: string
+          max_level?: number
+          name: string
+          slug: string
+          status?: string
+          updated_at?: string
+          version?: number
+        }
+        Update: {
+          base_xp?: number
+          created_at?: string
+          description?: string | null
+          growth_multiplier?: number
+          growth_type?: string
+          id?: string
+          max_level?: number
+          name?: string
+          slug?: string
+          status?: string
+          updated_at?: string
+          version?: number
+        }
+        Relationships: []
+      }
+      xp_multipliers: {
+        Row: {
+          created_at: string
+          ends_at: string | null
+          id: string
+          kind: string
+          name: string
+          priority: number
+          slug: string
+          sort_order: number
+          stackable: boolean
+          starts_at: string | null
+          status: string
+          updated_at: string
+          value: number
+        }
+        Insert: {
+          created_at?: string
+          ends_at?: string | null
+          id?: string
+          kind?: string
+          name: string
+          priority?: number
+          slug: string
+          sort_order?: number
+          stackable?: boolean
+          starts_at?: string | null
+          status?: string
+          updated_at?: string
+          value?: number
+        }
+        Update: {
+          created_at?: string
+          ends_at?: string | null
+          id?: string
+          kind?: string
+          name?: string
+          priority?: number
+          slug?: string
+          sort_order?: number
+          stackable?: boolean
+          starts_at?: string | null
+          status?: string
+          updated_at?: string
+          value?: number
+        }
+        Relationships: []
+      }
+      xp_sources: {
+        Row: {
+          base_xp: number
+          category: string
+          cooldown_seconds: number
+          created_at: string
+          daily_cap: number | null
+          description: string | null
+          enabled: boolean
+          id: string
+          max_level: number | null
+          min_level: number
+          name: string
+          scaling_enabled: boolean
+          slug: string
+          sort_order: number
+          updated_at: string
+          weekly_cap: number | null
+        }
+        Insert: {
+          base_xp?: number
+          category?: string
+          cooldown_seconds?: number
+          created_at?: string
+          daily_cap?: number | null
+          description?: string | null
+          enabled?: boolean
+          id?: string
+          max_level?: number | null
+          min_level?: number
+          name: string
+          scaling_enabled?: boolean
+          slug: string
+          sort_order?: number
+          updated_at?: string
+          weekly_cap?: number | null
+        }
+        Update: {
+          base_xp?: number
+          category?: string
+          cooldown_seconds?: number
+          created_at?: string
+          daily_cap?: number | null
+          description?: string | null
+          enabled?: boolean
+          id?: string
+          max_level?: number | null
+          min_level?: number
+          name?: string
+          scaling_enabled?: boolean
+          slug?: string
+          sort_order?: number
+          updated_at?: string
+          weekly_cap?: number | null
         }
         Relationships: []
       }

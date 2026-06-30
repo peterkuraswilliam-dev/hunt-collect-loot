@@ -3,6 +3,7 @@ import { assetsModule } from "./assets";
 import { collectionsModule } from "./collections";
 import { rewardsModule } from "./rewards";
 import { economyModule } from "./economy";
+import { progressionModule } from "./progression";
 import { gamesModule } from "./games";
 import { usersModule } from "./users";
 import { automationModule } from "./automation";
@@ -13,6 +14,7 @@ export const modules: AssetOSModule[] = [
   collectionsModule,
   rewardsModule,
   economyModule,
+  progressionModule,
   gamesModule,
   usersModule,
   automationModule,
