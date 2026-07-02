@@ -10,11 +10,27 @@ export type ProgressionType = {
   name: string;
   description: string | null;
   icon: string | null;
+  color: string;
+  category: string;
+  entity_type: string;
   status: string;
   max_level: number;
+  starting_level: number;
+  starting_xp: number;
+  allow_overflow_xp: boolean;
   default_curve_id: string | null;
   xp_display_name: string;
   visible: boolean;
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
+};
+
+export type ProgressionEntityType = {
+  id: string;
+  slug: string;
+  label: string;
+  description: string | null;
   sort_order: number;
 };
 
@@ -90,3 +106,7 @@ export const xpCurvesQuery = list<XPCurve>("xp_curves", "xp_curves", "name");
 export const progressionLevelsQuery = list<ProgressionLevel>("progression_levels", "progression_levels", "level_number");
 export const xpSourcesQuery = list<XPSource>("xp_sources", "xp_sources");
 export const xpMultipliersQuery = list<XPMultiplier>("xp_multipliers", "xp_multipliers");
+export const progressionEntityTypesQuery = list<ProgressionEntityType>(
+  "progression_entity_types",
+  "progression_entity_types",
+);

@@ -771,6 +771,36 @@ export type Database = {
         }
         Relationships: []
       }
+      progression_entity_types: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          label: string
+          slug: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          label: string
+          slug: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          label?: string
+          slug?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       progression_levels: {
         Row: {
           created_at: string
@@ -823,45 +853,63 @@ export type Database = {
       }
       progression_types: {
         Row: {
+          allow_overflow_xp: boolean
+          category: string
+          color: string
           created_at: string
           default_curve_id: string | null
           description: string | null
+          entity_type: string
           icon: string | null
           id: string
           max_level: number
           name: string
           slug: string
           sort_order: number
+          starting_level: number
+          starting_xp: number
           status: string
           updated_at: string
           visible: boolean
           xp_display_name: string
         }
         Insert: {
+          allow_overflow_xp?: boolean
+          category?: string
+          color?: string
           created_at?: string
           default_curve_id?: string | null
           description?: string | null
+          entity_type?: string
           icon?: string | null
           id?: string
           max_level?: number
           name: string
           slug: string
           sort_order?: number
+          starting_level?: number
+          starting_xp?: number
           status?: string
           updated_at?: string
           visible?: boolean
           xp_display_name?: string
         }
         Update: {
+          allow_overflow_xp?: boolean
+          category?: string
+          color?: string
           created_at?: string
           default_curve_id?: string | null
           description?: string | null
+          entity_type?: string
           icon?: string | null
           id?: string
           max_level?: number
           name?: string
           slug?: string
           sort_order?: number
+          starting_level?: number
+          starting_xp?: number
           status?: string
           updated_at?: string
           visible?: boolean
