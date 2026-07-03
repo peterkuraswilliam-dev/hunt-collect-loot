@@ -39,13 +39,21 @@ export type XPCurve = {
   slug: string;
   name: string;
   description: string | null;
+  notes: string | null;
   growth_type: string;
   base_xp: number;
+  starting_xp: number;
   growth_multiplier: number;
+  growth_factor: number;
   max_level: number;
+  decimal_precision: number;
+  smoothing: boolean;
   status: string;
   version: number;
+  created_at: string;
+  updated_at: string;
 };
+
 
 export type ProgressionLevel = {
   id: string;
