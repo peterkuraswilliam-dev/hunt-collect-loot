@@ -1400,13 +1400,18 @@ export type Database = {
         Row: {
           base_xp: number
           created_at: string
+          decimal_precision: number
           description: string | null
+          growth_factor: number
           growth_multiplier: number
           growth_type: string
           id: string
           max_level: number
           name: string
+          notes: string | null
           slug: string
+          smoothing: boolean
+          starting_xp: number
           status: string
           updated_at: string
           version: number
@@ -1414,13 +1419,18 @@ export type Database = {
         Insert: {
           base_xp?: number
           created_at?: string
+          decimal_precision?: number
           description?: string | null
+          growth_factor?: number
           growth_multiplier?: number
           growth_type?: string
           id?: string
           max_level?: number
           name: string
+          notes?: string | null
           slug: string
+          smoothing?: boolean
+          starting_xp?: number
           status?: string
           updated_at?: string
           version?: number
@@ -1428,13 +1438,18 @@ export type Database = {
         Update: {
           base_xp?: number
           created_at?: string
+          decimal_precision?: number
           description?: string | null
+          growth_factor?: number
           growth_multiplier?: number
           growth_type?: string
           id?: string
           max_level?: number
           name?: string
+          notes?: string | null
           slug?: string
+          smoothing?: boolean
+          starting_xp?: number
           status?: string
           updated_at?: string
           version?: number
