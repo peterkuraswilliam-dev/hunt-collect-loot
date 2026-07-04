@@ -803,41 +803,59 @@ export type Database = {
       }
       progression_levels: {
         Row: {
+          color: string
           created_at: string
+          description: string | null
+          display_order: number
+          hidden: boolean
           icon: string | null
           id: string
+          is_demo: boolean
           level_number: number
           notes: string | null
           progression_type_id: string | null
           status: string
           title: string | null
           updated_at: string
+          visible: boolean
           xp_from_previous: number
           xp_required: number
         }
         Insert: {
+          color?: string
           created_at?: string
+          description?: string | null
+          display_order?: number
+          hidden?: boolean
           icon?: string | null
           id?: string
+          is_demo?: boolean
           level_number: number
           notes?: string | null
           progression_type_id?: string | null
           status?: string
           title?: string | null
           updated_at?: string
+          visible?: boolean
           xp_from_previous?: number
           xp_required?: number
         }
         Update: {
+          color?: string
           created_at?: string
+          description?: string | null
+          display_order?: number
+          hidden?: boolean
           icon?: string | null
           id?: string
+          is_demo?: boolean
           level_number?: number
           notes?: string | null
           progression_type_id?: string | null
           status?: string
           title?: string | null
           updated_at?: string
+          visible?: boolean
           xp_from_previous?: number
           xp_required?: number
         }
@@ -862,6 +880,7 @@ export type Database = {
           entity_type: string
           icon: string | null
           id: string
+          is_demo: boolean
           max_level: number
           name: string
           slug: string
@@ -883,6 +902,7 @@ export type Database = {
           entity_type?: string
           icon?: string | null
           id?: string
+          is_demo?: boolean
           max_level?: number
           name: string
           slug: string
@@ -904,6 +924,7 @@ export type Database = {
           entity_type?: string
           icon?: string | null
           id?: string
+          is_demo?: boolean
           max_level?: number
           name?: string
           slug?: string
