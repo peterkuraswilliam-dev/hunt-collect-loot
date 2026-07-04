@@ -62,10 +62,19 @@ export type ProgressionLevel = {
   xp_required: number;
   xp_from_previous: number;
   title: string | null;
+  description: string | null;
   icon: string | null;
+  color: string;
   notes: string | null;
   status: string;
+  display_order: number;
+  visible: boolean;
+  hidden: boolean;
+  is_demo: boolean;
+  updated_at: string;
+  created_at: string;
 };
+
 
 export type XPSource = {
   id: string;
