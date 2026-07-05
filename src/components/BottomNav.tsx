@@ -3,24 +3,27 @@ import { useQuery } from "@tanstack/react-query";
 import { Home, Package, Library, Archive, Sparkles, User, Pickaxe } from "lucide-react";
 import { miningSettingsQuery } from "@/modules/mining/settings";
 
-const BASE_ITEMS = [
+type NavItem = { to: string; label: string; Icon: typeof Home };
+
+const BASE_ITEMS: NavItem[] = [
   { to: "/home", label: "Home", Icon: Home },
   { to: "/packs", label: "Packs", Icon: Package },
   { to: "/collections", label: "Sets", Icon: Library },
   { to: "/my-assets", label: "Assets", Icon: Archive },
   { to: "/spin", label: "Spin", Icon: Sparkles },
   { to: "/profile", label: "Me", Icon: User },
-] as const;
+];
 
 export function BottomNav() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const { data: mining } = useQuery(miningSettingsQuery);
 
-  const items = [...BASE_ITEMS];
+  const items: NavItem[] = [...BASE_ITEMS];
   if (mining && mining.status !== "disabled" && mining.navigation.show_in_nav) {
-    items.splice(5, 0, { to: "/mining", label: "Mine", Icon: Pickaxe } as (typeof BASE_ITEMS)[number]);
+    items.splice(5, 0, { to: "/mining", label: "Mine", Icon: Pickaxe });
   }
   const cols = `grid-cols-${items.length}`;
+
 
   return (
     <nav
