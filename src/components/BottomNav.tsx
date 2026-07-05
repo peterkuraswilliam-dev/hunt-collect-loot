@@ -1,7 +1,9 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Home, Package, Library, Archive, Sparkles, User } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { Home, Package, Library, Archive, Sparkles, User, Pickaxe } from "lucide-react";
+import { miningSettingsQuery } from "@/modules/mining/settings";
 
-const ITEMS = [
+const BASE_ITEMS = [
   { to: "/home", label: "Home", Icon: Home },
   { to: "/packs", label: "Packs", Icon: Package },
   { to: "/collections", label: "Sets", Icon: Library },
@@ -12,12 +14,20 @@ const ITEMS = [
 
 export function BottomNav() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const { data: mining } = useQuery(miningSettingsQuery);
+
+  const items = [...BASE_ITEMS];
+  if (mining && mining.status !== "disabled" && mining.navigation.show_in_nav) {
+    items.splice(5, 0, { to: "/mining", label: "Mine", Icon: Pickaxe } as (typeof BASE_ITEMS)[number]);
+  }
+  const cols = `grid-cols-${items.length}`;
+
   return (
     <nav
-      className="sticky bottom-0 z-30 mt-4 grid grid-cols-6 gap-0.5 border-t border-border bg-surface/95 px-1 pb-[env(safe-area-inset-bottom)] pt-2 backdrop-blur"
+      className={`sticky bottom-0 z-30 mt-4 grid ${cols} gap-0.5 border-t border-border bg-surface/95 px-1 pb-[env(safe-area-inset-bottom)] pt-2 backdrop-blur`}
       aria-label="Primary"
     >
-      {ITEMS.map(({ to, label, Icon }) => {
+      {items.map(({ to, label, Icon }) => {
         const active = pathname === to;
         return (
           <Link
