@@ -1,119 +1,72 @@
-# Plan: XP Curve Materialization + Modular Mining Mini Game
+## Phase 1 — Remove Legacy XP System (cleanup only)
 
-Two independent workstreams landing in the same phase.
-
----
-
-## 1. `xp_curve_levels` Materialization (Runtime O(1) XP → Level Lookups)
-
-### Schema (migration)
-Create `public.xp_curve_levels`:
-- `curve_id` (fk → xp_curves, on delete cascade)
-- `level` (int)
-- `xp_required` (bigint) — XP to reach this level from previous
-- `xp_total` (bigint) — cumulative XP from level 1
-- PK `(curve_id, level)`
-- Index on `(curve_id, xp_total)` for reverse (xp → level) lookups
-- GRANT SELECT to `authenticated`, `anon`; ALL to `service_role`
-- RLS enabled; policy: readable to all authenticated + anon (curve data is public reference)
-
-### Function
-`public.rebuild_xp_curve_levels(p_curve_id uuid)`:
-- Deletes existing rows for the curve
-- Re-computes levels 1..max_level using the same math as the frontend (linear / exponential / soft_exponential / logarithmic) with `starting_xp`, `base_xp`, `growth_multiplier`, `growth_factor`, `decimal_precision`, `smoothing`
-- Bulk inserts rows with running cumulative total
-
-`public.xp_to_level(p_curve_id uuid, p_total_xp bigint)` — returns the highest level whose `xp_total <= p_total_xp` (single index scan).
-
-### Trigger
-`AFTER INSERT OR UPDATE` on `xp_curves` → calls `rebuild_xp_curve_levels(NEW.id)` when relevant math columns change. On delete cascades automatically.
-
-### Backfill
-Migration ends with `SELECT rebuild_xp_curve_levels(id) FROM xp_curves;` so existing curves are populated immediately.
-
-### UI touchpoints
-- XP Curves editor: after save, show a small "levels cached" indicator (row count from `xp_curve_levels`).
-- No behavioural change to player progression yet (per Phase 5 rule — foundation only).
+Goal: strip all hardcoded XP curve / level logic and legacy XP surfaces so the codebase is ready for a future CMS-driven Experience & Progression module. **No new system built in this phase.** Player XP/level columns are preserved for later migration.
 
 ---
 
-## 2. Modular Mining Mini Game
+### 1. Database (single migration)
 
-### Module registration
-Add `src/modules/mining/` following the existing `AssetOSModule` contract:
+Strip XP awards and level recompute from DB functions, drop the legacy curve setting. **Keep `user_stats.xp` and `user_stats.level` data intact.**
 
-```
-src/modules/mining/
-  index.tsx               // module def: id, name, description, version, icon, route, category, status, sections
-  queries.ts              // module settings, content toggles
-  sections/
-    Dashboard.tsx         // status + stats
-    Settings.tsx          // general / gameplay / economy / progression flags
-    Content.tsx           // enable/disable areas, rocks, pickaxes, loot, events
-    Permissions.tsx
-    Analytics.tsx
-  runtime/                // lazy-only, NEVER imported at module scope
-    MiningGame.tsx        // dynamic import of pixi runtime
-    pixi/                 // sprites, sounds, logic
-```
+- `game_settings`: drop column `xp_per_level` (the only hardcoded curve knob).
+- `economy_multipliers`: drop column `xp_multiplier` (legacy XP scaler — production_multiplier stays for credits/energy).
+- `collect_production(p_user)`: remove `total_xp` calculation, remove `xp` / `level` updates, remove `xp` from activity payload. Still returns `xp: 0` in JSON for backward compat with the client until callers are updated in the same phase.
+- `spin_wheel(p_user)`: remove the `WHEN 'xp'` branch entirely. If a legacy `spin_rewards` row with `kind='xp'` is rolled, treat as no-op (log + return reward with `amount: 0`). Also delete existing `spin_rewards` rows where `kind='xp'` so the wheel no longer offers it.
+- `spin_rewards.kind` check constraint: drop `'xp'` from the allowed set.
+- `reward_types` / `reward_log` / `reward_bundles`: remove any seeded rows referencing kind `xp` so the Rewards module no longer offers XP as a reward type.
+- Leave `user_stats.xp` and `user_stats.level` columns + data untouched.
 
-Registered in `src/modules/registry.ts` under Mini Games category. Version `1.0.0-beta`. Status stored in `module_settings.settings.status` (`enabled | disabled | maintenance | beta`).
+### 2. Server-side types regeneration
 
-### Admin settings page (CMS-driven, no code changes for content toggles)
+After the migration runs, `src/integrations/supabase/types.ts` regenerates automatically — no manual edit.
 
-Stored in `module_settings` under module `mining`:
+### 3. Frontend code removal / decoupling
 
-```jsonc
-{
-  "status": "beta",
-  "navigation": { "show_in_nav": true },
-  "gameplay": {
-    "auto_mining": false, "critical_hits": true, "random_events": true,
-    "pickaxe_upgrades": true, "xp_rewards": true, "coin_rewards": true,
-    "energy_system": false
-  },
-  "economy": { "xp_multiplier": 1, "coin_multiplier": 1, "loot_multiplier": 1, "drop_rate_multiplier": 1 },
-  "progression": { "min_level": 1, "unlock_requirement": null, "daily_play_limit": null },
-  "content": {
-    "areas":    { "<slug>": true, ... },
-    "rocks":    { "<slug>": true, ... },
-    "pickaxes": { "<slug>": true, ... },
-    "loot":     { "<slug>": true, ... },
-    "events":   { "<slug>": true, ... }
-  }
-}
-```
+**Delete:**
+- `src/modules/economy/sections/Balancing.tsx` — the "XP curve" card and `xp_per_level` save mutation. The Pack prices + Spin reward tables in this file stay; only the XP curve `<section>` is removed. (File kept, section deleted.)
+- The `xp_multiplier` field from `src/modules/economy/sections/Multipliers.tsx` form.
+- Any `kind: 'xp'` option in `src/modules/rewards/sections/RewardTypes.tsx`, `Spins.tsx`, `Bundles.tsx` dropdowns/selects.
 
-Content section renders toggle rows sourced from mock/demo data seeded at module load (Iron Cavern, Copper Ridge, etc.). Wired to persist via existing `moduleSettingsQuery` / upsert pattern already used by other modules' `SettingsSection.tsx`.
+**Edit types in `src/lib/types.ts`:**
+- `GameSettings`: remove `xp_per_level`.
+- `EconomyMultipliers`: remove `xp_multiplier`.
+- `SpinReward.kind`: drop `'xp'` from the union.
 
-### Runtime route
-`src/routes/_authenticated/mining.tsx`:
-- Reads `module_settings` for `mining`
-- If `status === 'disabled'` → 404 / redirect
-- If `status === 'maintenance'` → maintenance screen, no pixi load
-- Else `React.lazy(() => import('@/modules/mining/runtime/MiningGame'))` inside `<Suspense>` — pixi + sprites + sounds only fetched here
-- Beta badge overlay when `status === 'beta'`
+**Edit `src/lib/queries.ts`:** ensure no select pulls the dropped columns.
 
-### Navigation gating
-`BottomNav` / any nav lister reads mining module settings; hides link when disabled OR `navigation.show_in_nav === false`.
+**Decouple XP display surfaces** (keep showing stored XP/level, no curve math):
+- `src/routes/_authenticated/profile.tsx`: remove `xpInLevel` / `xpPct` progress bar (depends on `xp_per_level`). Replace with a simple "Total XP" readout + a "Progression coming soon" note. Keep level number display (reads stored `user_stats.level`).
+- `src/components/StatBar.tsx`: keep the XP chip (it just reads total xp — no curve).
+- `src/routes/_authenticated/home.tsx`, `my-assets.tsx`, `src/lib/production.ts`: remove XP from production preview math and from any "+X XP" UI. Production preview now shows credits + energy only.
+- `src/modules/economy/sections/Dashboard.tsx`: remove "XP earned today" tile (legacy aggregate). Replaced with a small "Progression: coming soon" placeholder tile.
+- `src/routes/_authenticated/admin/index.tsx`: remove the "Total XP" tile.
 
-### Integration hooks (stubs)
-`src/modules/mining/runtime/hooks.ts` exposes typed no-op wrappers for: `awardXP`, `grantReward`, `addToInventory`, `unlockAsset`, `trackAnalytics`, `emitNotification`, `checkAchievement`, `craft`, `listOnMarketplace`, `fireEvent`. Each currently mocks; each has a single call site so live wiring later is a one-file change.
+**Imports & dead code:** delete now-unused `Hexagon` icon imports, `xp_per_level` references, and any `xp`-keyed reducers left dangling.
 
-### Performance guarantees
-- `runtime/` folder never imported from `index.tsx`, `sections/*`, or `registry.ts`.
-- Route uses `React.lazy` + dynamic `import()` — no pixi in main bundle.
-- Sprites/sounds referenced via URL imports inside `runtime/pixi/**` only.
+### 4. Admin UI placeholder
 
-### Dependency
-`bun add pixi.js` (only if not already present; will check first).
+The Economy → Balancing tab currently houses the XP curve. After removal, Balancing still has Pack prices + Spin reward values, so it stays. There is no XP-exclusive admin page to replace.
+
+Add a **new Economy section** `Progression` (placeholder only):
+- `src/modules/economy/sections/Progression.tsx` — a single panel: "Experience & Progression module coming soon."
+- Register it in `src/modules/economy/index.ts` so admins see where the new system will live.
+
+### 5. Validation checklist (run before finishing)
+
+- `rg -n "xp_per_level|xp_multiplier"` → zero hits in `src/` (excluding `types.ts` auto-gen until migration runs).
+- `rg -n "kind.*['\"]xp['\"]"` → zero hits.
+- `bun run build` (or whatever the project's typecheck is) clean.
+- Manual smoke: load `/`, `/profile`, `/admin/modules/economy` — no console errors.
 
 ---
 
-## Deliverables
-- 1 SQL migration for `xp_curve_levels` + function + trigger + backfill.
-- New `src/modules/mining/` tree with CMS-driven settings + lazy runtime.
-- `registry.ts` updated.
-- `mining` route added under `_authenticated`.
-- Nav gating hook.
-- No player progression logic changes; no removal of existing modules.
+### Deliverables produced at end of phase
+
+1. **Removed:** XP curve setting, XP multiplier, XP spin-reward kind, XP from production payouts, XP curve admin card, XP progress bar on profile, XP tiles on dashboards, XP from reward types.
+2. **Files modified:** migration file + ~10 TS/TSX files listed above.
+3. **Still depends on future module:** stored `user_stats.xp` / `user_stats.level` (data preserved, no writer remains); `Progression` placeholder tab; XP chip in `StatBar` displays a frozen total.
+4. **Migration notes for next phase:** new module owns curve table, level recompute trigger/function, XP award sources (production, spins, packs, quests), and backfills `user_stats.level` from preserved XP.
+
+### Out of scope (explicitly NOT in this phase)
+
+New curve table, level formulas, CMS pages for progression, XP award wiring, player progression UI.

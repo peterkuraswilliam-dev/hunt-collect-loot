@@ -16,7 +16,6 @@ import { Route as AuthenticatedSpinRouteImport } from './routes/_authenticated/s
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedPacksRouteImport } from './routes/_authenticated/packs'
 import { Route as AuthenticatedMyAssetsRouteImport } from './routes/_authenticated/my-assets'
-import { Route as AuthenticatedMiningRouteImport } from './routes/_authenticated/mining'
 import { Route as AuthenticatedInventoryRouteImport } from './routes/_authenticated/inventory'
 import { Route as AuthenticatedHomeRouteImport } from './routes/_authenticated/home'
 import { Route as AuthenticatedCollectionsRouteImport } from './routes/_authenticated/collections'
@@ -57,11 +56,6 @@ const AuthenticatedPacksRoute = AuthenticatedPacksRouteImport.update({
 const AuthenticatedMyAssetsRoute = AuthenticatedMyAssetsRouteImport.update({
   id: '/my-assets',
   path: '/my-assets',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedMiningRoute = AuthenticatedMiningRouteImport.update({
-  id: '/mining',
-  path: '/mining',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedInventoryRoute = AuthenticatedInventoryRouteImport.update({
@@ -109,7 +103,6 @@ export interface FileRoutesByFullPath {
   '/collections': typeof AuthenticatedCollectionsRoute
   '/home': typeof AuthenticatedHomeRoute
   '/inventory': typeof AuthenticatedInventoryRoute
-  '/mining': typeof AuthenticatedMiningRoute
   '/my-assets': typeof AuthenticatedMyAssetsRoute
   '/packs': typeof AuthenticatedPacksRoute
   '/profile': typeof AuthenticatedProfileRoute
@@ -124,7 +117,6 @@ export interface FileRoutesByTo {
   '/collections': typeof AuthenticatedCollectionsRoute
   '/home': typeof AuthenticatedHomeRoute
   '/inventory': typeof AuthenticatedInventoryRoute
-  '/mining': typeof AuthenticatedMiningRoute
   '/my-assets': typeof AuthenticatedMyAssetsRoute
   '/packs': typeof AuthenticatedPacksRoute
   '/profile': typeof AuthenticatedProfileRoute
@@ -142,7 +134,6 @@ export interface FileRoutesById {
   '/_authenticated/collections': typeof AuthenticatedCollectionsRoute
   '/_authenticated/home': typeof AuthenticatedHomeRoute
   '/_authenticated/inventory': typeof AuthenticatedInventoryRoute
-  '/_authenticated/mining': typeof AuthenticatedMiningRoute
   '/_authenticated/my-assets': typeof AuthenticatedMyAssetsRoute
   '/_authenticated/packs': typeof AuthenticatedPacksRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
@@ -160,7 +151,6 @@ export interface FileRouteTypes {
     | '/collections'
     | '/home'
     | '/inventory'
-    | '/mining'
     | '/my-assets'
     | '/packs'
     | '/profile'
@@ -175,7 +165,6 @@ export interface FileRouteTypes {
     | '/collections'
     | '/home'
     | '/inventory'
-    | '/mining'
     | '/my-assets'
     | '/packs'
     | '/profile'
@@ -192,7 +181,6 @@ export interface FileRouteTypes {
     | '/_authenticated/collections'
     | '/_authenticated/home'
     | '/_authenticated/inventory'
-    | '/_authenticated/mining'
     | '/_authenticated/my-assets'
     | '/_authenticated/packs'
     | '/_authenticated/profile'
@@ -257,13 +245,6 @@ declare module '@tanstack/react-router' {
       path: '/my-assets'
       fullPath: '/my-assets'
       preLoaderRoute: typeof AuthenticatedMyAssetsRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/mining': {
-      id: '/_authenticated/mining'
-      path: '/mining'
-      fullPath: '/mining'
-      preLoaderRoute: typeof AuthenticatedMiningRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/inventory': {
@@ -341,7 +322,6 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedCollectionsRoute: typeof AuthenticatedCollectionsRoute
   AuthenticatedHomeRoute: typeof AuthenticatedHomeRoute
   AuthenticatedInventoryRoute: typeof AuthenticatedInventoryRoute
-  AuthenticatedMiningRoute: typeof AuthenticatedMiningRoute
   AuthenticatedMyAssetsRoute: typeof AuthenticatedMyAssetsRoute
   AuthenticatedPacksRoute: typeof AuthenticatedPacksRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
@@ -353,7 +333,6 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedCollectionsRoute: AuthenticatedCollectionsRoute,
   AuthenticatedHomeRoute: AuthenticatedHomeRoute,
   AuthenticatedInventoryRoute: AuthenticatedInventoryRoute,
-  AuthenticatedMiningRoute: AuthenticatedMiningRoute,
   AuthenticatedMyAssetsRoute: AuthenticatedMyAssetsRoute,
   AuthenticatedPacksRoute: AuthenticatedPacksRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
