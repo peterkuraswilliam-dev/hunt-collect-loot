@@ -1417,6 +1417,35 @@ export type Database = {
         }
         Relationships: []
       }
+      xp_curve_levels: {
+        Row: {
+          curve_id: string
+          level: number
+          xp_required: number
+          xp_total: number
+        }
+        Insert: {
+          curve_id: string
+          level: number
+          xp_required: number
+          xp_total: number
+        }
+        Update: {
+          curve_id?: string
+          level?: number
+          xp_required?: number
+          xp_total?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "xp_curve_levels_curve_id_fkey"
+            columns: ["curve_id"]
+            isOneToOne: false
+            referencedRelation: "xp_curves"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       xp_curves: {
         Row: {
           base_xp: number
@@ -1652,12 +1681,17 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      rebuild_xp_curve_levels: { Args: { p_curve_id: string }; Returns: number }
       recompute_all_collections: { Args: never; Returns: undefined }
       recompute_collection: {
         Args: { p_collection_id: string }
         Returns: number
       }
       spin_wheel: { Args: { p_user: string }; Returns: Json }
+      xp_to_level: {
+        Args: { p_curve_id: string; p_total_xp: number }
+        Returns: number
+      }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user" | "business_owner"
