@@ -22,12 +22,11 @@ export function BottomNav() {
   if (mining && mining.status !== "disabled" && mining.navigation.show_in_nav) {
     items.splice(5, 0, { to: "/mining", label: "Mine", Icon: Pickaxe });
   }
-  const cols = `grid-cols-${items.length}`;
-
 
   return (
     <nav
-      className={`sticky bottom-0 z-30 mt-4 grid ${cols} gap-0.5 border-t border-border bg-surface/95 px-1 pb-[env(safe-area-inset-bottom)] pt-2 backdrop-blur`}
+      className="sticky bottom-0 z-30 mt-4 grid gap-0.5 border-t border-border bg-surface/95 px-1 pb-[env(safe-area-inset-bottom)] pt-2 backdrop-blur"
+      style={{ gridTemplateColumns: `repeat(${items.length}, minmax(0, 1fr))` }}
       aria-label="Primary"
     >
       {items.map(({ to, label, Icon }) => {
@@ -35,7 +34,8 @@ export function BottomNav() {
         return (
           <Link
             key={to}
-            to={to}
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            to={to as any}
             className={`flex flex-col items-center gap-0.5 rounded-md py-1.5 text-[9px] font-semibold uppercase tracking-wider transition ${
               active ? "text-primary" : "text-muted-foreground hover:text-foreground"
             }`}
@@ -45,6 +45,7 @@ export function BottomNav() {
           </Link>
         );
       })}
+
     </nav>
   );
 }
