@@ -82,7 +82,9 @@ export type XPSource = {
   name: string;
   description: string | null;
   category: string;
+  progression_type_id: string | null;
   enabled: boolean;
+  status: string;
   base_xp: number;
   scaling_enabled: boolean;
   daily_cap: number | null;
@@ -90,6 +92,26 @@ export type XPSource = {
   cooldown_seconds: number;
   min_level: number;
   max_level: number | null;
+  max_xp_per_action: number | null;
+  icon: string | null;
+  color: string;
+  visible: boolean;
+  hidden: boolean;
+  notes: string | null;
+  display_order: number;
+  sort_order: number;
+  is_demo: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+export type XPSourceCategory = {
+  id: string;
+  slug: string;
+  label: string;
+  description: string | null;
+  color: string;
+  icon: string | null;
   sort_order: number;
 };
 
