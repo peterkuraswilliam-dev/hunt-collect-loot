@@ -149,3 +149,7 @@ export const progressionEntityTypesQuery = list<ProgressionEntityType>(
   "progression_entity_types",
   "progression_entity_types",
 );
+export const xpSourceCategoriesQuery = list<XPSourceCategory>(
+  "xp_source_categories",
+  "xp_source_categories",
+);
