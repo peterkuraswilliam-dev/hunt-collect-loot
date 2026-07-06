@@ -1554,62 +1554,136 @@ export type Database = {
         }
         Relationships: []
       }
+      xp_source_categories: {
+        Row: {
+          color: string
+          created_at: string
+          description: string | null
+          icon: string | null
+          id: string
+          label: string
+          slug: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          color?: string
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          label: string
+          slug: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          label?: string
+          slug?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       xp_sources: {
         Row: {
           base_xp: number
           category: string
+          color: string
           cooldown_seconds: number
           created_at: string
           daily_cap: number | null
           description: string | null
+          display_order: number
           enabled: boolean
+          hidden: boolean
+          icon: string | null
           id: string
+          is_demo: boolean
           max_level: number | null
+          max_xp_per_action: number | null
           min_level: number
           name: string
+          notes: string | null
+          progression_type_id: string | null
           scaling_enabled: boolean
           slug: string
           sort_order: number
+          status: string
           updated_at: string
+          visible: boolean
           weekly_cap: number | null
         }
         Insert: {
           base_xp?: number
           category?: string
+          color?: string
           cooldown_seconds?: number
           created_at?: string
           daily_cap?: number | null
           description?: string | null
+          display_order?: number
           enabled?: boolean
+          hidden?: boolean
+          icon?: string | null
           id?: string
+          is_demo?: boolean
           max_level?: number | null
+          max_xp_per_action?: number | null
           min_level?: number
           name: string
+          notes?: string | null
+          progression_type_id?: string | null
           scaling_enabled?: boolean
           slug: string
           sort_order?: number
+          status?: string
           updated_at?: string
+          visible?: boolean
           weekly_cap?: number | null
         }
         Update: {
           base_xp?: number
           category?: string
+          color?: string
           cooldown_seconds?: number
           created_at?: string
           daily_cap?: number | null
           description?: string | null
+          display_order?: number
           enabled?: boolean
+          hidden?: boolean
+          icon?: string | null
           id?: string
+          is_demo?: boolean
           max_level?: number | null
+          max_xp_per_action?: number | null
           min_level?: number
           name?: string
+          notes?: string | null
+          progression_type_id?: string | null
           scaling_enabled?: boolean
           slug?: string
           sort_order?: number
+          status?: string
           updated_at?: string
+          visible?: boolean
           weekly_cap?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "xp_sources_progression_type_id_fkey"
+            columns: ["progression_type_id"]
+            isOneToOne: false
+            referencedRelation: "progression_types"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
