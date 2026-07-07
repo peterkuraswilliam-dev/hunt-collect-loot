@@ -771,6 +771,33 @@ export type Database = {
         }
         Relationships: []
       }
+      progression_demo_subjects: {
+        Row: {
+          avatar: string | null
+          created_at: string
+          id: string
+          kind: string
+          name: string
+          notes: string | null
+        }
+        Insert: {
+          avatar?: string | null
+          created_at?: string
+          id?: string
+          kind?: string
+          name: string
+          notes?: string | null
+        }
+        Update: {
+          avatar?: string | null
+          created_at?: string
+          id?: string
+          kind?: string
+          name?: string
+          notes?: string | null
+        }
+        Relationships: []
+      }
       progression_entity_types: {
         Row: {
           created_at: string
@@ -1217,6 +1244,44 @@ export type Database = {
         }
         Relationships: []
       }
+      subject_progression: {
+        Row: {
+          created_at: string
+          current_level: number
+          current_xp: number
+          id: string
+          progression_type_id: string
+          subject_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          current_level?: number
+          current_xp?: number
+          id?: string
+          progression_type_id: string
+          subject_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          current_level?: number
+          current_xp?: number
+          id?: string
+          progression_type_id?: string
+          subject_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subject_progression_progression_type_id_fkey"
+            columns: ["progression_type_id"]
+            isOneToOne: false
+            referencedRelation: "progression_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tags: {
         Row: {
           color: string | null
@@ -1416,6 +1481,66 @@ export type Database = {
           xp?: number
         }
         Relationships: []
+      }
+      xp_award_log: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          level_after: number
+          level_before: number
+          leveled_up: boolean
+          note: string | null
+          progression_type_id: string
+          subject_id: string
+          xp_after: number
+          xp_before: number
+          xp_source_id: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          level_after: number
+          level_before: number
+          leveled_up?: boolean
+          note?: string | null
+          progression_type_id: string
+          subject_id: string
+          xp_after: number
+          xp_before: number
+          xp_source_id?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          level_after?: number
+          level_before?: number
+          leveled_up?: boolean
+          note?: string | null
+          progression_type_id?: string
+          subject_id?: string
+          xp_after?: number
+          xp_before?: number
+          xp_source_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "xp_award_log_progression_type_id_fkey"
+            columns: ["progression_type_id"]
+            isOneToOne: false
+            referencedRelation: "progression_types"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "xp_award_log_xp_source_id_fkey"
+            columns: ["xp_source_id"]
+            isOneToOne: false
+            referencedRelation: "xp_sources"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       xp_curve_levels: {
         Row: {
@@ -1717,6 +1842,16 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      award_xp: {
+        Args: {
+          p_amount: number
+          p_note?: string
+          p_source_id: string
+          p_subject: string
+          p_type_id: string
+        }
+        Returns: Json
+      }
       claim_collection_bonus: {
         Args: { p_collection_id: string; p_threshold: number; p_user: string }
         Returns: Json
@@ -1754,6 +1889,14 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      progression_level_for_xp: {
+        Args: { p_type_id: string; p_xp: number }
+        Returns: number
+      }
+      progression_next_level_xp: {
+        Args: { p_current_level: number; p_type_id: string }
+        Returns: number
       }
       rebuild_xp_curve_levels: { Args: { p_curve_id: string }; Returns: number }
       recompute_all_collections: { Args: never; Returns: undefined }
