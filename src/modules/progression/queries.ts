@@ -153,3 +153,111 @@ export const xpSourceCategoriesQuery = list<XPSourceCategory>(
   "xp_source_categories",
   "xp_source_categories",
 );
+
+export type DemoSubject = {
+  id: string;
+  name: string;
+  kind: string;
+  avatar: string | null;
+  notes: string | null;
+  created_at: string;
+};
+
+export type SubjectProgression = {
+  id: string;
+  subject_id: string;
+  progression_type_id: string;
+  current_xp: number;
+  current_level: number;
+  updated_at: string;
+  created_at: string;
+};
+
+export type XPAwardLogEntry = {
+  id: string;
+  subject_id: string;
+  progression_type_id: string;
+  xp_source_id: string | null;
+  amount: number;
+  xp_before: number;
+  xp_after: number;
+  level_before: number;
+  level_after: number;
+  leveled_up: boolean;
+  note: string | null;
+  created_at: string;
+};
+
+export const demoSubjectsQuery = queryOptions({
+  queryKey: ["progression_demo_subjects"],
+  queryFn: async (): Promise<DemoSubject[]> => {
+    const { data, error } = await sb.from("progression_demo_subjects").select("*").order("name");
+    if (error) throw error;
+    return (data ?? []) as DemoSubject[];
+  },
+  staleTime: 30_000,
+});
+
+export const subjectProgressionQuery = (subjectId: string | null) =>
+  queryOptions({
+    queryKey: ["subject_progression", subjectId],
+    queryFn: async (): Promise<SubjectProgression[]> => {
+      if (!subjectId) return [];
+      const { data, error } = await sb
+        .from("subject_progression")
+        .select("*")
+        .eq("subject_id", subjectId);
+      if (error) throw error;
+      return (data ?? []) as SubjectProgression[];
+    },
+    enabled: !!subjectId,
+    staleTime: 5_000,
+  });
+
+export const xpAwardLogQuery = (subjectId: string | null, typeId: string | null) =>
+  queryOptions({
+    queryKey: ["xp_award_log", subjectId, typeId],
+    queryFn: async (): Promise<XPAwardLogEntry[]> => {
+      if (!subjectId || !typeId) return [];
+      const { data, error } = await sb
+        .from("xp_award_log")
+        .select("*")
+        .eq("subject_id", subjectId)
+        .eq("progression_type_id", typeId)
+        .order("created_at", { ascending: false })
+        .limit(20);
+      if (error) throw error;
+      return (data ?? []) as XPAwardLogEntry[];
+    },
+    enabled: !!subjectId && !!typeId,
+    staleTime: 2_000,
+  });
+
+export async function awardXp(params: {
+  subjectId: string;
+  progressionTypeId: string;
+  xpSourceId: string | null;
+  amount: number;
+  note?: string;
+}) {
+  const { data, error } = await sb.rpc("award_xp", {
+    p_subject: params.subjectId,
+    p_type_id: params.progressionTypeId,
+    p_source_id: params.xpSourceId,
+    p_amount: params.amount,
+    p_note: params.note ?? null,
+  });
+  if (error) throw error;
+  return data as {
+    subject_id: string;
+    progression_type_id: string;
+    xp_before: number;
+    xp_after: number;
+    level_before: number;
+    level_after: number;
+    leveled_up: boolean;
+    levels_gained: number;
+    next_level_xp: number | null;
+  };
+}
+
