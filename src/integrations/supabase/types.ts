@@ -1250,6 +1250,10 @@ export type Database = {
           current_level: number
           current_xp: number
           id: string
+          last_awarded_amount: number | null
+          last_awarded_at: string | null
+          last_level_up_at: string | null
+          lifetime_xp: number
           progression_type_id: string
           subject_id: string
           updated_at: string
@@ -1259,6 +1263,10 @@ export type Database = {
           current_level?: number
           current_xp?: number
           id?: string
+          last_awarded_amount?: number | null
+          last_awarded_at?: string | null
+          last_level_up_at?: string | null
+          lifetime_xp?: number
           progression_type_id: string
           subject_id: string
           updated_at?: string
@@ -1268,6 +1276,10 @@ export type Database = {
           current_level?: number
           current_xp?: number
           id?: string
+          last_awarded_amount?: number | null
+          last_awarded_at?: string | null
+          last_level_up_at?: string | null
+          lifetime_xp?: number
           progression_type_id?: string
           subject_id?: string
           updated_at?: string

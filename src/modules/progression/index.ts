@@ -26,6 +26,7 @@ import { CatchUpXP } from "./sections/CatchUpXP";
 import { Prestige } from "./sections/Prestige";
 import { Analytics } from "./sections/Analytics";
 import { Simulator } from "./sections/Simulator";
+import { Progress } from "./sections/Progress";
 import { SettingsSection } from "./sections/SettingsSection";
 import { Permissions } from "./sections/Permissions";
 
@@ -45,6 +46,7 @@ export const progressionModule: AssetOSModule = {
     { key: "catchup", label: "Catch-Up XP", icon: Rocket, component: CatchUpXP },
     { key: "prestige", label: "Prestige", icon: Crown, component: Prestige },
     { key: "analytics", label: "Analytics", icon: BarChart3, component: Analytics },
+    { key: "progress", label: "Progress", icon: TrendingUp, component: Progress },
     { key: "simulator", label: "Simulator", icon: FlaskConical, component: Simulator },
     { key: "settings", label: "Settings", icon: Settings, component: SettingsSection },
     { key: "permissions", label: "Permissions", icon: ShieldCheck, component: Permissions },
