@@ -235,6 +235,8 @@ export const xpAwardLogQuery = (subjectId: string | null, typeId: string | null)
     },
     enabled: !!subjectId && !!typeId,
     staleTime: 2_000,
+  });
+
 
 export const allSubjectProgressionQuery = queryOptions({
   queryKey: ["subject_progression", "all"],
