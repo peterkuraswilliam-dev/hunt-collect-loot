@@ -235,7 +235,35 @@ export const xpAwardLogQuery = (subjectId: string | null, typeId: string | null)
     },
     enabled: !!subjectId && !!typeId,
     staleTime: 2_000,
-  });
+
+export const allSubjectProgressionQuery = queryOptions({
+  queryKey: ["subject_progression", "all"],
+  queryFn: async (): Promise<SubjectProgression[]> => {
+    const { data, error } = await sb
+      .from("subject_progression")
+      .select("*")
+      .order("updated_at", { ascending: false });
+    if (error) throw error;
+    return (data ?? []) as SubjectProgression[];
+  },
+  staleTime: 5_000,
+});
+
+export const recentLevelUpsQuery = queryOptions({
+  queryKey: ["xp_award_log", "level_ups"],
+  queryFn: async (): Promise<XPAwardLogEntry[]> => {
+    const { data, error } = await sb
+      .from("xp_award_log")
+      .select("*")
+      .eq("leveled_up", true)
+      .order("created_at", { ascending: false })
+      .limit(25);
+    if (error) throw error;
+    return (data ?? []) as XPAwardLogEntry[];
+  },
+  staleTime: 5_000,
+});
+
 
 export async function awardXp(params: {
   subjectId: string;
