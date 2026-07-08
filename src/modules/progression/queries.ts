@@ -169,6 +169,10 @@ export type SubjectProgression = {
   progression_type_id: string;
   current_xp: number;
   current_level: number;
+  lifetime_xp: number;
+  last_awarded_amount: number | null;
+  last_awarded_at: string | null;
+  last_level_up_at: string | null;
   updated_at: string;
   created_at: string;
 };
