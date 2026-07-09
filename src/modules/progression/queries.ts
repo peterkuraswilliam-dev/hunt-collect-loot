@@ -295,3 +295,85 @@ export async function awardXp(params: {
   };
 }
 
+export type XPEventType = "xp_awarded" | "xp_removed" | "level_up" | "multi_level_up";
+export type XPEventStatus = "processed" | "failed" | "replayed";
+
+export type XPEvent = {
+  id: string;
+  subject_id: string;
+  progression_type_id: string;
+  xp_source_id: string | null;
+  event_type: XPEventType;
+  amount: number;
+  xp_before: number;
+  xp_after: number;
+  level_before: number;
+  level_after: number;
+  levels_gained: number;
+  status: XPEventStatus;
+  error_message: string | null;
+  note: string | null;
+  metadata: Record<string, unknown>;
+  replay_of: string | null;
+  created_at: string;
+};
+
+export const xpEventsQuery = queryOptions({
+  queryKey: ["xp_events"],
+  queryFn: async (): Promise<XPEvent[]> => {
+    const { data, error } = await sb
+      .from("xp_events")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(500);
+    if (error) throw error;
+    return (data ?? []) as XPEvent[];
+  },
+  staleTime: 5_000,
+});
+
+export const playerXpEventsQuery = (subjectId: string | null) =>
+  queryOptions({
+    queryKey: ["xp_events", "subject", subjectId],
+    queryFn: async (): Promise<XPEvent[]> => {
+      if (!subjectId) return [];
+      const { data, error } = await sb
+        .from("xp_events")
+        .select("*")
+        .eq("subject_id", subjectId)
+        .order("created_at", { ascending: false })
+        .limit(200);
+      if (error) throw error;
+      return (data ?? []) as XPEvent[];
+    },
+    enabled: !!subjectId,
+    staleTime: 5_000,
+  });
+
+export async function submitXpEvent(params: {
+  subjectId: string;
+  progressionTypeId: string;
+  xpSourceId: string | null;
+  amount: number;
+  note?: string;
+  metadata?: Record<string, unknown>;
+}) {
+  const { data, error } = await sb.rpc("submit_xp_event", {
+    p_subject: params.subjectId,
+    p_type_id: params.progressionTypeId,
+    p_source_id: params.xpSourceId,
+    p_amount: params.amount,
+    p_note: params.note ?? null,
+    p_metadata: params.metadata ?? {},
+  });
+  if (error) throw error;
+  return data as { ok: boolean; event_id: string; event_type?: XPEventType; error?: string };
+}
+
+export async function replayXpEvent(eventId: string) {
+  const { data, error } = await sb.rpc("replay_xp_event", { p_event_id: eventId });
+  if (error) throw error;
+  return data as { ok: boolean; event_id: string };
+}
+
+

@@ -1643,6 +1643,88 @@ export type Database = {
         }
         Relationships: []
       }
+      xp_events: {
+        Row: {
+          amount: number
+          created_at: string
+          error_message: string | null
+          event_type: Database["public"]["Enums"]["xp_event_type"]
+          id: string
+          level_after: number
+          level_before: number
+          levels_gained: number
+          metadata: Json
+          note: string | null
+          progression_type_id: string
+          replay_of: string | null
+          status: Database["public"]["Enums"]["xp_event_status"]
+          subject_id: string
+          xp_after: number
+          xp_before: number
+          xp_source_id: string | null
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          error_message?: string | null
+          event_type: Database["public"]["Enums"]["xp_event_type"]
+          id?: string
+          level_after?: number
+          level_before?: number
+          levels_gained?: number
+          metadata?: Json
+          note?: string | null
+          progression_type_id: string
+          replay_of?: string | null
+          status?: Database["public"]["Enums"]["xp_event_status"]
+          subject_id: string
+          xp_after?: number
+          xp_before?: number
+          xp_source_id?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          error_message?: string | null
+          event_type?: Database["public"]["Enums"]["xp_event_type"]
+          id?: string
+          level_after?: number
+          level_before?: number
+          levels_gained?: number
+          metadata?: Json
+          note?: string | null
+          progression_type_id?: string
+          replay_of?: string | null
+          status?: Database["public"]["Enums"]["xp_event_status"]
+          subject_id?: string
+          xp_after?: number
+          xp_before?: number
+          xp_source_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "xp_events_progression_type_id_fkey"
+            columns: ["progression_type_id"]
+            isOneToOne: false
+            referencedRelation: "progression_types"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "xp_events_replay_of_fkey"
+            columns: ["replay_of"]
+            isOneToOne: false
+            referencedRelation: "xp_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "xp_events_xp_source_id_fkey"
+            columns: ["xp_source_id"]
+            isOneToOne: false
+            referencedRelation: "xp_sources"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       xp_multipliers: {
         Row: {
           created_at: string
@@ -1916,7 +1998,19 @@ export type Database = {
         Args: { p_collection_id: string }
         Returns: number
       }
+      replay_xp_event: { Args: { p_event_id: string }; Returns: Json }
       spin_wheel: { Args: { p_user: string }; Returns: Json }
+      submit_xp_event: {
+        Args: {
+          p_amount: number
+          p_metadata?: Json
+          p_note?: string
+          p_source_id: string
+          p_subject: string
+          p_type_id: string
+        }
+        Returns: Json
+      }
       xp_to_level: {
         Args: { p_curve_id: string; p_total_xp: number }
         Returns: number
@@ -1926,6 +2020,8 @@ export type Database = {
       app_role: "admin" | "moderator" | "user" | "business_owner"
       rarity: "common" | "rare" | "epic" | "legendary"
       tile_reward_type: "credits" | "xp" | "asset" | "pack" | "empty"
+      xp_event_status: "processed" | "failed" | "replayed"
+      xp_event_type: "xp_awarded" | "xp_removed" | "level_up" | "multi_level_up"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -2056,6 +2152,8 @@ export const Constants = {
       app_role: ["admin", "moderator", "user", "business_owner"],
       rarity: ["common", "rare", "epic", "legendary"],
       tile_reward_type: ["credits", "xp", "asset", "pack", "empty"],
+      xp_event_status: ["processed", "failed", "replayed"],
+      xp_event_type: ["xp_awarded", "xp_removed", "level_up", "multi_level_up"],
     },
   },
 } as const
