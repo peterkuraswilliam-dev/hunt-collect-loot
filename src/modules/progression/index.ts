@@ -50,6 +50,7 @@ export const progressionModule: AssetOSModule = {
     { key: "analytics", label: "Analytics", icon: BarChart3, component: Analytics },
     { key: "progress", label: "Progress", icon: TrendingUp, component: Progress },
     { key: "simulator", label: "Simulator", icon: FlaskConical, component: Simulator },
+    { key: "events", label: "Events", icon: Activity, component: Events },
     { key: "settings", label: "Settings", icon: Settings, component: SettingsSection },
     { key: "permissions", label: "Permissions", icon: ShieldCheck, component: Permissions },
   ],
