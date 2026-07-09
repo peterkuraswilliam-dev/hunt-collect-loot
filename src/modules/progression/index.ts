@@ -28,6 +28,7 @@ import { Prestige } from "./sections/Prestige";
 import { Analytics } from "./sections/Analytics";
 import { Simulator } from "./sections/Simulator";
 import { Progress } from "./sections/Progress";
+import { Events } from "./sections/Events";
 import { SettingsSection } from "./sections/SettingsSection";
 import { Permissions } from "./sections/Permissions";
 
