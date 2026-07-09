@@ -13,6 +13,7 @@ import {
   FlaskConical,
   Settings,
   ShieldCheck,
+  Activity,
 } from "lucide-react";
 import type { AssetOSModule } from "../contract";
 import { Dashboard } from "./sections/Dashboard";
