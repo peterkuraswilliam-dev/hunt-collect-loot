@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { Coins, Zap, Sparkles, Hammer, Star } from "lucide-react";
+import { Coins, Zap, Sparkles, Hammer, Hexagon } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { inventoryQuery, meStatsQuery, multipliersQuery } from "@/lib/queries";
 import { supabase } from "@/integrations/supabase/client";
@@ -53,7 +53,7 @@ function MyAssets() {
         <div className="grid grid-cols-3 gap-2 text-center">
           <Stat icon={<Coins className="h-4 w-4 text-credits" />} label="Credits / hr" value={fmt(totals.creditsPerHour)} />
           <Stat icon={<Zap className="h-4 w-4 text-energy" />} label="Energy / hr" value={fmt(totals.energyPerHour)} />
-          <Stat icon={<Star className="h-4 w-4 text-primary" />} label="XP / hr" value={fmt(totals.xpPerHour)} />
+          <Stat icon={<Hexagon className="h-4 w-4 text-xp" />} label="XP / hr" value={fmt(totals.xpPerHour)} />
         </div>
         <div className="rounded-md border border-border bg-surface-2 p-3">
           <div className="flex items-center justify-between text-[11px] uppercase tracking-wider text-muted-foreground">
@@ -63,7 +63,7 @@ function MyAssets() {
           <div className="mt-1 flex items-center justify-between gap-2 text-sm font-bold">
             <span className="flex items-center gap-1 text-credits"><Coins className="h-3.5 w-3.5" />{pending.credits}</span>
             <span className="flex items-center gap-1 text-energy"><Zap className="h-3.5 w-3.5" />{pending.energy}</span>
-            <span className="flex items-center gap-1 text-primary"><Star className="h-3.5 w-3.5" />{pending.xp}</span>
+            <span className="flex items-center gap-1 text-xp"><Hexagon className="h-3.5 w-3.5" />{pending.xp}</span>
           </div>
         </div>
         <button
@@ -111,8 +111,8 @@ function MyAssets() {
                     <span className="flex items-center gap-1 text-energy">
                       <Zap className="h-3 w-3" />{fmt((row.assets.energy_per_hour ?? 0) * row.quantity)}/h
                     </span>
-                    <span className="flex items-center gap-1 text-primary">
-                      <Star className="h-3 w-3" />{fmt((row.assets.xp_per_hour ?? 0) * row.quantity)}/h
+                    <span className="flex items-center gap-1 text-xp">
+                      <Hexagon className="h-3 w-3" />{fmt((row.assets.xp_per_hour ?? 0) * row.quantity)}/h
                     </span>
 
                   </div>
