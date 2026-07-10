@@ -33,6 +33,8 @@ function Collections() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["collection_claims", uid] });
       qc.invalidateQueries({ queryKey: ["user_stats", uid] });
+      qc.invalidateQueries({ queryKey: ["subject_progression", uid] });
+      qc.invalidateQueries({ queryKey: ["prog_next_xp"] });
     },
   });
 
