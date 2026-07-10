@@ -896,6 +896,81 @@ export type Database = {
           },
         ]
       }
+      progression_rules: {
+        Row: {
+          created_at: string
+          description: string | null
+          enabled: boolean
+          ends_at: string | null
+          id: string
+          is_demo: boolean
+          name: string
+          notes: string | null
+          priority: number
+          progression_type_id: string | null
+          rule_type: Database["public"]["Enums"]["progression_rule_type"]
+          slug: string
+          starts_at: string | null
+          status: string
+          updated_at: string
+          value: number
+          xp_source_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          enabled?: boolean
+          ends_at?: string | null
+          id?: string
+          is_demo?: boolean
+          name: string
+          notes?: string | null
+          priority?: number
+          progression_type_id?: string | null
+          rule_type: Database["public"]["Enums"]["progression_rule_type"]
+          slug: string
+          starts_at?: string | null
+          status?: string
+          updated_at?: string
+          value?: number
+          xp_source_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          enabled?: boolean
+          ends_at?: string | null
+          id?: string
+          is_demo?: boolean
+          name?: string
+          notes?: string | null
+          priority?: number
+          progression_type_id?: string | null
+          rule_type?: Database["public"]["Enums"]["progression_rule_type"]
+          slug?: string
+          starts_at?: string | null
+          status?: string
+          updated_at?: string
+          value?: number
+          xp_source_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "progression_rules_progression_type_id_fkey"
+            columns: ["progression_type_id"]
+            isOneToOne: false
+            referencedRelation: "progression_types"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "progression_rules_xp_source_id_fkey"
+            columns: ["xp_source_id"]
+            isOneToOne: false
+            referencedRelation: "xp_sources"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       progression_types: {
         Row: {
           allow_overflow_xp: boolean
@@ -1951,6 +2026,10 @@ export type Database = {
         Returns: Json
       }
       collect_production: { Args: { p_user: string }; Returns: Json }
+      compute_effective_xp: {
+        Args: { p_amount: number; p_source_id: string; p_type_id: string }
+        Returns: number
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -2018,6 +2097,15 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "moderator" | "user" | "business_owner"
+      progression_rule_type:
+        | "global_multiplier"
+        | "type_multiplier"
+        | "source_multiplier"
+        | "level_requirement"
+        | "daily_xp_limit"
+        | "weekly_xp_limit"
+        | "min_level"
+        | "max_level"
       rarity: "common" | "rare" | "epic" | "legendary"
       tile_reward_type: "credits" | "xp" | "asset" | "pack" | "empty"
       xp_event_status: "processed" | "failed" | "replayed"
@@ -2150,6 +2238,16 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "moderator", "user", "business_owner"],
+      progression_rule_type: [
+        "global_multiplier",
+        "type_multiplier",
+        "source_multiplier",
+        "level_requirement",
+        "daily_xp_limit",
+        "weekly_xp_limit",
+        "min_level",
+        "max_level",
+      ],
       rarity: ["common", "rare", "epic", "legendary"],
       tile_reward_type: ["credits", "xp", "asset", "pack", "empty"],
       xp_event_status: ["processed", "failed", "replayed"],
