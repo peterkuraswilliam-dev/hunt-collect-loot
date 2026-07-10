@@ -245,6 +245,7 @@ export type Database = {
           priority: number
           progression_type_id: string | null
           reference: string
+          sort_order: number
           starts_at: string | null
           status: string
           updated_at: string
@@ -263,6 +264,7 @@ export type Database = {
           priority?: number
           progression_type_id?: string | null
           reference?: string
+          sort_order?: number
           starts_at?: string | null
           status?: string
           updated_at?: string
@@ -281,6 +283,7 @@ export type Database = {
           priority?: number
           progression_type_id?: string | null
           reference?: string
+          sort_order?: number
           starts_at?: string | null
           status?: string
           updated_at?: string
@@ -1175,6 +1178,7 @@ export type Database = {
           priority: number
           progression_type_id: string | null
           regen_rate_per_hour: number
+          sort_order: number
           status: string
           updated_at: string
         }
@@ -1192,6 +1196,7 @@ export type Database = {
           priority?: number
           progression_type_id?: string | null
           regen_rate_per_hour?: number
+          sort_order?: number
           status?: string
           updated_at?: string
         }
@@ -1209,6 +1214,7 @@ export type Database = {
           priority?: number
           progression_type_id?: string | null
           regen_rate_per_hour?: number
+          sort_order?: number
           status?: string
           updated_at?: string
         }
