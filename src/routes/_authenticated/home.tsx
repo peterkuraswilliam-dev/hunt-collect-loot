@@ -87,7 +87,7 @@ function Home() {
         <StatRow label="Total Assets" value={totalAssets} />
         <StatRow label="Collections" value={`${stats?.collections_completed ?? 0} / ${collections.length}`} />
         <StatRow label="Packs Opened" value={stats?.packs_opened ?? 0} />
-        <StatRow label="Level" value={stats?.level ?? 1} />
+        <StatRow label="Level" value={level} />
       </section>
 
       {/* Spin tokens */}
