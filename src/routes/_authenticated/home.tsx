@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Coins, Package, Sparkles, Star, Ticket, Zap } from "lucide-react";
+import { Coins, Hexagon, Package, Sparkles, Ticket, Zap } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import {
   collectionsQuery,
