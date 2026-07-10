@@ -63,7 +63,7 @@ function MyAssets() {
           <div className="mt-1 flex items-center justify-between gap-2 text-sm font-bold">
             <span className="flex items-center gap-1 text-credits"><Coins className="h-3.5 w-3.5" />{pending.credits}</span>
             <span className="flex items-center gap-1 text-energy"><Zap className="h-3.5 w-3.5" />{pending.energy}</span>
-            <span className="flex items-center gap-1 text-primary"><Star className="h-3.5 w-3.5" />{pending.xp}</span>
+            <span className="flex items-center gap-1 text-xp"><Hexagon className="h-3.5 w-3.5" />{pending.xp}</span>
           </div>
         </div>
         <button
