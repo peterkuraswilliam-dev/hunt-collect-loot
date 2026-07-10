@@ -1400,39 +1400,104 @@ export type Database = {
       }
       reward_types: {
         Row: {
+          color: string | null
           created_at: string
           description: string | null
+          enabled: boolean
           icon: string | null
           id: string
+          internal_id: string | null
           is_system: boolean
           kind: string
           name: string
           slug: string
           sort_order: number
+          stackable: boolean
+          tradable: boolean
         }
         Insert: {
+          color?: string | null
           created_at?: string
           description?: string | null
+          enabled?: boolean
           icon?: string | null
           id?: string
+          internal_id?: string | null
           is_system?: boolean
           kind: string
           name: string
           slug: string
           sort_order?: number
+          stackable?: boolean
+          tradable?: boolean
         }
         Update: {
+          color?: string | null
           created_at?: string
           description?: string | null
+          enabled?: boolean
           icon?: string | null
           id?: string
+          internal_id?: string | null
           is_system?: boolean
           kind?: string
           name?: string
           slug?: string
           sort_order?: number
+          stackable?: boolean
+          tradable?: boolean
         }
         Relationships: []
+      }
+      rewards: {
+        Row: {
+          created_at: string
+          description: string | null
+          enabled: boolean
+          icon: string | null
+          id: string
+          name: string
+          quantity: number
+          rarity: string
+          reward_type_id: string
+          tags: string[]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          enabled?: boolean
+          icon?: string | null
+          id?: string
+          name: string
+          quantity?: number
+          rarity?: string
+          reward_type_id: string
+          tags?: string[]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          enabled?: boolean
+          icon?: string | null
+          id?: string
+          name?: string
+          quantity?: number
+          rarity?: string
+          reward_type_id?: string
+          tags?: string[]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rewards_reward_type_id_fkey"
+            columns: ["reward_type_id"]
+            isOneToOne: false
+            referencedRelation: "reward_types"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       seasons: {
         Row: {
