@@ -49,13 +49,13 @@ function Profile() {
         {playerType && (
           <div className="mt-3 space-y-1">
             <div className="flex justify-between text-[10px] uppercase tracking-widest text-muted-foreground">
-              <span>{playerType.name} XP</span>
+              <span>{typeName}</span>
               <span>{curXp.toLocaleString()}{nextXp ? ` / ${nextXp.toLocaleString()}` : ""}</span>
             </div>
             <div className="h-2 overflow-hidden rounded-full bg-surface-2">
               <div className="h-full bg-gradient-to-r from-amber-500 to-amber-300" style={{ width: `${pct}%` }} />
             </div>
-            <div className="text-[10px] text-muted-foreground">Lifetime XP: {(prog?.lifetime_xp ?? 0).toLocaleString()}</div>
+            <div className="text-[10px] text-muted-foreground">Lifetime XP: {lifetimeXp.toLocaleString()}</div>
           </div>
         )}
       </section>
