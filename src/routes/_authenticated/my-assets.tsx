@@ -111,8 +111,8 @@ function MyAssets() {
                     <span className="flex items-center gap-1 text-energy">
                       <Zap className="h-3 w-3" />{fmt((row.assets.energy_per_hour ?? 0) * row.quantity)}/h
                     </span>
-                    <span className="flex items-center gap-1 text-primary">
-                      <Star className="h-3 w-3" />{fmt((row.assets.xp_per_hour ?? 0) * row.quantity)}/h
+                    <span className="flex items-center gap-1 text-xp">
+                      <Hexagon className="h-3 w-3" />{fmt((row.assets.xp_per_hour ?? 0) * row.quantity)}/h
                     </span>
 
                   </div>
