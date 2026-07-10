@@ -9,6 +9,7 @@ import {
   multipliersQuery,
   packsQuery,
 } from "@/lib/queries";
+import { usePlayerProgression } from "@/lib/usePlayerProgression";
 import { PackCard } from "@/components/PackCard";
 import { calcTotals, fmt, pendingProduction } from "@/lib/production";
 import { supabase } from "@/integrations/supabase/client";
@@ -22,6 +23,7 @@ function Home() {
   const uid = user?.id ?? "";
   const qc = useQueryClient();
   const { data: stats } = useQuery({ ...meStatsQuery(uid), enabled: !!uid });
+  const { level } = usePlayerProgression(uid);
   const { data: collections = [] } = useQuery(collectionsQuery);
   const { data: inv = [] } = useQuery({ ...inventoryQuery(uid), enabled: !!uid });
   const { data: packs = [] } = useQuery(packsQuery);
@@ -85,7 +87,7 @@ function Home() {
         <StatRow label="Total Assets" value={totalAssets} />
         <StatRow label="Collections" value={`${stats?.collections_completed ?? 0} / ${collections.length}`} />
         <StatRow label="Packs Opened" value={stats?.packs_opened ?? 0} />
-        <StatRow label="Level" value={stats?.level ?? 1} />
+        <StatRow label="Level" value={level} />
       </section>
 
       {/* Spin tokens */}

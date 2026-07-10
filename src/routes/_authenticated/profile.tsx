@@ -5,10 +5,7 @@ import { useAuth } from "@/lib/auth-context";
 import { meStatsQuery, settingsQuery, collectionsQuery, inventoryQuery } from "@/lib/queries";
 import { supabase } from "@/integrations/supabase/client";
 import { useIsAdmin } from "@/lib/admin";
-import { progressionTypesQuery } from "@/modules/progression/queries";
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const sb = supabase as any;
+import { usePlayerProgression } from "@/lib/usePlayerProgression";
 
 export const Route = createFileRoute("/_authenticated/profile")({
   component: Profile,
@@ -22,45 +19,16 @@ function Profile() {
   const { data: settings } = useQuery(settingsQuery);
   const { data: collections = [] } = useQuery(collectionsQuery);
   const { data: inv = [] } = useQuery({ ...inventoryQuery(uid), enabled: !!uid });
-  const { data: types = [] } = useQuery(progressionTypesQuery);
   const { isAdmin } = useIsAdmin();
 
-  const playerType = types.find((t) => t.category === "player" || t.slug === "player") ?? types[0];
-
-  const { data: prog } = useQuery({
-    queryKey: ["subject_progression", uid, playerType?.id],
-    enabled: !!uid && !!playerType?.id,
-    queryFn: async () => {
-      const { data } = await sb
-        .from("subject_progression")
-        .select("*")
-        .eq("subject_id", uid)
-        .eq("progression_type_id", playerType!.id)
-        .maybeSingle();
-      return data as { current_xp: number; current_level: number; lifetime_xp: number } | null;
-    },
-  });
-
-  const { data: nextXp } = useQuery({
-    queryKey: ["prog_next_xp", playerType?.id, prog?.current_level ?? 0],
-    enabled: !!playerType?.id,
-    queryFn: async () => {
-      const { data } = await sb.rpc("progression_next_level_xp", {
-        p_type_id: playerType!.id,
-        p_current_level: prog?.current_level ?? (playerType!.starting_level ?? 1),
-      });
-      return (data as number | null) ?? null;
-    },
-  });
+  const { type: playerType, level: curLvl, currentXp: curXp, nextXp, lifetimeXp, pct, typeName } =
+    usePlayerProgression(uid);
 
   async function signOut() {
     await supabase.auth.signOut();
     navigate({ to: "/auth" });
   }
 
-  const curXp = prog?.current_xp ?? 0;
-  const curLvl = prog?.current_level ?? playerType?.starting_level ?? 1;
-  const pct = nextXp && nextXp > 0 ? Math.min(100, Math.round((curXp / nextXp) * 100)) : 0;
 
   return (
     <div className="space-y-4">
@@ -81,13 +49,13 @@ function Profile() {
         {playerType && (
           <div className="mt-3 space-y-1">
             <div className="flex justify-between text-[10px] uppercase tracking-widest text-muted-foreground">
-              <span>{playerType.name} XP</span>
+              <span>{typeName}</span>
               <span>{curXp.toLocaleString()}{nextXp ? ` / ${nextXp.toLocaleString()}` : ""}</span>
             </div>
             <div className="h-2 overflow-hidden rounded-full bg-surface-2">
               <div className="h-full bg-gradient-to-r from-amber-500 to-amber-300" style={{ width: `${pct}%` }} />
             </div>
-            <div className="text-[10px] text-muted-foreground">Lifetime XP: {(prog?.lifetime_xp ?? 0).toLocaleString()}</div>
+            <div className="text-[10px] text-muted-foreground">Lifetime XP: {lifetimeXp.toLocaleString()}</div>
           </div>
         )}
       </section>
