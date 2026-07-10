@@ -53,7 +53,7 @@ function MyAssets() {
         <div className="grid grid-cols-3 gap-2 text-center">
           <Stat icon={<Coins className="h-4 w-4 text-credits" />} label="Credits / hr" value={fmt(totals.creditsPerHour)} />
           <Stat icon={<Zap className="h-4 w-4 text-energy" />} label="Energy / hr" value={fmt(totals.energyPerHour)} />
-          <Stat icon={<Star className="h-4 w-4 text-primary" />} label="XP / hr" value={fmt(totals.xpPerHour)} />
+          <Stat icon={<Hexagon className="h-4 w-4 text-xp" />} label="XP / hr" value={fmt(totals.xpPerHour)} />
         </div>
         <div className="rounded-md border border-border bg-surface-2 p-3">
           <div className="flex items-center justify-between text-[11px] uppercase tracking-wider text-muted-foreground">
