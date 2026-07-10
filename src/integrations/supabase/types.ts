@@ -818,6 +818,80 @@ export type Database = {
         }
         Relationships: []
       }
+      prestige_configs: {
+        Row: {
+          created_at: string
+          description: string | null
+          enabled: boolean
+          id: string
+          is_demo: boolean
+          max_prestige_rank: number
+          name: string
+          notes: string | null
+          prestige_color: string
+          prestige_icon: string | null
+          prestige_name: string
+          progression_type_id: string | null
+          required_max_level: number
+          reset_stats: Json
+          slug: string
+          sort_order: number
+          status: string
+          updated_at: string
+          xp_retention_pct: number
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          enabled?: boolean
+          id?: string
+          is_demo?: boolean
+          max_prestige_rank?: number
+          name: string
+          notes?: string | null
+          prestige_color?: string
+          prestige_icon?: string | null
+          prestige_name?: string
+          progression_type_id?: string | null
+          required_max_level?: number
+          reset_stats?: Json
+          slug: string
+          sort_order?: number
+          status?: string
+          updated_at?: string
+          xp_retention_pct?: number
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          enabled?: boolean
+          id?: string
+          is_demo?: boolean
+          max_prestige_rank?: number
+          name?: string
+          notes?: string | null
+          prestige_color?: string
+          prestige_icon?: string | null
+          prestige_name?: string
+          progression_type_id?: string | null
+          required_max_level?: number
+          reset_stats?: Json
+          slug?: string
+          sort_order?: number
+          status?: string
+          updated_at?: string
+          xp_retention_pct?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prestige_configs_progression_type_id_fkey"
+            columns: ["progression_type_id"]
+            isOneToOne: false
+            referencedRelation: "progression_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -1360,6 +1434,66 @@ export type Database = {
         }
         Relationships: []
       }
+      seasons: {
+        Row: {
+          color: string
+          created_at: string
+          description: string | null
+          ends_at: string | null
+          icon: string | null
+          id: string
+          is_demo: boolean
+          name: string
+          notes: string | null
+          progression_type_ids: string[]
+          slug: string
+          sort_order: number
+          starts_at: string | null
+          status: string
+          updated_at: string
+          visible: boolean
+          xp_modifier: number
+        }
+        Insert: {
+          color?: string
+          created_at?: string
+          description?: string | null
+          ends_at?: string | null
+          icon?: string | null
+          id?: string
+          is_demo?: boolean
+          name: string
+          notes?: string | null
+          progression_type_ids?: string[]
+          slug: string
+          sort_order?: number
+          starts_at?: string | null
+          status?: string
+          updated_at?: string
+          visible?: boolean
+          xp_modifier?: number
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          description?: string | null
+          ends_at?: string | null
+          icon?: string | null
+          id?: string
+          is_demo?: boolean
+          name?: string
+          notes?: string | null
+          progression_type_ids?: string[]
+          slug?: string
+          sort_order?: number
+          starts_at?: string | null
+          status?: string
+          updated_at?: string
+          visible?: boolean
+          xp_modifier?: number
+        }
+        Relationships: []
+      }
       spin_rewards: {
         Row: {
           active: boolean
@@ -1449,6 +1583,96 @@ export type Database = {
           slug?: string
           sort_order?: number
           status?: string
+        }
+        Relationships: []
+      }
+      subject_prestige: {
+        Row: {
+          created_at: string
+          current_rank: number
+          id: string
+          last_prestige_at: string | null
+          prestige_config_id: string | null
+          progression_type_id: string
+          subject_id: string
+          total_prestiges: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          current_rank?: number
+          id?: string
+          last_prestige_at?: string | null
+          prestige_config_id?: string | null
+          progression_type_id: string
+          subject_id: string
+          total_prestiges?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          current_rank?: number
+          id?: string
+          last_prestige_at?: string | null
+          prestige_config_id?: string | null
+          progression_type_id?: string
+          subject_id?: string
+          total_prestiges?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subject_prestige_prestige_config_id_fkey"
+            columns: ["prestige_config_id"]
+            isOneToOne: false
+            referencedRelation: "prestige_configs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subject_prestige_progression_type_id_fkey"
+            columns: ["progression_type_id"]
+            isOneToOne: false
+            referencedRelation: "progression_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      subject_prestige_history: {
+        Row: {
+          created_at: string
+          from_rank: number
+          id: string
+          note: string | null
+          prestige_config_id: string | null
+          progression_type_id: string
+          subject_id: string
+          to_rank: number
+          xp_before: number
+          xp_retained: number
+        }
+        Insert: {
+          created_at?: string
+          from_rank: number
+          id?: string
+          note?: string | null
+          prestige_config_id?: string | null
+          progression_type_id: string
+          subject_id: string
+          to_rank: number
+          xp_before?: number
+          xp_retained?: number
+        }
+        Update: {
+          created_at?: string
+          from_rank?: number
+          id?: string
+          note?: string | null
+          prestige_config_id?: string | null
+          progression_type_id?: string
+          subject_id?: string
+          to_rank?: number
+          xp_before?: number
+          xp_retained?: number
         }
         Relationships: []
       }
@@ -1542,6 +1766,90 @@ export type Database = {
             columns: ["progression_type_id"]
             isOneToOne: false
             referencedRelation: "progression_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      subject_season_history: {
+        Row: {
+          archived_at: string
+          events_count: number
+          final_xp: number
+          id: string
+          progression_type_id: string
+          season_id: string
+          snapshot: Json
+          subject_id: string
+        }
+        Insert: {
+          archived_at?: string
+          events_count?: number
+          final_xp?: number
+          id?: string
+          progression_type_id: string
+          season_id: string
+          snapshot?: Json
+          subject_id: string
+        }
+        Update: {
+          archived_at?: string
+          events_count?: number
+          final_xp?: number
+          id?: string
+          progression_type_id?: string
+          season_id?: string
+          snapshot?: Json
+          subject_id?: string
+        }
+        Relationships: []
+      }
+      subject_season_progress: {
+        Row: {
+          created_at: string
+          events_count: number
+          id: string
+          last_awarded_at: string | null
+          progression_type_id: string
+          season_id: string
+          season_xp: number
+          subject_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          events_count?: number
+          id?: string
+          last_awarded_at?: string | null
+          progression_type_id: string
+          season_id: string
+          season_xp?: number
+          subject_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          events_count?: number
+          id?: string
+          last_awarded_at?: string | null
+          progression_type_id?: string
+          season_id?: string
+          season_xp?: number
+          subject_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subject_season_progress_progression_type_id_fkey"
+            columns: ["progression_type_id"]
+            isOneToOne: false
+            referencedRelation: "progression_types"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subject_season_progress_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "seasons"
             referencedColumns: ["id"]
           },
         ]
@@ -2249,6 +2557,10 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      prestige_advance: {
+        Args: { p_subject: string; p_type_id: string }
+        Returns: Json
       }
       progression_level_for_xp: {
         Args: { p_type_id: string; p_xp: number }

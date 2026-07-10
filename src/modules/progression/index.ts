@@ -9,6 +9,7 @@ import {
   Moon,
   Rocket,
   Crown,
+  CalendarDays,
   BarChart3,
   FlaskConical,
   Settings,
@@ -26,6 +27,7 @@ import { Multipliers } from "./sections/Multipliers";
 import { RestedXP } from "./sections/RestedXP";
 import { CatchUpXP } from "./sections/CatchUpXP";
 import { Prestige } from "./sections/Prestige";
+import { Seasons } from "./sections/Seasons";
 import { Analytics } from "./sections/Analytics";
 import { Simulator } from "./sections/Simulator";
 import { Progress } from "./sections/Progress";
@@ -50,6 +52,7 @@ export const progressionModule: AssetOSModule = {
     { key: "rested", label: "Rested XP", icon: Moon, component: RestedXP },
     { key: "catchup", label: "Catch-Up XP", icon: Rocket, component: CatchUpXP },
     { key: "prestige", label: "Prestige", icon: Crown, component: Prestige },
+    { key: "seasons", label: "Seasons", icon: CalendarDays, component: Seasons },
     { key: "analytics", label: "Analytics", icon: BarChart3, component: Analytics },
     { key: "progress", label: "Progress", icon: TrendingUp, component: Progress },
     { key: "simulator", label: "Simulator", icon: FlaskConical, component: Simulator },
