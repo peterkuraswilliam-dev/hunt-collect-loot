@@ -46,6 +46,7 @@ export const progressionModule: AssetOSModule = {
     { key: "levels", label: "Levels", icon: ListOrdered, component: Levels },
     { key: "sources", label: "XP Sources", icon: Zap, component: XPSources },
     { key: "multipliers", label: "Multipliers", icon: TrendingUp, component: Multipliers },
+    { key: "rules", label: "Rules", icon: Filter, component: Rules },
     { key: "rested", label: "Rested XP", icon: Moon, component: RestedXP },
     { key: "catchup", label: "Catch-Up XP", icon: Rocket, component: CatchUpXP },
     { key: "prestige", label: "Prestige", icon: Crown, component: Prestige },
