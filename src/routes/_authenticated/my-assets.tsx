@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { Coins, Zap, Sparkles, Hammer, Star } from "lucide-react";
+import { Coins, Zap, Sparkles, Hammer, Hexagon } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { inventoryQuery, meStatsQuery, multipliersQuery } from "@/lib/queries";
 import { supabase } from "@/integrations/supabase/client";
