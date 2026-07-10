@@ -395,7 +395,3 @@ function AddRewardPicker({
     </div>
   );
 }
-
-// Fake type binding used to satisfy compiler in AddRewardPicker signature above.
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const rewardById: Map<string, import("../queries").Reward> = new Map();
