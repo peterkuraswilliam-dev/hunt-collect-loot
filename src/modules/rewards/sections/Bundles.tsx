@@ -361,7 +361,7 @@ function AddRewardPicker({
   typeById,
   onPick,
 }: {
-  rewards: ReturnType<typeof rewardById>[number] extends never ? never : import("../queries").Reward[];
+  rewards: import("../queries").Reward[];
   typeById: Map<string, import("../queries").RewardType>;
   onPick: (id: string) => void;
 }) {
