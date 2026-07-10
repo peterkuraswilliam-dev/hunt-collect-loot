@@ -1,19 +1,21 @@
-import { Gift, Gauge, Sparkles, Library, Settings } from "lucide-react";
+import { Gift, Gauge, Sparkles, Library, Settings, Boxes } from "lucide-react";
 import type { AssetOSModule } from "../contract";
 import { Dashboard } from "./sections/Dashboard";
 import { RewardTypes } from "./sections/RewardTypes";
 import { RewardsLibrary } from "./sections/RewardsLibrary";
+import { Bundles } from "./sections/Bundles";
 import { SettingsSection } from "./sections/SettingsSection";
 
 export const rewardsModule: AssetOSModule = {
   slug: "rewards",
   name: "Rewards",
-  description: "CMS-first source of truth for reward types and the reward library.",
+  description: "CMS-first source of truth for reward types, library, and bundles.",
   icon: Gift,
   sections: [
     { key: "dashboard", label: "Dashboard", icon: Gauge, component: Dashboard },
     { key: "types", label: "Reward Types", icon: Sparkles, component: RewardTypes },
     { key: "library", label: "Rewards Library", icon: Library, component: RewardsLibrary },
+    { key: "bundles", label: "Reward Bundles", icon: Boxes, component: Bundles },
     { key: "settings", label: "Settings", icon: Settings, component: SettingsSection },
   ],
 };

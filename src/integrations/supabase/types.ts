@@ -1302,35 +1302,128 @@ export type Database = {
           },
         ]
       }
-      reward_bundles: {
+      reward_bundle_categories: {
         Row: {
           created_at: string
-          description: string | null
+          icon: string | null
           id: string
+          name: string
+          slug: string
+          sort_order: number
+        }
+        Insert: {
+          created_at?: string
+          icon?: string | null
+          id?: string
+          name: string
+          slug: string
+          sort_order?: number
+        }
+        Update: {
+          created_at?: string
+          icon?: string | null
+          id?: string
+          name?: string
+          slug?: string
+          sort_order?: number
+        }
+        Relationships: []
+      }
+      reward_bundle_items: {
+        Row: {
+          bundle_id: string
+          created_at: string
+          display_order: number
+          guaranteed: boolean
+          id: string
+          quantity_override: number | null
+          reward_id: string
+          weight: number
+        }
+        Insert: {
+          bundle_id: string
+          created_at?: string
+          display_order?: number
+          guaranteed?: boolean
+          id?: string
+          quantity_override?: number | null
+          reward_id: string
+          weight?: number
+        }
+        Update: {
+          bundle_id?: string
+          created_at?: string
+          display_order?: number
+          guaranteed?: boolean
+          id?: string
+          quantity_override?: number | null
+          reward_id?: string
+          weight?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reward_bundle_items_bundle_id_fkey"
+            columns: ["bundle_id"]
+            isOneToOne: false
+            referencedRelation: "reward_bundles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reward_bundle_items_reward_id_fkey"
+            columns: ["reward_id"]
+            isOneToOne: false
+            referencedRelation: "rewards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reward_bundles: {
+        Row: {
+          category: string | null
+          created_at: string
+          description: string | null
+          enabled: boolean
+          estimated_value: number
+          icon: string | null
+          id: string
+          internal_id: string | null
           name: string
           rewards: Json
           slug: string
           status: string
+          tags: string[]
           updated_at: string
         }
         Insert: {
+          category?: string | null
           created_at?: string
           description?: string | null
+          enabled?: boolean
+          estimated_value?: number
+          icon?: string | null
           id?: string
+          internal_id?: string | null
           name: string
           rewards?: Json
           slug: string
           status?: string
+          tags?: string[]
           updated_at?: string
         }
         Update: {
+          category?: string | null
           created_at?: string
           description?: string | null
+          enabled?: boolean
+          estimated_value?: number
+          icon?: string | null
           id?: string
+          internal_id?: string | null
           name?: string
           rewards?: Json
           slug?: string
           status?: string
+          tags?: string[]
           updated_at?: string
         }
         Relationships: []
