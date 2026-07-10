@@ -39,7 +39,11 @@ function Home() {
       if (error) throw error;
       return data as CollectProductionResult;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["user_stats", uid] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["user_stats", uid] });
+      qc.invalidateQueries({ queryKey: ["subject_progression", uid] });
+      qc.invalidateQueries({ queryKey: ["prog_next_xp"] });
+    },
   });
 
   return (
@@ -66,21 +70,23 @@ function Home() {
           </div>
           <Link to="/my-assets" className="text-[11px] text-primary underline">My Assets →</Link>
         </div>
-        <div className="mt-2 grid grid-cols-2 gap-2 text-center text-sm font-bold">
+        <div className="mt-2 grid grid-cols-3 gap-2 text-center text-sm font-bold">
           <span className="flex items-center justify-center gap-1 text-credits"><Coins className="h-3.5 w-3.5" />{pending.credits}</span>
           <span className="flex items-center justify-center gap-1 text-energy"><Zap className="h-3.5 w-3.5" />{pending.energy}</span>
+          <span className="flex items-center justify-center gap-1 text-primary"><Star className="h-3.5 w-3.5" />{pending.xp}</span>
         </div>
         <div className="mt-2 text-center text-[10px] text-muted-foreground">
-          {fmt(totals.creditsPerHour)} cr/h · {fmt(totals.energyPerHour)} en/h
+          {fmt(totals.creditsPerHour)} cr/h · {fmt(totals.energyPerHour)} en/h · {fmt(totals.xpPerHour)} xp/h
         </div>
         <button
           onClick={() => collect.mutate()}
-          disabled={collect.isPending || pending.credits + pending.energy === 0}
+          disabled={collect.isPending || pending.credits + pending.energy + pending.xp === 0}
           className="btn-gold mt-3 inline-flex w-full items-center justify-center gap-2 py-2 text-xs disabled:opacity-50"
         >
           <Sparkles className="h-3.5 w-3.5" /> Collect Now
         </button>
       </section>
+
 
       {/* Stats grid */}
       <section className="panel grid grid-cols-2 gap-px overflow-hidden p-0 text-sm">
