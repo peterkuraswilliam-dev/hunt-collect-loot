@@ -230,6 +230,71 @@ export type Database = {
         }
         Relationships: []
       }
+      catchup_xp_configs: {
+        Row: {
+          created_at: string
+          description: string | null
+          enabled: boolean
+          ends_at: string | null
+          id: string
+          max_bonus: number
+          min_level_difference: number
+          multiplier: number
+          name: string
+          notes: string | null
+          priority: number
+          progression_type_id: string | null
+          reference: string
+          starts_at: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          enabled?: boolean
+          ends_at?: string | null
+          id?: string
+          max_bonus?: number
+          min_level_difference?: number
+          multiplier?: number
+          name: string
+          notes?: string | null
+          priority?: number
+          progression_type_id?: string | null
+          reference?: string
+          starts_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          enabled?: boolean
+          ends_at?: string | null
+          id?: string
+          max_bonus?: number
+          min_level_difference?: number
+          multiplier?: number
+          name?: string
+          notes?: string | null
+          priority?: number
+          progression_type_id?: string | null
+          reference?: string
+          starts_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "catchup_xp_configs_progression_type_id_fkey"
+            columns: ["progression_type_id"]
+            isOneToOne: false
+            referencedRelation: "progression_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       collection_assets: {
         Row: {
           added_at: string
@@ -1095,6 +1160,68 @@ export type Database = {
           },
         ]
       }
+      rested_xp_configs: {
+        Row: {
+          bonus_multiplier: number
+          created_at: string
+          description: string | null
+          enabled: boolean
+          expires_after_hours: number | null
+          id: string
+          max_storage: number
+          name: string
+          notes: string | null
+          offline_accumulation: boolean
+          priority: number
+          progression_type_id: string | null
+          regen_rate_per_hour: number
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          bonus_multiplier?: number
+          created_at?: string
+          description?: string | null
+          enabled?: boolean
+          expires_after_hours?: number | null
+          id?: string
+          max_storage?: number
+          name: string
+          notes?: string | null
+          offline_accumulation?: boolean
+          priority?: number
+          progression_type_id?: string | null
+          regen_rate_per_hour?: number
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          bonus_multiplier?: number
+          created_at?: string
+          description?: string | null
+          enabled?: boolean
+          expires_after_hours?: number | null
+          id?: string
+          max_storage?: number
+          name?: string
+          notes?: string | null
+          offline_accumulation?: boolean
+          priority?: number
+          progression_type_id?: string | null
+          regen_rate_per_hour?: number
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rested_xp_configs_progression_type_id_fkey"
+            columns: ["progression_type_id"]
+            isOneToOne: false
+            referencedRelation: "progression_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reward_bundles: {
         Row: {
           created_at: string
@@ -1362,6 +1489,50 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "subject_progression_progression_type_id_fkey"
+            columns: ["progression_type_id"]
+            isOneToOne: false
+            referencedRelation: "progression_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      subject_rested_xp: {
+        Row: {
+          created_at: string
+          id: string
+          last_accrued_at: string
+          last_used_at: string | null
+          notes: string | null
+          progression_type_id: string
+          stored_xp: number
+          subject_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          last_accrued_at?: string
+          last_used_at?: string | null
+          notes?: string | null
+          progression_type_id: string
+          stored_xp?: number
+          subject_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          last_accrued_at?: string
+          last_used_at?: string | null
+          notes?: string | null
+          progression_type_id?: string
+          stored_xp?: number
+          subject_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subject_rested_xp_progression_type_id_fkey"
             columns: ["progression_type_id"]
             isOneToOne: false
             referencedRelation: "progression_types"
@@ -2026,10 +2197,20 @@ export type Database = {
         Returns: Json
       }
       collect_production: { Args: { p_user: string }; Returns: Json }
-      compute_effective_xp: {
-        Args: { p_amount: number; p_source_id: string; p_type_id: string }
-        Returns: number
-      }
+      compute_effective_xp:
+        | {
+            Args: { p_amount: number; p_source_id: string; p_type_id: string }
+            Returns: number
+          }
+        | {
+            Args: {
+              p_amount: number
+              p_source_id: string
+              p_subject?: string
+              p_type_id: string
+            }
+            Returns: number
+          }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
