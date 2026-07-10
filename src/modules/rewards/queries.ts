@@ -7,72 +7,31 @@ const sb = supabase as any;
 export type RewardType = {
   id: string;
   slug: string;
+  internal_id: string | null;
   name: string;
   kind: string;
   icon: string | null;
   description: string | null;
+  color: string | null;
+  stackable: boolean;
+  tradable: boolean;
+  enabled: boolean;
   sort_order: number;
   is_system: boolean;
 };
 
-export type PackRow = {
+export type Reward = {
   id: string;
-  slug: string;
   name: string;
+  reward_type_id: string;
   description: string | null;
-  image_url: string | null;
-  tier: string;
-  price_credits: number;
-  assets_per_pack: number;
-  sort_order: number;
-  status: string;
-  include_tags: string[];
-  exclude_tags: string[];
-  match_mode: "all" | "any";
-};
-
-export type SpinWheel = {
-  id: string;
-  slug: string;
-  name: string;
-  description: string | null;
-  cooldown_seconds: number;
-  daily_limit: number;
-  status: string;
-  sort_order: number;
-};
-
-export type SpinRewardRow = {
-  id: string;
-  spin_id: string | null;
-  label: string;
-  kind: string;
-  min_amount: number;
-  max_amount: number;
-  pack_slug: string | null;
-  asset_rarity: string | null;
-  weight: number;
   icon: string | null;
-  sort_order: number;
-  active: boolean;
-};
-
-export type RewardBundle = {
-  id: string;
-  slug: string;
-  name: string;
-  description: string | null;
-  rewards: Array<{ kind: string; amount?: number; pack_slug?: string; asset_rarity?: string }>;
-  status: string;
-};
-
-export type RewardSource = {
-  id: string;
-  slug: string;
-  name: string;
-  icon: string | null;
+  quantity: number;
+  rarity: string;
   enabled: boolean;
-  sort_order: number;
+  tags: string[];
+  created_at: string;
+  updated_at: string;
 };
 
 export type RewardLogRow = {
@@ -86,24 +45,25 @@ export type RewardLogRow = {
   created_at: string;
 };
 
-function listQuery<T>(key: string, from: string, order = "sort_order") {
-  return queryOptions({
-    queryKey: [key],
-    queryFn: async (): Promise<T[]> => {
-      const { data, error } = await sb.from(from).select("*").order(order);
-      if (error) throw error;
-      return (data ?? []) as T[];
-    },
-    staleTime: 30_000,
-  });
-}
+export const rewardTypesQuery = queryOptions({
+  queryKey: ["reward_types"],
+  queryFn: async (): Promise<RewardType[]> => {
+    const { data, error } = await sb.from("reward_types").select("*").order("sort_order");
+    if (error) throw error;
+    return data ?? [];
+  },
+  staleTime: 30_000,
+});
 
-export const rewardTypesQuery = listQuery<RewardType>("reward_types", "reward_types");
-export const packsAdminQuery = listQuery<PackRow>("packs_admin", "packs");
-export const spinsQuery = listQuery<SpinWheel>("spins", "spins");
-export const spinRewardsAllQuery = listQuery<SpinRewardRow>("spin_rewards_all", "spin_rewards");
-export const rewardBundlesQuery = listQuery<RewardBundle>("reward_bundles", "reward_bundles", "name");
-export const rewardSourcesQuery = listQuery<RewardSource>("reward_sources", "reward_sources");
+export const rewardsQuery = queryOptions({
+  queryKey: ["rewards"],
+  queryFn: async (): Promise<Reward[]> => {
+    const { data, error } = await sb.from("rewards").select("*").order("created_at", { ascending: false });
+    if (error) throw error;
+    return data ?? [];
+  },
+  staleTime: 30_000,
+});
 
 export const rewardLogRecentQuery = queryOptions({
   queryKey: ["reward_log_recent"],
@@ -117,18 +77,4 @@ export const rewardLogRecentQuery = queryOptions({
     return data ?? [];
   },
   staleTime: 15_000,
-});
-
-export const userPacksTotalsQuery = queryOptions({
-  queryKey: ["user_packs_totals"],
-  queryFn: async (): Promise<Array<{ pack_id: string; total: number }>> => {
-    const { data, error } = await sb.from("user_packs").select("pack_id, quantity");
-    if (error) throw error;
-    const map = new Map<string, number>();
-    for (const r of (data ?? []) as Array<{ pack_id: string; quantity: number }>) {
-      map.set(r.pack_id, (map.get(r.pack_id) ?? 0) + r.quantity);
-    }
-    return Array.from(map.entries()).map(([pack_id, total]) => ({ pack_id, total }));
-  },
-  staleTime: 30_000,
 });
