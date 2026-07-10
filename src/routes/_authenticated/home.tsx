@@ -23,6 +23,7 @@ function Home() {
   const uid = user?.id ?? "";
   const qc = useQueryClient();
   const { data: stats } = useQuery({ ...meStatsQuery(uid), enabled: !!uid });
+  const { level } = usePlayerProgression(uid);
   const { data: collections = [] } = useQuery(collectionsQuery);
   const { data: inv = [] } = useQuery({ ...inventoryQuery(uid), enabled: !!uid });
   const { data: packs = [] } = useQuery(packsQuery);
