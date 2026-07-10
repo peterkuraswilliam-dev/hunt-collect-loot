@@ -9,6 +9,7 @@ import {
   multipliersQuery,
   packsQuery,
 } from "@/lib/queries";
+import { usePlayerProgression } from "@/lib/usePlayerProgression";
 import { PackCard } from "@/components/PackCard";
 import { calcTotals, fmt, pendingProduction } from "@/lib/production";
 import { supabase } from "@/integrations/supabase/client";
