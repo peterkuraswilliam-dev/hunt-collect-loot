@@ -32,6 +32,7 @@ import { Progress } from "./sections/Progress";
 import { Events } from "./sections/Events";
 import { SettingsSection } from "./sections/SettingsSection";
 import { Permissions } from "./sections/Permissions";
+import { Rules } from "./sections/Rules";
 
 export const progressionModule: AssetOSModule = {
   slug: "progression",
