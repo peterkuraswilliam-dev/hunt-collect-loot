@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { progressionTypesQuery, type ProgressionType } from "@/modules/progression/queries";
@@ -58,10 +58,11 @@ export function usePlayerProgression(userId: string): PlayerProgression {
   });
 
   // Realtime: refresh when this player's progression row changes
+  const channelIdRef = useRef<string>(Math.random().toString(36).slice(2));
   useEffect(() => {
     if (!userId) return;
     const channel = supabase
-      .channel(`player-prog-${userId}`)
+      .channel(`player-prog-${userId}-${channelIdRef.current}`)
       .on(
         "postgres_changes",
         {
