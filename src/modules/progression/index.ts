@@ -14,6 +14,7 @@ import {
   Settings,
   ShieldCheck,
   Activity,
+  Filter,
 } from "lucide-react";
 import type { AssetOSModule } from "../contract";
 import { Dashboard } from "./sections/Dashboard";
