@@ -32,7 +32,72 @@ export type Reward = {
   tags: string[];
   created_at: string;
   updated_at: string;
+  asset_id: string | null;
+  asset_version: number;
+  asset_synced_at: string | null;
+  asset_sync_status: "linked" | "awaiting_sync" | "unlinked" | "orphaned";
+  imported_at: string | null;
+  source_kind: "manual" | "asset" | "collection" | "item_set" | "template";
 };
+
+export type AssetForImport = {
+  id: string;
+  slug: string;
+  name: string;
+  description: string | null;
+  image_url: string | null;
+  rarity: string;
+  status: string;
+  collection_id: string | null;
+  asset_type_id: string | null;
+  credits_per_hour: number;
+  energy_per_hour: number;
+  xp_per_hour: number;
+};
+
+export const assetsForImportQuery = queryOptions({
+  queryKey: ["rewards_assets_for_import"],
+  queryFn: async (): Promise<AssetForImport[]> => {
+    const { data, error } = await sb
+      .from("assets")
+      .select("id,slug,name,description,image_url,rarity,status,collection_id,asset_type_id,credits_per_hour,energy_per_hour,xp_per_hour")
+      .order("name");
+    if (error) throw error;
+    return data ?? [];
+  },
+  staleTime: 30_000,
+});
+
+export const assetTypesLookupQuery = queryOptions({
+  queryKey: ["rewards_asset_types_lookup"],
+  queryFn: async (): Promise<Array<{ id: string; name: string; slug: string }>> => {
+    const { data, error } = await sb.from("asset_types").select("id,name,slug").order("name");
+    if (error) throw error;
+    return data ?? [];
+  },
+  staleTime: 60_000,
+});
+
+export const collectionsLookupQuery = queryOptions({
+  queryKey: ["rewards_collections_lookup"],
+  queryFn: async (): Promise<Array<{ id: string; name: string; slug: string }>> => {
+    const { data, error } = await sb.from("collections").select("id,name,slug").order("name");
+    if (error) throw error;
+    return data ?? [];
+  },
+  staleTime: 60_000,
+});
+
+export const collectionSetsLookupQuery = queryOptions({
+  queryKey: ["rewards_collection_sets_lookup"],
+  queryFn: async (): Promise<Array<{ id: string; name: string; slug: string }>> => {
+    const { data, error } = await sb.from("collection_sets").select("id,name,slug").order("name");
+    if (error) throw error;
+    return data ?? [];
+  },
+  staleTime: 60_000,
+});
+
 
 export type RewardLogRow = {
   id: string;

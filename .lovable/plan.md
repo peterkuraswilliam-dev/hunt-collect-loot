@@ -1,95 +1,70 @@
-## Phase 1 — Refactor the Rewards module
+# Rewards Module — Asset Import & Sync
 
-Refactor the existing Rewards module into a lean CMS-first structure with only four sections. No new module, no changes to other modules, no XP/progression logic in Rewards.
+Enhance the existing Rewards Library to import from and reference the Assets module as the single source of truth. No changes to Assets, no new module.
 
-### Final section list (registry)
+## Schema (single migration)
 
-```text
-Rewards
-├── Dashboard
-├── Reward Types
-├── Rewards Library   ← NEW
-└── Settings
-```
+Extend `public.rewards` with a linking layer (nullable — manual rewards keep working):
 
-Remove from the registry: `packs`, `pools`, `spins`, `bundles`, `inventory`, `sources`, `analytics`, `permissions`. Keep Permissions logic intact at the module level (permissions table + admin checks unchanged), just drop the section entry per the "only these four pages" requirement.
+- `asset_id uuid REFERENCES assets(id) ON DELETE SET NULL`
+- `asset_version int NOT NULL DEFAULT 1` — bumped on sync
+- `asset_synced_at timestamptz`
+- `asset_sync_status text` — `linked` | `awaiting_sync` | `unlinked` | `orphaned`
+- `imported_at timestamptz`
+- `source_kind text` — `manual` | `asset` | `collection` | `item_set` | `template`
+- Unique partial index `(asset_id) WHERE asset_id IS NOT NULL` so an asset maps to at most one linked reward (enables skip/update/replace).
+- Index on `(asset_sync_status)` and `(source_kind)`.
 
-### Files
+Trigger: when the source asset's `name / description / image_url / rarity / status / *_per_hour` change, mark linked rewards `awaiting_sync` (AFTER UPDATE on `assets`, updates `rewards.asset_sync_status`). Keeps thousands of rewards efficient — no cron needed.
 
-Delete these section files:
-- `src/modules/rewards/sections/Packs.tsx`
-- `src/modules/rewards/sections/PackPools.tsx`
-- `src/modules/rewards/sections/Spins.tsx`
-- `src/modules/rewards/sections/Bundles.tsx`
-- `src/modules/rewards/sections/Inventory.tsx`
-- `src/modules/rewards/sections/Sources.tsx`
-- `src/modules/rewards/sections/Analytics.tsx`
-- `src/modules/rewards/sections/Permissions.tsx`
+RPC `sync_reward_from_asset(reward_id uuid)` — copies name/description/icon(image_url)/rarity from asset, bumps `asset_version`, sets `asset_synced_at = now()`, `asset_sync_status = 'linked'`. `SECURITY DEFINER`, admin-only via `has_role`.
 
-Create:
-- `src/modules/rewards/sections/RewardsLibrary.tsx`
+RPC `import_assets_as_rewards(asset_ids uuid[], reward_type_id uuid, mode text)` where mode is `skip | update | replace`. Returns `{created, updated, skipped, replaced}`.
 
-Rewrite:
-- `src/modules/rewards/index.ts` — register only Dashboard, Reward Types, Rewards Library, Settings.
-- `src/modules/rewards/sections/Dashboard.tsx` — new stat/chart set (see below).
-- `src/modules/rewards/sections/RewardTypes.tsx` — align fields with spec (name, internal_id, description, icon, colour, stackable, tradable, enabled).
-- `src/modules/rewards/sections/SettingsSection.tsx` — form-based settings (not raw JSON) matching the Settings field list.
-- `src/modules/rewards/queries.ts` — trim to types/rewards/logs; drop pack/spin/bundle/source query exports.
+## Queries (`src/modules/rewards/queries.ts`)
 
-Do NOT touch: packs/spins/bundles DB tables, other modules, RPCs like `open_pack` / `spin_wheel`, player-facing routes, navigation, layouts, design tokens.
+- Extend `Reward` type with the new fields.
+- `assetsForImportQuery` — pulls `assets` joined to `asset_types`, `collections`, `asset_tags` for the wizard's filters (Type / Collection / Rarity / Tier(via tag) / Profession(via tag) / Status / Tags).
+- `linkedRewardsStatsQuery` — dashboard aggregates: total linked, imported count, awaiting sync, last import (`max(imported_at)`), last sync (`max(asset_synced_at)`).
 
-### Database (migration)
+## UI — `src/modules/rewards/sections/RewardsLibrary.tsx`
 
-New tables + updates. All in `public` with GRANTs, RLS, and admin-only write policies matching existing pattern.
+- Add prominent **Import Assets** button next to **New Reward**.
+- Table gains an "Asset" column with a small link icon + sync-status pill (`linked` green, `awaiting_sync` amber, `unlinked` neutral, `orphaned` red).
+- Row action: **Sync now** (visible when linked).
+- Bulk toolbar (checkbox column): Re-sync Selected, Re-sync All Linked.
+- Reward editor drawer gains **Asset Link** panel: linked asset preview, Asset ID, version, last synced, Sync Now, Open Asset (links to `/admin/modules/assets`).
 
-1. `reward_types` — add columns `internal_id text unique`, `color text`, `stackable boolean default true`, `tradable boolean default false`, `enabled boolean default true`. Keep existing `slug`, `name`, `kind`, `icon`, `description`, `sort_order`, `is_system` for back-compat; UI uses the new fields.
-2. `rewards` (new) — library of reusable reward definitions:
-   - `id`, `name`, `reward_type_id → reward_types`, `description`, `icon`, `quantity int default 1`, `rarity text`, `enabled boolean default true`, `tags text[] default '{}'`, `created_at`, `updated_at`.
-   - Indexes on `reward_type_id`, `enabled`, GIN on `tags`.
-3. `reward_module_settings` (new, single-row keyed by `id=1`) — `module_enabled`, `allow_duplicate_rewards`, `enable_reward_logging`, `default_claim_behavior text`, `default_reward_expiry_hours int`, `default_currency_precision int`.
-   - Alternative: store as JSON in existing `module_settings` row (`module='rewards'`) and expose via a typed form. Chosen: **use existing `module_settings` row** to avoid a new table; form reads/writes the JSON blob but presents typed inputs.
-4. Reuse existing `reward_log` for "Recent Activity" and "Most Used" dashboard stats.
+## UI — new `src/modules/rewards/components/ImportAssetsWizard.tsx`
 
-Seed data (migration):
-- 14 reward types listed in the brief (XP, Gold, Gems, Energy, Item, Equipment, Resource, Collection Piece, Cosmetic, Title, Badge, Chest, Key, Token) with realistic icons/colours/flags.
-- ~50 rewards spanning the types with varied rarity (common/uncommon/rare/epic/legendary), quantities, tags (e.g. `daily`, `quest`, `event`, `starter`, `endgame`).
+4-step modal reusing existing `panel-gold` / `inputCls` / admin table styles:
 
-### Dashboard
+1. **Source**: card picker — Assets / Asset Collections / Item Sets / Templates. (Item Sets and Templates map to `collection_sets` and a stub "templates" empty state — surfaced but only Assets/Collections have data today; keeps the UI ready.)
+2. **Filter**: multi-select chips for Asset Type, Collection, Rarity, Status, Tags + text search. Also quick-buttons: Import All / Import by Collection / Import by Profession-tag.
+3. **Preview**: paginated table with checkbox, thumbnail (image_url), name, asset ID (short), category (type), rarity, tier (from tag), value (credits_per_hour), status. Select-all / deselect-all.
+4. **Options**: destination Reward Type dropdown (default "Asset"), mode radios (Create / Skip Duplicates / Update Existing / Replace Existing), "Keep asset linked after import" checkbox (default on). Confirm calls `import_assets_as_rewards` RPC.
 
-Cards:
-- Total Reward Types, Total Rewards, Active Rewards, Disabled Rewards.
+## Dashboard (`Dashboard.tsx`)
 
-Panels:
-- Recently Created Rewards (last 10 from `rewards.created_at`).
-- Most Used Rewards (top 10 grouped from `reward_log` if present, else empty state).
-- Reward Distribution chart (bar per reward type — count of rewards). Use inline SVG bars to avoid new deps.
-- Recent Activity (last 10 `reward_log` rows).
+Add 5 stat cards row: Total Linked Assets · Imported Rewards · Rewards Awaiting Sync · Last Import · Last Synchronisation. Plus a small "Linked vs manual" mini bar.
 
-### Reward Types section
+## Demo Data
 
-CRUD grid + drawer form. Fields per spec. Toggles for Stackable / Tradable / Enabled. Colour picker (text input `#hex`). Icon = lucide name text. Delete disabled for `is_system`.
+Seed migration links ~15 of the 20 existing assets to rewards under the "Asset" reward type (skipping duplicates by name), sets `source_kind='asset'`, `asset_sync_status='linked'`, `imported_at=now()`, `asset_synced_at=now()`. No duplicate reward rows for assets that already have a name match.
 
-### Rewards Library section
+## Files
 
-- Table with columns: Name, Type (badge w/ color), Rarity, Quantity, Tags, Enabled, Actions.
-- Toolbar: search (name/description), filter by type, filter by rarity, filter by enabled, sort (name / created_at / quantity), pagination (25 per page).
-- Create/Edit drawer with all spec fields. No hardcoded reward behaviour — purely data.
+**Migration** (schema + trigger + RPCs + seed link).
 
-### Settings section
+**Edited**
+- `src/modules/rewards/queries.ts` — types + new queries.
+- `src/modules/rewards/sections/RewardsLibrary.tsx` — button, column, sync actions, bulk toolbar, editor asset panel.
+- `src/modules/rewards/sections/Dashboard.tsx` — new widgets.
 
-Typed form persisting to `module_settings` where `module='rewards'`:
-- Module Enabled (switch)
-- Allow Duplicate Rewards (switch)
-- Enable Reward Logging (switch)
-- Default Claim Behaviour (select: auto / manual / queued)
-- Default Reward Expiry (number, hours; 0 = never)
-- Default Currency Precision (number 0-8)
+**New**
+- `src/modules/rewards/components/ImportAssetsWizard.tsx`
 
-Save → upsert JSON blob; Dashboard/Library read flags where relevant (e.g. hide activity panel when logging disabled).
+## Out of scope (per spec)
 
-### Guarantees
-
-- No XP or progression calculations anywhere in Rewards.
-- No hardcoded reward tables/lists in code — everything reads from `reward_types` / `rewards` / `module_settings`.
-- Navigation, permissions table, admin layout, design system untouched.
-- Other modules unchanged.
+- No edits to the Assets module.
+- No auto-sync cron — trigger flips status to `awaiting_sync`; sync stays admin-triggered (bulk or per row). Schema is ready for a future scheduler.
