@@ -1544,45 +1544,70 @@ export type Database = {
       }
       rewards: {
         Row: {
+          asset_id: string | null
+          asset_sync_status: string
+          asset_synced_at: string | null
+          asset_version: number
           created_at: string
           description: string | null
           enabled: boolean
           icon: string | null
           id: string
+          imported_at: string | null
           name: string
           quantity: number
           rarity: string
           reward_type_id: string
+          source_kind: string
           tags: string[]
           updated_at: string
         }
         Insert: {
+          asset_id?: string | null
+          asset_sync_status?: string
+          asset_synced_at?: string | null
+          asset_version?: number
           created_at?: string
           description?: string | null
           enabled?: boolean
           icon?: string | null
           id?: string
+          imported_at?: string | null
           name: string
           quantity?: number
           rarity?: string
           reward_type_id: string
+          source_kind?: string
           tags?: string[]
           updated_at?: string
         }
         Update: {
+          asset_id?: string | null
+          asset_sync_status?: string
+          asset_synced_at?: string | null
+          asset_version?: number
           created_at?: string
           description?: string | null
           enabled?: boolean
           icon?: string | null
           id?: string
+          imported_at?: string | null
           name?: string
           quantity?: number
           rarity?: string
           reward_type_id?: string
+          source_kind?: string
           tags?: string[]
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "rewards_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "assets"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "rewards_reward_type_id_fkey"
             columns: ["reward_type_id"]
@@ -2690,6 +2715,15 @@ export type Database = {
         }
         Returns: boolean
       }
+      import_assets_as_rewards: {
+        Args: {
+          p_asset_ids: string[]
+          p_keep_linked?: boolean
+          p_mode?: string
+          p_reward_type_id: string
+        }
+        Returns: Json
+      }
       open_pack: { Args: { p_pack_id: string; p_user: string }; Returns: Json }
       pick_pack_asset: {
         Args: { p_pack_id: string }
@@ -2735,6 +2769,10 @@ export type Database = {
         Returns: number
       }
       replay_xp_event: { Args: { p_event_id: string }; Returns: Json }
+      resync_linked_rewards: {
+        Args: { p_reward_ids?: string[] }
+        Returns: Json
+      }
       spin_wheel: { Args: { p_user: string }; Returns: Json }
       submit_xp_event: {
         Args: {
@@ -2747,6 +2785,7 @@ export type Database = {
         }
         Returns: Json
       }
+      sync_reward_from_asset: { Args: { p_reward_id: string }; Returns: Json }
       xp_to_level: {
         Args: { p_curve_id: string; p_total_xp: number }
         Returns: number
