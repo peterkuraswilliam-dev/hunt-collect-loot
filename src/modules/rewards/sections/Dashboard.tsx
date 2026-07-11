@@ -53,6 +53,19 @@ export function Dashboard() {
     .sort((a, b) => b.count - a.count);
   const maxCount = Math.max(1, ...distribution.map((d) => d.count));
 
+  const linked = rewards.filter((r) => !!r.asset_id);
+  const imported = rewards.filter((r) => r.source_kind !== "manual").length;
+  const awaitingSync = rewards.filter((r) => r.asset_sync_status === "awaiting_sync").length;
+  const lastImport = rewards
+    .filter((r) => r.imported_at)
+    .map((r) => new Date(r.imported_at!).getTime())
+    .sort((a, b) => b - a)[0];
+  const lastSync = rewards
+    .filter((r) => r.asset_synced_at)
+    .map((r) => new Date(r.asset_synced_at!).getTime())
+    .sort((a, b) => b - a)[0];
+  const fmt = (t?: number) => (t ? new Date(t).toLocaleDateString() : "—");
+
   return (
     <div className="space-y-3">
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
@@ -63,6 +76,15 @@ export function Dashboard() {
         <Stat icon={Boxes} label="Total Bundles" value={bundles.length} />
         <Stat icon={Boxes} label="Active Bundles" value={activeBundles} />
       </div>
+
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
+        <Stat icon={Link2} label="Linked Assets" value={linked.length} />
+        <Stat icon={Download} label="Imported Rewards" value={imported} />
+        <Stat icon={RefreshCw} label="Awaiting Sync" value={awaitingSync} />
+        <Stat icon={Clock} label="Last Import" value={fmt(lastImport)} />
+        <Stat icon={Clock} label="Last Sync" value={fmt(lastSync)} />
+      </div>
+
 
       <div className="grid gap-3 lg:grid-cols-2">
         <div className="panel p-3">
