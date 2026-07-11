@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import { Gift, Sparkles, CheckCircle2, CircleSlash, Boxes } from "lucide-react";
+import { Gift, Sparkles, CheckCircle2, CircleSlash, Boxes, Link2, RefreshCw, Download, Clock } from "lucide-react";
+
 import {
   rewardTypesQuery,
   rewardsQuery,
