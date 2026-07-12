@@ -1302,6 +1302,44 @@ export type Database = {
           },
         ]
       }
+      reward_activity_log: {
+        Row: {
+          action: string
+          actor_id: string | null
+          actor_label: string | null
+          created_at: string
+          detail: Json
+          id: string
+          reward_id: string
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          actor_label?: string | null
+          created_at?: string
+          detail?: Json
+          id?: string
+          reward_id: string
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          actor_label?: string | null
+          created_at?: string
+          detail?: Json
+          id?: string
+          reward_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reward_activity_log_reward_id_fkey"
+            columns: ["reward_id"]
+            isOneToOne: false
+            referencedRelation: "rewards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reward_bundle_categories: {
         Row: {
           created_at: string
@@ -1544,60 +1582,78 @@ export type Database = {
       }
       rewards: {
         Row: {
+          archived_at: string | null
           asset_id: string | null
           asset_sync_status: string
           asset_synced_at: string | null
           asset_version: number
+          category: string | null
           created_at: string
           description: string | null
           enabled: boolean
           icon: string | null
           id: string
           imported_at: string | null
+          last_awarded_at: string | null
           name: string
           quantity: number
           rarity: string
           reward_type_id: string
           source_kind: string
           tags: string[]
+          tier: string | null
+          times_awarded: number
+          times_claimed: number
           updated_at: string
         }
         Insert: {
+          archived_at?: string | null
           asset_id?: string | null
           asset_sync_status?: string
           asset_synced_at?: string | null
           asset_version?: number
+          category?: string | null
           created_at?: string
           description?: string | null
           enabled?: boolean
           icon?: string | null
           id?: string
           imported_at?: string | null
+          last_awarded_at?: string | null
           name: string
           quantity?: number
           rarity?: string
           reward_type_id: string
           source_kind?: string
           tags?: string[]
+          tier?: string | null
+          times_awarded?: number
+          times_claimed?: number
           updated_at?: string
         }
         Update: {
+          archived_at?: string | null
           asset_id?: string | null
           asset_sync_status?: string
           asset_synced_at?: string | null
           asset_version?: number
+          category?: string | null
           created_at?: string
           description?: string | null
           enabled?: boolean
           icon?: string | null
           id?: string
           imported_at?: string | null
+          last_awarded_at?: string | null
           name?: string
           quantity?: number
           rarity?: string
           reward_type_id?: string
           source_kind?: string
           tags?: string[]
+          tier?: string | null
+          times_awarded?: number
+          times_claimed?: number
           updated_at?: string
         }
         Relationships: [
@@ -2689,10 +2745,15 @@ export type Database = {
         }
         Returns: Json
       }
+      bulk_update_rewards: {
+        Args: { p_patch: Json; p_reward_ids: string[] }
+        Returns: Json
+      }
       claim_collection_bonus: {
         Args: { p_collection_id: string; p_threshold: number; p_user: string }
         Returns: Json
       }
+      clone_reward: { Args: { p_reward_id: string }; Returns: string }
       collect_production: { Args: { p_user: string }; Returns: Json }
       compute_effective_xp:
         | {
