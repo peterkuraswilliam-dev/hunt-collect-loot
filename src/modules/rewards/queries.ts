@@ -38,7 +38,74 @@ export type Reward = {
   asset_sync_status: "linked" | "awaiting_sync" | "unlinked" | "orphaned";
   imported_at: string | null;
   source_kind: "manual" | "asset" | "collection" | "item_set" | "template";
+  archived_at: string | null;
+  tier: string | null;
+  category: string | null;
+  times_awarded: number;
+  times_claimed: number;
+  last_awarded_at: string | null;
 };
+
+export type RewardActivityRow = {
+  id: string;
+  reward_id: string;
+  action: string;
+  actor_id: string | null;
+  actor_label: string | null;
+  detail: Record<string, unknown>;
+  created_at: string;
+};
+
+export const rewardActivityQuery = (rewardId: string | null) =>
+  queryOptions({
+    queryKey: ["reward_activity", rewardId],
+    enabled: !!rewardId,
+    queryFn: async (): Promise<RewardActivityRow[]> => {
+      if (!rewardId) return [];
+      const { data, error } = await sb
+        .from("reward_activity_log")
+        .select("*")
+        .eq("reward_id", rewardId)
+        .order("created_at", { ascending: false })
+        .limit(100);
+      if (error) throw error;
+      return data ?? [];
+    },
+    staleTime: 15_000,
+  });
+
+export const rewardReferencesQuery = (rewardId: string | null) =>
+  queryOptions({
+    queryKey: ["reward_references", rewardId],
+    enabled: !!rewardId,
+    queryFn: async () => {
+      if (!rewardId) return { bundles: [] as Array<{ id: string; name: string; enabled: boolean; updated_at: string; quantity_override: number | null; guaranteed: boolean }> };
+      const { data, error } = await sb
+        .from("reward_bundle_items")
+        .select("quantity_override,guaranteed,bundle:bundle_id(id,name,enabled,updated_at)")
+        .eq("reward_id", rewardId);
+      if (error) throw error;
+      const bundles = ((data ?? []) as Array<{ bundle: { id: string; name: string; enabled: boolean; updated_at: string } | null; quantity_override: number | null; guaranteed: boolean }>)
+        .map((r) =>
+          r.bundle
+            ? { id: r.bundle.id, name: r.bundle.name, enabled: r.bundle.enabled, updated_at: r.bundle.updated_at, quantity_override: r.quantity_override, guaranteed: r.guaranteed }
+            : null,
+        )
+        .filter(Boolean) as Array<{ id: string; name: string; enabled: boolean; updated_at: string; quantity_override: number | null; guaranteed: boolean }>;
+      return { bundles };
+    },
+    staleTime: 15_000,
+  });
+
+export const bundleItemsAllQuery = queryOptions({
+  queryKey: ["reward_bundle_items_all"],
+  queryFn: async (): Promise<Array<{ reward_id: string; bundle_id: string }>> => {
+    const { data, error } = await sb.from("reward_bundle_items").select("reward_id,bundle_id");
+    if (error) throw error;
+    return data ?? [];
+  },
+  staleTime: 30_000,
+});
 
 export type AssetForImport = {
   id: string;
