@@ -311,27 +311,44 @@ export function RewardsLibrary() {
             <div className="flex gap-1">
               <button
                 onClick={() => {
-                  const name = prompt("Save current filters as:");
-                  if (name) persistSaved([...savedFilters.filter((s) => s.name !== name), { name, filters: f }]);
+                  const current = savedFilters.find((s) => s.id === activePresetId);
+                  const suggested = current?.name ?? "";
+                  const name = prompt("Save current filters as:", suggested)?.trim();
+                  if (!name) return;
+                  const existing = savedFilters.find((s) => s.name === name);
+                  saveFilter.mutate({ id: existing?.id ?? null, name, filters: f });
                 }}
                 className="btn-secondary inline-flex items-center gap-1 px-2 py-1 text-xs flex-1"
               >
-                <Save className="h-3 w-3" /> Save filter
+                <Save className="h-3 w-3" /> {activePresetId ? "Update preset" : "Save preset"}
               </button>
-              <button onClick={() => setF(DEFAULT_FILTERS)} className="btn-secondary px-2 py-1 text-xs">Reset</button>
+              <button onClick={() => { setF(DEFAULT_FILTERS); setActivePresetId(null); localStorage.removeItem(SAVED_LAST_KEY); }} className="btn-secondary px-2 py-1 text-xs">Reset</button>
             </div>
             {savedFilters.length > 0 && (
-              <select
-                className={inputCls + " sm:col-span-2"}
-                value=""
-                onChange={(e) => {
-                  const saved = savedFilters.find((s) => s.name === e.target.value);
-                  if (saved) setF(saved.filters);
-                }}
-              >
-                <option value="">Load saved filter…</option>
-                {savedFilters.map((s) => <option key={s.name} value={s.name}>{s.name}</option>)}
-              </select>
+              <div className="sm:col-span-2 flex flex-wrap gap-1 items-center">
+                <Bookmark className="h-3 w-3 text-muted-foreground" />
+                <span className="text-[10px] uppercase text-muted-foreground mr-1">Presets</span>
+                {savedFilters.map((s) => {
+                  const active = s.id === activePresetId;
+                  return (
+                    <span key={s.id} className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] ${active ? "border-primary bg-primary/10 text-primary" : "border-border bg-surface-2"}`}>
+                      <button
+                        onClick={() => { setActivePresetId(s.id); setF({ ...DEFAULT_FILTERS, ...s.filters }); localStorage.setItem(SAVED_LAST_KEY, s.id); }}
+                        className="font-semibold"
+                      >
+                        {s.name}
+                      </button>
+                      <button
+                        onClick={() => { if (confirm(`Delete preset "${s.name}"?`)) deleteFilter.mutate(s.id); }}
+                        title="Delete preset"
+                        className="opacity-60 hover:opacity-100"
+                      >
+                        <X className="h-2.5 w-2.5" />
+                      </button>
+                    </span>
+                  );
+                })}
+              </div>
             )}
           </div>
         )}
