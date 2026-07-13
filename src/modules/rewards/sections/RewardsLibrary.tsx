@@ -29,11 +29,11 @@ const savedFiltersQuery = queryOptions({
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const sb = supabase as any;
 
+const SAVED_LAST_KEY = "rewards.library.lastPreset";
+
 const RARITIES = ["common", "uncommon", "rare", "epic", "legendary"];
 const TIERS = ["I", "II", "III", "IV", "V"];
 const PAGE_SIZE = 25;
-
-const SAVED_KEY = "rewards.library.savedFilters";
 
 type Filters = {
   search: string;
