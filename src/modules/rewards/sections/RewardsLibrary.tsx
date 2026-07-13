@@ -1,7 +1,7 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient, queryOptions } from "@tanstack/react-query";
 import {
   Plus, Trash2, Search, Link2, RefreshCw, Download, Copy, Archive,
-  ArchiveRestore, CheckCircle2, CircleSlash, Filter, Save, ChevronDown,
+  ArchiveRestore, CheckCircle2, CircleSlash, Filter, Save, ChevronDown, X, Bookmark,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -12,6 +12,19 @@ import {
 } from "../queries";
 import { ImportAssetsWizard } from "../components/ImportAssetsWizard";
 import { RewardDetail } from "../components/RewardDetail";
+
+const SAVED_SCOPE = "rewards.library";
+type SavedFilterRow = { id: string; name: string; filters: Filters; updated_at: string };
+const savedFiltersQuery = queryOptions({
+  queryKey: ["reward_saved_filters", SAVED_SCOPE],
+  queryFn: async (): Promise<SavedFilterRow[]> => {
+    const { data, error } = await (supabase as unknown as { from: (t: string) => { select: (c: string) => { eq: (k: string, v: string) => { order: (c: string) => Promise<{ data: SavedFilterRow[] | null; error: unknown }> } } } })
+      .from("reward_saved_filters").select("id,name,filters,updated_at").eq("scope", SAVED_SCOPE).order("name");
+    if (error) throw error as Error;
+    return data ?? [];
+  },
+  staleTime: 30_000,
+});
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const sb = supabase as any;
