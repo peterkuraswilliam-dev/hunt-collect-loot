@@ -1,7 +1,7 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient, queryOptions } from "@tanstack/react-query";
 import {
   Plus, Trash2, Search, Link2, RefreshCw, Download, Copy, Archive,
-  ArchiveRestore, CheckCircle2, CircleSlash, Filter, Save, ChevronDown,
+  ArchiveRestore, CheckCircle2, CircleSlash, Filter, Save, ChevronDown, X, Bookmark,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -13,14 +13,27 @@ import {
 import { ImportAssetsWizard } from "../components/ImportAssetsWizard";
 import { RewardDetail } from "../components/RewardDetail";
 
+const SAVED_SCOPE = "rewards.library";
+type SavedFilterRow = { id: string; name: string; filters: Filters; updated_at: string };
+const savedFiltersQuery = queryOptions({
+  queryKey: ["reward_saved_filters", SAVED_SCOPE],
+  queryFn: async (): Promise<SavedFilterRow[]> => {
+    const { data, error } = await (supabase as unknown as { from: (t: string) => { select: (c: string) => { eq: (k: string, v: string) => { order: (c: string) => Promise<{ data: SavedFilterRow[] | null; error: unknown }> } } } })
+      .from("reward_saved_filters").select("id,name,filters,updated_at").eq("scope", SAVED_SCOPE).order("name");
+    if (error) throw error as Error;
+    return data ?? [];
+  },
+  staleTime: 30_000,
+});
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const sb = supabase as any;
+
+const SAVED_LAST_KEY = "rewards.library.lastPreset";
 
 const RARITIES = ["common", "uncommon", "rare", "epic", "legendary"];
 const TIERS = ["I", "II", "III", "IV", "V"];
 const PAGE_SIZE = 25;
-
-const SAVED_KEY = "rewards.library.savedFilters";
 
 type Filters = {
   search: string;
@@ -67,20 +80,45 @@ export function RewardsLibrary() {
 
   const [f, setF] = useState<Filters>(DEFAULT_FILTERS);
   const [showAdvanced, setShowAdvanced] = useState(false);
-  const [savedFilters, setSavedFilters] = useState<Array<{ name: string; filters: Filters }>>([]);
+  const { data: savedFilters = [] } = useQuery(savedFiltersQuery);
+  const [activePresetId, setActivePresetId] = useState<string | null>(null);
+
+  const saveFilter = useMutation({
+    mutationFn: async ({ id, name, filters }: { id?: string | null; name: string; filters: Filters }) => {
+      const sbAny = supabase as unknown as { from: (t: string) => { upsert: (v: unknown, o?: unknown) => { select: (c: string) => { single: () => Promise<{ data: SavedFilterRow | null; error: unknown }> } } } };
+      const row = { ...(id ? { id } : {}), scope: SAVED_SCOPE, name, filters, user_id: (await supabase.auth.getUser()).data.user?.id };
+      const { data, error } = await sbAny.from("reward_saved_filters").upsert(row, { onConflict: "user_id,scope,name" }).select("id,name,filters,updated_at").single();
+      if (error) throw error as Error;
+      return data;
+    },
+    onSuccess: (row) => {
+      qc.invalidateQueries({ queryKey: ["reward_saved_filters", SAVED_SCOPE] });
+      if (row) { setActivePresetId(row.id); localStorage.setItem(SAVED_LAST_KEY, row.id); }
+    },
+  });
+  const deleteFilter = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await (supabase as unknown as { from: (t: string) => { delete: () => { eq: (k: string, v: string) => Promise<{ error: unknown }> } } })
+        .from("reward_saved_filters").delete().eq("id", id);
+      if (error) throw error as Error;
+    },
+    onSuccess: (_v, id) => {
+      qc.invalidateQueries({ queryKey: ["reward_saved_filters", SAVED_SCOPE] });
+      if (activePresetId === id) { setActivePresetId(null); localStorage.removeItem(SAVED_LAST_KEY); }
+    },
+  });
 
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem(SAVED_KEY);
-      if (raw) setSavedFilters(JSON.parse(raw));
-    } catch { /* ignore */ }
-  }, []);
-  function persistSaved(next: Array<{ name: string; filters: Filters }>) {
-    setSavedFilters(next);
-    localStorage.setItem(SAVED_KEY, JSON.stringify(next));
-  }
+    const last = localStorage.getItem(SAVED_LAST_KEY);
+    if (!last || activePresetId) return;
+    const hit = savedFilters.find((s) => s.id === last);
+    if (hit) { setActivePresetId(hit.id); setF({ ...DEFAULT_FILTERS, ...hit.filters }); }
+  }, [savedFilters, activePresetId]);
 
-  const setFilter = <K extends keyof Filters>(k: K, v: Filters[K]) => setF((prev) => ({ ...prev, [k]: v }));
+  const setFilter = <K extends keyof Filters>(k: K, v: Filters[K]) => {
+    setF((prev) => ({ ...prev, [k]: v }));
+    setActivePresetId(null);
+  };
 
   const [sortBy, setSortBy] = useState<"created_at" | "name" | "quantity" | "times_awarded">("created_at");
   const [page, setPage] = useState(0);
@@ -218,6 +256,21 @@ export function RewardsLibrary() {
           <button onClick={() => setShowAdvanced((s) => !s)} className="btn-secondary inline-flex items-center gap-1 px-2 py-1 text-xs">
             <Filter className="h-3 w-3" /> Advanced <ChevronDown className={`h-3 w-3 transition-transform ${showAdvanced ? "rotate-180" : ""}`} />
           </button>
+          {savedFilters.length > 0 && (
+            <select
+              className={inputCls + " w-auto"}
+              value={activePresetId ?? ""}
+              onChange={(e) => {
+                const id = e.target.value;
+                if (!id) { setF(DEFAULT_FILTERS); setActivePresetId(null); localStorage.removeItem(SAVED_LAST_KEY); return; }
+                const hit = savedFilters.find((s) => s.id === id);
+                if (hit) { setActivePresetId(hit.id); setF({ ...DEFAULT_FILTERS, ...hit.filters }); localStorage.setItem(SAVED_LAST_KEY, hit.id); }
+              }}
+            >
+              <option value="">— Preset —</option>
+              {savedFilters.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+            </select>
+          )}
           <select className={inputCls + " w-auto"} value={sortBy} onChange={(e) => setSortBy(e.target.value as typeof sortBy)}>
             <option value="created_at">Newest</option>
             <option value="name">Name</option>
@@ -273,27 +326,44 @@ export function RewardsLibrary() {
             <div className="flex gap-1">
               <button
                 onClick={() => {
-                  const name = prompt("Save current filters as:");
-                  if (name) persistSaved([...savedFilters.filter((s) => s.name !== name), { name, filters: f }]);
+                  const current = savedFilters.find((s) => s.id === activePresetId);
+                  const suggested = current?.name ?? "";
+                  const name = prompt("Save current filters as:", suggested)?.trim();
+                  if (!name) return;
+                  const existing = savedFilters.find((s) => s.name === name);
+                  saveFilter.mutate({ id: existing?.id ?? null, name, filters: f });
                 }}
                 className="btn-secondary inline-flex items-center gap-1 px-2 py-1 text-xs flex-1"
               >
-                <Save className="h-3 w-3" /> Save filter
+                <Save className="h-3 w-3" /> {activePresetId ? "Update preset" : "Save preset"}
               </button>
-              <button onClick={() => setF(DEFAULT_FILTERS)} className="btn-secondary px-2 py-1 text-xs">Reset</button>
+              <button onClick={() => { setF(DEFAULT_FILTERS); setActivePresetId(null); localStorage.removeItem(SAVED_LAST_KEY); }} className="btn-secondary px-2 py-1 text-xs">Reset</button>
             </div>
             {savedFilters.length > 0 && (
-              <select
-                className={inputCls + " sm:col-span-2"}
-                value=""
-                onChange={(e) => {
-                  const saved = savedFilters.find((s) => s.name === e.target.value);
-                  if (saved) setF(saved.filters);
-                }}
-              >
-                <option value="">Load saved filter…</option>
-                {savedFilters.map((s) => <option key={s.name} value={s.name}>{s.name}</option>)}
-              </select>
+              <div className="sm:col-span-2 flex flex-wrap gap-1 items-center">
+                <Bookmark className="h-3 w-3 text-muted-foreground" />
+                <span className="text-[10px] uppercase text-muted-foreground mr-1">Presets</span>
+                {savedFilters.map((s) => {
+                  const active = s.id === activePresetId;
+                  return (
+                    <span key={s.id} className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] ${active ? "border-primary bg-primary/10 text-primary" : "border-border bg-surface-2"}`}>
+                      <button
+                        onClick={() => { setActivePresetId(s.id); setF({ ...DEFAULT_FILTERS, ...s.filters }); localStorage.setItem(SAVED_LAST_KEY, s.id); }}
+                        className="font-semibold"
+                      >
+                        {s.name}
+                      </button>
+                      <button
+                        onClick={() => { if (confirm(`Delete preset "${s.name}"?`)) deleteFilter.mutate(s.id); }}
+                        title="Delete preset"
+                        className="opacity-60 hover:opacity-100"
+                      >
+                        <X className="h-2.5 w-2.5" />
+                      </button>
+                    </span>
+                  );
+                })}
+              </div>
             )}
           </div>
         )}
