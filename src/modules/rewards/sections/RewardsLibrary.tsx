@@ -80,20 +80,45 @@ export function RewardsLibrary() {
 
   const [f, setF] = useState<Filters>(DEFAULT_FILTERS);
   const [showAdvanced, setShowAdvanced] = useState(false);
-  const [savedFilters, setSavedFilters] = useState<Array<{ name: string; filters: Filters }>>([]);
+  const { data: savedFilters = [] } = useQuery(savedFiltersQuery);
+  const [activePresetId, setActivePresetId] = useState<string | null>(null);
+
+  const saveFilter = useMutation({
+    mutationFn: async ({ id, name, filters }: { id?: string | null; name: string; filters: Filters }) => {
+      const sbAny = supabase as unknown as { from: (t: string) => { upsert: (v: unknown, o?: unknown) => { select: (c: string) => { single: () => Promise<{ data: SavedFilterRow | null; error: unknown }> } } } };
+      const row = { ...(id ? { id } : {}), scope: SAVED_SCOPE, name, filters, user_id: (await supabase.auth.getUser()).data.user?.id };
+      const { data, error } = await sbAny.from("reward_saved_filters").upsert(row, { onConflict: "user_id,scope,name" }).select("id,name,filters,updated_at").single();
+      if (error) throw error as Error;
+      return data;
+    },
+    onSuccess: (row) => {
+      qc.invalidateQueries({ queryKey: ["reward_saved_filters", SAVED_SCOPE] });
+      if (row) { setActivePresetId(row.id); localStorage.setItem(SAVED_LAST_KEY, row.id); }
+    },
+  });
+  const deleteFilter = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await (supabase as unknown as { from: (t: string) => { delete: () => { eq: (k: string, v: string) => Promise<{ error: unknown }> } } })
+        .from("reward_saved_filters").delete().eq("id", id);
+      if (error) throw error as Error;
+    },
+    onSuccess: (_v, id) => {
+      qc.invalidateQueries({ queryKey: ["reward_saved_filters", SAVED_SCOPE] });
+      if (activePresetId === id) { setActivePresetId(null); localStorage.removeItem(SAVED_LAST_KEY); }
+    },
+  });
 
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem(SAVED_KEY);
-      if (raw) setSavedFilters(JSON.parse(raw));
-    } catch { /* ignore */ }
-  }, []);
-  function persistSaved(next: Array<{ name: string; filters: Filters }>) {
-    setSavedFilters(next);
-    localStorage.setItem(SAVED_KEY, JSON.stringify(next));
-  }
+    const last = localStorage.getItem(SAVED_LAST_KEY);
+    if (!last || activePresetId) return;
+    const hit = savedFilters.find((s) => s.id === last);
+    if (hit) { setActivePresetId(hit.id); setF({ ...DEFAULT_FILTERS, ...hit.filters }); }
+  }, [savedFilters, activePresetId]);
 
-  const setFilter = <K extends keyof Filters>(k: K, v: Filters[K]) => setF((prev) => ({ ...prev, [k]: v }));
+  const setFilter = <K extends keyof Filters>(k: K, v: Filters[K]) => {
+    setF((prev) => ({ ...prev, [k]: v }));
+    setActivePresetId(null);
+  };
 
   const [sortBy, setSortBy] = useState<"created_at" | "name" | "quantity" | "times_awarded">("created_at");
   const [page, setPage] = useState(0);
