@@ -256,6 +256,21 @@ export function RewardsLibrary() {
           <button onClick={() => setShowAdvanced((s) => !s)} className="btn-secondary inline-flex items-center gap-1 px-2 py-1 text-xs">
             <Filter className="h-3 w-3" /> Advanced <ChevronDown className={`h-3 w-3 transition-transform ${showAdvanced ? "rotate-180" : ""}`} />
           </button>
+          {savedFilters.length > 0 && (
+            <select
+              className={inputCls + " w-auto"}
+              value={activePresetId ?? ""}
+              onChange={(e) => {
+                const id = e.target.value;
+                if (!id) { setF(DEFAULT_FILTERS); setActivePresetId(null); localStorage.removeItem(SAVED_LAST_KEY); return; }
+                const hit = savedFilters.find((s) => s.id === id);
+                if (hit) { setActivePresetId(hit.id); setF({ ...DEFAULT_FILTERS, ...hit.filters }); localStorage.setItem(SAVED_LAST_KEY, hit.id); }
+              }}
+            >
+              <option value="">— Preset —</option>
+              {savedFilters.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+            </select>
+          )}
           <select className={inputCls + " w-auto"} value={sortBy} onChange={(e) => setSortBy(e.target.value as typeof sortBy)}>
             <option value="created_at">Newest</option>
             <option value="name">Name</option>
