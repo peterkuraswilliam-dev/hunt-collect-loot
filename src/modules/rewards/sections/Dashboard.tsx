@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { Gift, Sparkles, CheckCircle2, CircleSlash, Boxes, Link2, RefreshCw, Download, Clock, TrendingUp, AlertTriangle, Archive } from "lucide-react";
+import { Gift, Sparkles, CheckCircle2, CircleSlash, Boxes, Link2, RefreshCw, Download, Clock, TrendingUp, AlertTriangle, Archive, Dices } from "lucide-react";
 
 import {
   rewardTypesQuery,
@@ -8,7 +8,10 @@ import {
   rewardBundlesQuery,
   rewardBundleItemCountsQuery,
   bundleItemsAllQuery,
+  lootTablesQuery,
+  lootTableEntriesAllQuery,
 } from "../queries";
+
 
 function Stat({ icon: Icon, label, value }: { icon: typeof Gift; label: string; value: number | string }) {
   return (
@@ -29,6 +32,19 @@ export function Dashboard() {
   const { data: bundles = [] } = useQuery(rewardBundlesQuery);
   const { data: bundleCounts = [] } = useQuery(rewardBundleItemCountsQuery);
   const { data: bundleItems = [] } = useQuery(bundleItemsAllQuery);
+  const { data: lootTables = [] } = useQuery(lootTablesQuery);
+  const { data: lootEntries = [] } = useQuery(lootTableEntriesAllQuery);
+
+  const lootActive = lootTables.filter((t) => t.enabled).length;
+  const lootUsage = new Map<string, number>();
+  for (const e of lootEntries) lootUsage.set(e.loot_table_id, (lootUsage.get(e.loot_table_id) ?? 0) + 1);
+  const mostUsedLoot = [...lootTables]
+    .map((t) => ({ t, rolls: t.total_rolls, entries: lootUsage.get(t.id) ?? 0 }))
+    .sort((a, b) => b.rolls - a.rolls)
+    .slice(0, 8);
+  const recentLoot = [...lootTables]
+    .sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())
+    .slice(0, 8);
 
   const active = rewards.filter((r) => r.enabled && !r.archived_at).length;
   const archived = rewards.filter((r) => r.archived_at).length;
@@ -92,6 +108,42 @@ export function Dashboard() {
         <Stat icon={AlertTriangle} label="Missing Asset Link" value={missingLink} />
         <Stat icon={AlertTriangle} label="Without References" value={withoutRefs} />
         <Stat icon={RefreshCw} label="Awaiting Sync" value={awaitingSync} />
+      </div>
+
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+        <Stat icon={Dices} label="Loot Tables" value={lootTables.length} />
+        <Stat icon={CheckCircle2} label="Active Loot Tables" value={lootActive} />
+        <Stat icon={TrendingUp} label="Total Rolls" value={lootTables.reduce((s, t) => s + (t.total_rolls ?? 0), 0).toLocaleString()} />
+        <Stat icon={Gift} label="Loot Rewards Granted" value={lootTables.reduce((s, t) => s + (t.total_rewards_granted ?? 0), 0).toLocaleString()} />
+      </div>
+
+      <div className="grid gap-3 lg:grid-cols-2">
+        <div className="panel p-3">
+          <div className="mb-2 flex items-center gap-1 text-[10px] uppercase tracking-widest text-primary"><Dices className="h-3 w-3" /> Most used loot tables</div>
+          {mostUsedLoot.length === 0 ? <p className="text-xs text-muted-foreground">No loot tables yet.</p> : (
+            <ul className="space-y-1 text-xs">
+              {mostUsedLoot.map((x) => (
+                <li key={x.t.id} className="flex items-center justify-between border-b border-border/40 py-1 last:border-0">
+                  <span className="font-semibold truncate">{x.t.name}</span>
+                  <span className="text-muted-foreground tabular-nums">{x.rolls.toLocaleString()} rolls · {x.entries} entries</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+        <div className="panel p-3">
+          <div className="mb-2 text-[10px] uppercase tracking-widest text-primary">Recently updated loot tables</div>
+          {recentLoot.length === 0 ? <p className="text-xs text-muted-foreground">No loot tables yet.</p> : (
+            <ul className="space-y-1 text-xs">
+              {recentLoot.map((t) => (
+                <li key={t.id} className="flex items-center justify-between border-b border-border/40 py-1 last:border-0">
+                  <span className="font-semibold truncate">{t.name}</span>
+                  <span className="text-muted-foreground">{new Date(t.updated_at).toLocaleDateString()}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
       </div>
 
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
