@@ -114,6 +114,42 @@ export function Dashboard() {
       </div>
 
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+        <Stat icon={Dices} label="Loot Tables" value={lootTables.length} />
+        <Stat icon={CheckCircle2} label="Active Loot Tables" value={lootActive} />
+        <Stat icon={TrendingUp} label="Total Rolls" value={lootTables.reduce((s, t) => s + (t.total_rolls ?? 0), 0).toLocaleString()} />
+        <Stat icon={Gift} label="Loot Rewards Granted" value={lootTables.reduce((s, t) => s + (t.total_rewards_granted ?? 0), 0).toLocaleString()} />
+      </div>
+
+      <div className="grid gap-3 lg:grid-cols-2">
+        <div className="panel p-3">
+          <div className="mb-2 flex items-center gap-1 text-[10px] uppercase tracking-widest text-primary"><Dices className="h-3 w-3" /> Most used loot tables</div>
+          {mostUsedLoot.length === 0 ? <p className="text-xs text-muted-foreground">No loot tables yet.</p> : (
+            <ul className="space-y-1 text-xs">
+              {mostUsedLoot.map((x) => (
+                <li key={x.t.id} className="flex items-center justify-between border-b border-border/40 py-1 last:border-0">
+                  <span className="font-semibold truncate">{x.t.name}</span>
+                  <span className="text-muted-foreground tabular-nums">{x.rolls.toLocaleString()} rolls · {x.entries} entries</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+        <div className="panel p-3">
+          <div className="mb-2 text-[10px] uppercase tracking-widest text-primary">Recently updated loot tables</div>
+          {recentLoot.length === 0 ? <p className="text-xs text-muted-foreground">No loot tables yet.</p> : (
+            <ul className="space-y-1 text-xs">
+              {recentLoot.map((t) => (
+                <li key={t.id} className="flex items-center justify-between border-b border-border/40 py-1 last:border-0">
+                  <span className="font-semibold truncate">{t.name}</span>
+                  <span className="text-muted-foreground">{new Date(t.updated_at).toLocaleDateString()}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
         <Stat icon={Clock} label="Last Import" value={fmt(lastImport)} />
         <Stat icon={Clock} label="Last Sync" value={fmt(lastSync)} />
         <div className="panel px-3 py-3 col-span-2">
