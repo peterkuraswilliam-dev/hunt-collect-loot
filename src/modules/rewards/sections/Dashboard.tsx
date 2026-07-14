@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { Gift, Sparkles, CheckCircle2, CircleSlash, Boxes, Link2, RefreshCw, Download, Clock, TrendingUp, AlertTriangle, Archive } from "lucide-react";
+import { Gift, Sparkles, CheckCircle2, CircleSlash, Boxes, Link2, RefreshCw, Download, Clock, TrendingUp, AlertTriangle, Archive, Dices } from "lucide-react";
 
 import {
   rewardTypesQuery,
@@ -8,7 +8,10 @@ import {
   rewardBundlesQuery,
   rewardBundleItemCountsQuery,
   bundleItemsAllQuery,
+  lootTablesQuery,
+  lootTableEntriesAllQuery,
 } from "../queries";
+
 
 function Stat({ icon: Icon, label, value }: { icon: typeof Gift; label: string; value: number | string }) {
   return (
