@@ -36,7 +36,6 @@ export function Dashboard() {
   const { data: lootEntries = [] } = useQuery(lootTableEntriesAllQuery);
 
   const lootActive = lootTables.filter((t) => t.enabled).length;
-  const lootById = new Map(lootTables.map((t) => [t.id, t]));
   const lootUsage = new Map<string, number>();
   for (const e of lootEntries) lootUsage.set(e.loot_table_id, (lootUsage.get(e.loot_table_id) ?? 0) + 1);
   const mostUsedLoot = [...lootTables]
