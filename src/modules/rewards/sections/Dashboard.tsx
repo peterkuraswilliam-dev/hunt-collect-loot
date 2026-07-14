@@ -45,8 +45,6 @@ export function Dashboard() {
   const recentLoot = [...lootTables]
     .sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())
     .slice(0, 8);
-  const rewardLootAwards = new Map<string, number>();
-  for (const e of lootEntries) rewardLootAwards.set(e.reward_id, (rewardLootAwards.get(e.reward_id) ?? 0) + ((e as unknown as { times_awarded?: number }).times_awarded ?? 0));
 
   const active = rewards.filter((r) => r.enabled && !r.archived_at).length;
   const archived = rewards.filter((r) => r.archived_at).length;
