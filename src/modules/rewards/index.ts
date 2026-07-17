@@ -1,9 +1,10 @@
-import { Gift, Gauge, Sparkles, Library, Settings, Boxes } from "lucide-react";
+import { Gift, Gauge, Sparkles, Library, Settings, Boxes, Dice5 } from "lucide-react";
 import type { AssetOSModule } from "../contract";
 import { Dashboard } from "./sections/Dashboard";
 import { RewardTypes } from "./sections/RewardTypes";
 import { RewardsLibrary } from "./sections/RewardsLibrary";
 import { Bundles } from "./sections/Bundles";
+import { LootTables } from "./sections/LootTables";
 import { SettingsSection } from "./sections/SettingsSection";
 
 export const rewardsModule: AssetOSModule = {
@@ -16,6 +17,7 @@ export const rewardsModule: AssetOSModule = {
     { key: "types", label: "Reward Types", icon: Sparkles, component: RewardTypes },
     { key: "library", label: "Rewards Library", icon: Library, component: RewardsLibrary },
     { key: "bundles", label: "Reward Bundles", icon: Boxes, component: Bundles },
+    { key: "loot", label: "Loot Tables", icon: Dice5, component: LootTables },
     { key: "settings", label: "Settings", icon: Settings, component: SettingsSection },
   ],
 };
