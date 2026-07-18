@@ -199,9 +199,15 @@ export function LootTables() {
               {(r.tags ?? []).slice(0, 3).map((t) => <span key={t} className="rounded bg-surface-2 px-1.5 py-0.5 text-[10px]">{t}</span>)}
             </div>
           )},
+          { key: "entries", label: "Entries", render: (r) => (
+            <button onClick={() => setOpenTable(r)} className="rounded bg-primary/10 text-primary px-2 py-0.5 text-[11px] font-semibold hover:bg-primary/20 inline-flex items-center gap-1">
+              <ListTree className="h-3 w-3" />{entriesByTable.get(r.id) ?? 0}
+            </button>
+          )},
           { key: "updated", label: "Updated", render: (r) => <span className="text-[11px] text-muted-foreground">{new Date(r.updated_at).toLocaleDateString()}</span> },
           { key: "actions", label: "", className: "text-right", render: (r) => (
             <div className="flex justify-end gap-1">
+              <button onClick={() => setOpenTable(r)} className="rounded p-1 hover:bg-surface-2" title="Manage entries"><ListTree className="h-3.5 w-3.5" /></button>
               <button onClick={() => setEditing(r)} className="rounded p-1 hover:bg-surface-2"><Pencil className="h-3.5 w-3.5" /></button>
               <button onClick={() => confirm("Delete loot table?") && del.mutate(r.id)} className="rounded p-1 text-destructive hover:bg-surface-2"><Trash2 className="h-3.5 w-3.5" /></button>
             </div>
