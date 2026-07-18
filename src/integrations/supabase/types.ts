@@ -731,6 +731,7 @@ export type Database = {
       }
       loot_table_entries: {
         Row: {
+          admin_notes: string | null
           created_at: string
           display_order: number
           drop_chance: number
@@ -746,6 +747,7 @@ export type Database = {
           weight: number
         }
         Insert: {
+          admin_notes?: string | null
           created_at?: string
           display_order?: number
           drop_chance?: number
@@ -761,6 +763,7 @@ export type Database = {
           weight?: number
         }
         Update: {
+          admin_notes?: string | null
           created_at?: string
           display_order?: number
           drop_chance?: number

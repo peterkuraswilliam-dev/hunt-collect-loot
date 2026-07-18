@@ -299,3 +299,50 @@ export const rewardBundleItemCountsQuery = queryOptions({
   },
   staleTime: 30_000,
 });
+
+// ---- Loot tables / entries ----
+export type LootTableEntry = {
+  id: string;
+  loot_table_id: string;
+  reward_id: string;
+  weight: number;
+  drop_chance: number;
+  min_quantity: number;
+  max_quantity: number;
+  guaranteed: boolean;
+  enabled: boolean;
+  display_order: number;
+  admin_notes: string | null;
+  times_awarded: number;
+  created_at: string;
+  updated_at: string;
+};
+
+export const lootTableEntriesQuery = (tableId: string | null) =>
+  queryOptions({
+    queryKey: ["loot_table_entries", tableId],
+    enabled: !!tableId,
+    queryFn: async (): Promise<LootTableEntry[]> => {
+      if (!tableId) return [];
+      const { data, error } = await sb
+        .from("loot_table_entries")
+        .select("*")
+        .eq("loot_table_id", tableId)
+        .order("display_order");
+      if (error) throw error;
+      return data ?? [];
+    },
+    staleTime: 15_000,
+  });
+
+export const allLootTableEntriesQuery = queryOptions({
+  queryKey: ["loot_table_entries_all"],
+  queryFn: async (): Promise<Array<Pick<LootTableEntry, "id" | "loot_table_id" | "reward_id" | "enabled" | "guaranteed">>> => {
+    const { data, error } = await sb
+      .from("loot_table_entries")
+      .select("id,loot_table_id,reward_id,enabled,guaranteed");
+    if (error) throw error;
+    return data ?? [];
+  },
+  staleTime: 30_000,
+});

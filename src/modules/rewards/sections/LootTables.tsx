@@ -1,9 +1,11 @@
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Pencil, Plus, Trash2, Search, Package, CheckCircle2, Clock, Layers } from "lucide-react";
+import { Pencil, Plus, Trash2, Search, Package, CheckCircle2, Clock, Layers, ListTree } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { AdminTable, Field, inputCls } from "@/components/admin/AdminTable";
+import { LootTableDetail } from "../components/LootTableDetail";
+import { allLootTableEntriesQuery } from "../queries";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const sb = supabase as any;
@@ -18,6 +20,7 @@ type LootTable = {
   category: string | null;
   source_type_id: string | null;
   enabled: boolean;
+  allow_duplicates: boolean;
   tags: string[];
   updated_at: string;
 };
@@ -55,6 +58,14 @@ export function LootTables() {
   const perPage = 10;
   const [editing, setEditing] = useState<Partial<LootTable> | null>(null);
   const [manageSources, setManageSources] = useState(false);
+  const [openTable, setOpenTable] = useState<LootTable | null>(null);
+
+  const { data: allEntries = [] } = useQuery(allLootTableEntriesQuery);
+  const entriesByTable = useMemo(() => {
+    const m = new Map<string, number>();
+    for (const e of allEntries) m.set(e.loot_table_id, (m.get(e.loot_table_id) ?? 0) + 1);
+    return m;
+  }, [allEntries]);
 
   const sourceById = useMemo(() => new Map(sources.map((s) => [s.id, s])), [sources]);
 
@@ -188,9 +199,15 @@ export function LootTables() {
               {(r.tags ?? []).slice(0, 3).map((t) => <span key={t} className="rounded bg-surface-2 px-1.5 py-0.5 text-[10px]">{t}</span>)}
             </div>
           )},
+          { key: "entries", label: "Entries", render: (r) => (
+            <button onClick={() => setOpenTable(r)} className="rounded bg-primary/10 text-primary px-2 py-0.5 text-[11px] font-semibold hover:bg-primary/20 inline-flex items-center gap-1">
+              <ListTree className="h-3 w-3" />{entriesByTable.get(r.id) ?? 0}
+            </button>
+          )},
           { key: "updated", label: "Updated", render: (r) => <span className="text-[11px] text-muted-foreground">{new Date(r.updated_at).toLocaleDateString()}</span> },
           { key: "actions", label: "", className: "text-right", render: (r) => (
             <div className="flex justify-end gap-1">
+              <button onClick={() => setOpenTable(r)} className="rounded p-1 hover:bg-surface-2" title="Manage entries"><ListTree className="h-3.5 w-3.5" /></button>
               <button onClick={() => setEditing(r)} className="rounded p-1 hover:bg-surface-2"><Pencil className="h-3.5 w-3.5" /></button>
               <button onClick={() => confirm("Delete loot table?") && del.mutate(r.id)} className="rounded p-1 text-destructive hover:bg-surface-2"><Trash2 className="h-3.5 w-3.5" /></button>
             </div>
@@ -231,10 +248,16 @@ export function LootTables() {
             <Field label="Tags (comma separated)">
               <input className={inputCls} value={(editing.tags ?? []).join(", ")} onChange={(e) => setEditing({ ...editing, tags: e.target.value.split(",").map((s) => s.trim()).filter(Boolean) })} />
             </Field>
-            <label className="flex items-center gap-2 text-xs">
-              <input type="checkbox" checked={editing.enabled ?? true} onChange={(e) => setEditing({ ...editing, enabled: e.target.checked })} />
-              Enabled
-            </label>
+            <div className="flex flex-wrap gap-4">
+              <label className="flex items-center gap-2 text-xs">
+                <input type="checkbox" checked={editing.enabled ?? true} onChange={(e) => setEditing({ ...editing, enabled: e.target.checked })} />
+                Enabled
+              </label>
+              <label className="flex items-center gap-2 text-xs">
+                <input type="checkbox" checked={editing.allow_duplicates ?? false} onChange={(e) => setEditing({ ...editing, allow_duplicates: e.target.checked })} />
+                Allow duplicate rewards
+              </label>
+            </div>
             <div className="flex gap-2 pt-2">
               <button onClick={() => setEditing(null)} className="flex-1 rounded-md border border-border bg-surface-2 py-2 text-xs font-semibold">Cancel</button>
               <button disabled={save.isPending || !editing.name} onClick={() => save.mutate(editing)} className="btn-gold flex-1 py-2 text-xs disabled:opacity-50">{save.isPending ? "Saving…" : "Save"}</button>
@@ -244,6 +267,7 @@ export function LootTables() {
       )}
 
       {manageSources && <SourceTypesModal onClose={() => setManageSources(false)} sources={sources} />}
+      {openTable && <LootTableDetail table={openTable} onClose={() => setOpenTable(null)} />}
     </div>
   );
 }
