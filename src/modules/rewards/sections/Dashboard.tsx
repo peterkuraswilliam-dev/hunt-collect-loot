@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { Gift, Sparkles, CheckCircle2, CircleSlash, Boxes, Link2, RefreshCw, Download, Clock, TrendingUp, AlertTriangle, Archive } from "lucide-react";
+import { Gift, Sparkles, CheckCircle2, CircleSlash, Boxes, Link2, RefreshCw, Download, Clock, TrendingUp, AlertTriangle, Archive, Dice5 } from "lucide-react";
 
 import {
   rewardTypesQuery,
@@ -8,7 +8,22 @@ import {
   rewardBundlesQuery,
   rewardBundleItemCountsQuery,
   bundleItemsAllQuery,
+  allLootTableEntriesQuery,
 } from "../queries";
+import { supabase } from "@/integrations/supabase/client";
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const sb = supabase as any;
+import { queryOptions } from "@tanstack/react-query";
+
+const lootTablesLiteQuery = queryOptions({
+  queryKey: ["loot_tables_lite"],
+  queryFn: async (): Promise<Array<{ id: string; name: string }>> => {
+    const { data, error } = await sb.from("loot_tables").select("id,name");
+    if (error) throw error;
+    return data ?? [];
+  },
+  staleTime: 30_000,
+});
 
 function Stat({ icon: Icon, label, value }: { icon: typeof Gift; label: string; value: number | string }) {
   return (
