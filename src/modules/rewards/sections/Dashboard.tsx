@@ -150,6 +150,29 @@ export function Dashboard() {
         </div>
       </div>
 
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+        <Stat icon={Dice5} label="Total Loot Entries" value={lootEntryTotal} />
+        <Stat icon={AlertTriangle} label="Tables Missing Entries" value={tablesMissingEntries} />
+        <Stat icon={CircleSlash} label="Disabled Loot Entries" value={disabledLootEntries} />
+        <Stat icon={AlertTriangle} label="Broken Loot Refs" value={brokenLootEntries} />
+      </div>
+
+      <div className="panel p-3">
+        <div className="mb-2 flex items-center gap-1 text-[10px] uppercase tracking-widest text-primary">
+          <Dice5 className="h-3 w-3" /> Most used rewards in loot tables
+        </div>
+        {mostUsedInLoot.length === 0 ? <p className="text-xs text-muted-foreground">No loot entries yet.</p> : (
+          <ul className="grid gap-1 text-xs md:grid-cols-2">
+            {mostUsedInLoot.map((x) => (
+              <li key={x.reward!.id} className="flex items-center justify-between border-b border-border/40 py-1 last:border-0">
+                <span className="font-semibold truncate">{x.reward!.name}</span>
+                <span className="text-muted-foreground tabular-nums">{x.count} table{x.count === 1 ? "" : "s"}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
       <div className="grid gap-3 lg:grid-cols-2">
         <div className="panel p-3">
           <div className="mb-2 flex items-center gap-1 text-[10px] uppercase tracking-widest text-primary">
