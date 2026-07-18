@@ -44,6 +44,25 @@ export function Dashboard() {
   const { data: bundles = [] } = useQuery(rewardBundlesQuery);
   const { data: bundleCounts = [] } = useQuery(rewardBundleItemCountsQuery);
   const { data: bundleItems = [] } = useQuery(bundleItemsAllQuery);
+  const { data: lootEntries = [] } = useQuery(allLootTableEntriesQuery);
+  const { data: lootTables = [] } = useQuery(lootTablesLiteQuery);
+
+  const rewardById = new Map(rewards.map((r) => [r.id, r]));
+  const lootEntryTotal = lootEntries.length;
+  const disabledLootEntries = lootEntries.filter((e) => !e.enabled).length;
+  const brokenLootEntries = lootEntries.filter((e) => {
+    const r = rewardById.get(e.reward_id);
+    return !r || r.archived_at != null;
+  }).length;
+  const tablesWithEntries = new Set(lootEntries.map((e) => e.loot_table_id));
+  const tablesMissingEntries = lootTables.filter((t) => !tablesWithEntries.has(t.id)).length;
+  const lootUsageMap = new Map<string, number>();
+  for (const e of lootEntries) lootUsageMap.set(e.reward_id, (lootUsageMap.get(e.reward_id) ?? 0) + 1);
+  const mostUsedInLoot = Array.from(lootUsageMap.entries())
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 10)
+    .map(([rid, n]) => ({ reward: rewardById.get(rid), count: n }))
+    .filter((x) => x.reward);
 
   const active = rewards.filter((r) => r.enabled && !r.archived_at).length;
   const archived = rewards.filter((r) => r.archived_at).length;
