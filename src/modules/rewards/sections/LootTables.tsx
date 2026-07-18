@@ -248,10 +248,16 @@ export function LootTables() {
             <Field label="Tags (comma separated)">
               <input className={inputCls} value={(editing.tags ?? []).join(", ")} onChange={(e) => setEditing({ ...editing, tags: e.target.value.split(",").map((s) => s.trim()).filter(Boolean) })} />
             </Field>
-            <label className="flex items-center gap-2 text-xs">
-              <input type="checkbox" checked={editing.enabled ?? true} onChange={(e) => setEditing({ ...editing, enabled: e.target.checked })} />
-              Enabled
-            </label>
+            <div className="flex flex-wrap gap-4">
+              <label className="flex items-center gap-2 text-xs">
+                <input type="checkbox" checked={editing.enabled ?? true} onChange={(e) => setEditing({ ...editing, enabled: e.target.checked })} />
+                Enabled
+              </label>
+              <label className="flex items-center gap-2 text-xs">
+                <input type="checkbox" checked={editing.allow_duplicates ?? false} onChange={(e) => setEditing({ ...editing, allow_duplicates: e.target.checked })} />
+                Allow duplicate rewards
+              </label>
+            </div>
             <div className="flex gap-2 pt-2">
               <button onClick={() => setEditing(null)} className="flex-1 rounded-md border border-border bg-surface-2 py-2 text-xs font-semibold">Cancel</button>
               <button disabled={save.isPending || !editing.name} onClick={() => save.mutate(editing)} className="btn-gold flex-1 py-2 text-xs disabled:opacity-50">{save.isPending ? "Saving…" : "Save"}</button>
@@ -261,6 +267,7 @@ export function LootTables() {
       )}
 
       {manageSources && <SourceTypesModal onClose={() => setManageSources(false)} sources={sources} />}
+      {openTable && <LootTableDetail table={openTable} onClose={() => setOpenTable(null)} />}
     </div>
   );
 }
