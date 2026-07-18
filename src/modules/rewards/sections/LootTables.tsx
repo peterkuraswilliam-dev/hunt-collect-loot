@@ -1,9 +1,11 @@
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Pencil, Plus, Trash2, Search, Package, CheckCircle2, Clock, Layers } from "lucide-react";
+import { Pencil, Plus, Trash2, Search, Package, CheckCircle2, Clock, Layers, ListTree } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { AdminTable, Field, inputCls } from "@/components/admin/AdminTable";
+import { LootTableDetail } from "../components/LootTableDetail";
+import { allLootTableEntriesQuery } from "../queries";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const sb = supabase as any;
