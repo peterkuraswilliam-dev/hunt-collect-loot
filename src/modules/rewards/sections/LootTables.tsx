@@ -20,6 +20,7 @@ type LootTable = {
   category: string | null;
   source_type_id: string | null;
   enabled: boolean;
+  allow_duplicates: boolean;
   tags: string[];
   updated_at: string;
 };
