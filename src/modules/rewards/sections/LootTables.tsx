@@ -58,6 +58,14 @@ export function LootTables() {
   const perPage = 10;
   const [editing, setEditing] = useState<Partial<LootTable> | null>(null);
   const [manageSources, setManageSources] = useState(false);
+  const [openTable, setOpenTable] = useState<LootTable | null>(null);
+
+  const { data: allEntries = [] } = useQuery(allLootTableEntriesQuery);
+  const entriesByTable = useMemo(() => {
+    const m = new Map<string, number>();
+    for (const e of allEntries) m.set(e.loot_table_id, (m.get(e.loot_table_id) ?? 0) + 1);
+    return m;
+  }, [allEntries]);
 
   const sourceById = useMemo(() => new Map(sources.map((s) => [s.id, s])), [sources]);
 
