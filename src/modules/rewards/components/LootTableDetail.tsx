@@ -27,7 +27,23 @@ type LootTable = {
   enabled: boolean;
   allow_duplicates: boolean;
   tags: string[];
+  min_rewards?: number;
+  max_rewards?: number;
+  fixed_roll_count?: number | null;
+  selection_method?: "weighted_random" | "independent" | "guaranteed_only" | "all";
+  guaranteed_first?: boolean;
+  quantity_multiplier?: number;
+  min_total_quantity?: number | null;
+  max_total_quantity?: number | null;
 };
+
+const SELECTION_LABELS: Record<string, string> = {
+  weighted_random: "Weighted Random",
+  independent: "Independent Drop Chance",
+  guaranteed_only: "Guaranteed Only",
+  all: "Roll All Entries",
+};
+
 
 export function LootTableDetail({ table, onClose }: { table: LootTable; onClose: () => void }) {
   const qc = useQueryClient();
