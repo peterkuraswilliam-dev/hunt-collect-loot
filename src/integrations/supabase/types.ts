@@ -843,12 +843,17 @@ export type Database = {
           created_at: string
           description: string | null
           enabled: boolean
+          fixed_roll_count: number | null
           guaranteed_first: boolean
           id: string
           internal_id: string | null
           max_rewards: number
+          max_total_quantity: number | null
           min_rewards: number
+          min_total_quantity: number | null
           name: string
+          quantity_multiplier: number
+          selection_method: string
           slug: string
           source_type_id: string | null
           tags: string[]
@@ -863,12 +868,17 @@ export type Database = {
           created_at?: string
           description?: string | null
           enabled?: boolean
+          fixed_roll_count?: number | null
           guaranteed_first?: boolean
           id?: string
           internal_id?: string | null
           max_rewards?: number
+          max_total_quantity?: number | null
           min_rewards?: number
+          min_total_quantity?: number | null
           name: string
+          quantity_multiplier?: number
+          selection_method?: string
           slug: string
           source_type_id?: string | null
           tags?: string[]
@@ -883,12 +893,17 @@ export type Database = {
           created_at?: string
           description?: string | null
           enabled?: boolean
+          fixed_roll_count?: number | null
           guaranteed_first?: boolean
           id?: string
           internal_id?: string | null
           max_rewards?: number
+          max_total_quantity?: number | null
           min_rewards?: number
+          min_total_quantity?: number | null
           name?: string
+          quantity_multiplier?: number
+          selection_method?: string
           slug?: string
           source_type_id?: string | null
           tags?: string[]
