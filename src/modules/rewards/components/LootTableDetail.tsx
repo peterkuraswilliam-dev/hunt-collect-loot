@@ -596,5 +596,133 @@ function EntryEditor({ entry, onClose, onSave }: { entry: LootTableEntry; onClos
   );
 }
 
+function RulesTab({ table, onSaved }: { table: LootTable; onSaved: () => void }) {
+  const qc = useQueryClient();
+  const [d, setD] = useState({
+    selection_method: table.selection_method ?? "weighted_random",
+    min_rewards: table.min_rewards ?? 1,
+    max_rewards: table.max_rewards ?? 1,
+    fixed_roll_count: table.fixed_roll_count ?? null,
+    allow_duplicates: table.allow_duplicates ?? false,
+    guaranteed_first: table.guaranteed_first ?? true,
+    enabled: table.enabled ?? true,
+    quantity_multiplier: table.quantity_multiplier ?? 1,
+    min_total_quantity: table.min_total_quantity ?? null,
+    max_total_quantity: table.max_total_quantity ?? null,
+  });
+
+  const errors: string[] = [];
+  const warnings: string[] = [];
+  if (d.min_rewards > d.max_rewards) errors.push("Min Rolls must be ≤ Max Rolls");
+  if (d.min_rewards < 0) errors.push("Min Rolls cannot be negative");
+  if (d.fixed_roll_count != null && d.fixed_roll_count < 0) errors.push("Fixed Roll Count cannot be negative");
+  if (d.min_total_quantity != null && d.max_total_quantity != null && d.min_total_quantity > d.max_total_quantity) {
+    errors.push("Min Total Quantity must be ≤ Max Total Quantity");
+  }
+  if (d.quantity_multiplier < 0) errors.push("Quantity Multiplier cannot be negative");
+  if (d.selection_method === "all" && d.fixed_roll_count != null) warnings.push("Fixed Roll Count is ignored when Selection Method is 'Roll All Entries'.");
+  if (d.selection_method === "guaranteed_only") warnings.push("Only entries marked Guaranteed will be granted.");
+  if (d.fixed_roll_count != null && (d.fixed_roll_count < d.min_rewards || d.fixed_roll_count > d.max_rewards)) {
+    warnings.push("Fixed Roll Count falls outside the Min/Max range and will override it.");
+  }
+
+  const save = useMutation({
+    mutationFn: async () => {
+      const { error } = await sb.from("loot_tables").update(d).eq("id", table.id);
+      if (error) throw error;
+    },
+    onSuccess: () => { toast.success("Rules saved"); qc.invalidateQueries({ queryKey: ["loot_tables"] }); onSaved(); },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const rollDesc = d.fixed_roll_count != null
+    ? `Rolls exactly ${d.fixed_roll_count} reward${d.fixed_roll_count === 1 ? "" : "s"}`
+    : d.min_rewards === d.max_rewards
+      ? `Rolls ${d.min_rewards} reward${d.min_rewards === 1 ? "" : "s"}`
+      : `Rolls ${d.min_rewards}-${d.max_rewards} rewards`;
+  const summary = `${rollDesc} using ${SELECTION_LABELS[d.selection_method]}.${d.guaranteed_first ? " Guaranteed rewards are granted first." : ""} Duplicates ${d.allow_duplicates ? "enabled" : "disabled"}.${d.quantity_multiplier !== 1 ? ` Quantities scaled ×${d.quantity_multiplier}.` : ""}${d.min_total_quantity != null || d.max_total_quantity != null ? ` Total qty clamped to ${d.min_total_quantity ?? "—"}…${d.max_total_quantity ?? "—"}.` : ""}${!d.enabled ? " (Table disabled)" : ""}`;
+
+  return (
+    <div className="space-y-4">
+      <div className="panel p-3 border-l-2 border-primary/50">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-1">Rule Summary</p>
+        <p className="text-xs">{summary}</p>
+      </div>
+
+      <div className="panel p-3 space-y-3">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Roll Configuration</p>
+        <div className="grid grid-cols-2 gap-2 md:grid-cols-3">
+          <Field label="Selection Method">
+            <select className={inputCls} value={d.selection_method} onChange={(e) => setD({ ...d, selection_method: e.target.value as typeof d.selection_method })}>
+              {Object.entries(SELECTION_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+            </select>
+          </Field>
+          <Field label="Minimum Rolls">
+            <input type="number" min={0} className={inputCls} value={d.min_rewards} onChange={(e) => setD({ ...d, min_rewards: Number(e.target.value) })} />
+          </Field>
+          <Field label="Maximum Rolls">
+            <input type="number" min={0} className={inputCls} value={d.max_rewards} onChange={(e) => setD({ ...d, max_rewards: Number(e.target.value) })} />
+          </Field>
+          <Field label="Fixed Roll Count (optional)">
+            <input type="number" min={0} className={inputCls} value={d.fixed_roll_count ?? ""} placeholder="—" onChange={(e) => setD({ ...d, fixed_roll_count: e.target.value === "" ? null : Number(e.target.value) })} />
+          </Field>
+        </div>
+        <div className="flex flex-wrap gap-4 pt-1">
+          <label className="flex items-center gap-2 text-xs">
+            <input type="checkbox" checked={d.enabled} onChange={(e) => setD({ ...d, enabled: e.target.checked })} /> Enabled
+          </label>
+          <label className="flex items-center gap-2 text-xs">
+            <input type="checkbox" checked={d.allow_duplicates} onChange={(e) => setD({ ...d, allow_duplicates: e.target.checked })} /> Allow Duplicates
+          </label>
+          <label className="flex items-center gap-2 text-xs">
+            <input type="checkbox" checked={d.guaranteed_first} onChange={(e) => setD({ ...d, guaranteed_first: e.target.checked })} /> Roll Guaranteed Rewards First
+          </label>
+        </div>
+      </div>
+
+      <div className="panel p-3 space-y-3">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Quantity Rules</p>
+        <div className="grid grid-cols-2 gap-2 md:grid-cols-3">
+          <Field label="Quantity Multiplier">
+            <input type="number" step="0.1" min={0} className={inputCls} value={d.quantity_multiplier} onChange={(e) => setD({ ...d, quantity_multiplier: Number(e.target.value) })} />
+          </Field>
+          <Field label="Minimum Total Quantity">
+            <input type="number" min={0} className={inputCls} value={d.min_total_quantity ?? ""} placeholder="—" onChange={(e) => setD({ ...d, min_total_quantity: e.target.value === "" ? null : Number(e.target.value) })} />
+          </Field>
+          <Field label="Maximum Total Quantity">
+            <input type="number" min={0} className={inputCls} value={d.max_total_quantity ?? ""} placeholder="—" onChange={(e) => setD({ ...d, max_total_quantity: e.target.value === "" ? null : Number(e.target.value) })} />
+          </Field>
+        </div>
+      </div>
+
+      {(errors.length > 0 || warnings.length > 0) && (
+        <div className="space-y-1">
+          {errors.map((m) => (
+            <div key={m} className="flex items-start gap-2 rounded border border-destructive/50 bg-destructive/10 p-2 text-[11px] text-destructive">
+              <AlertTriangle className="h-3.5 w-3.5 mt-0.5" /> {m}
+            </div>
+          ))}
+          {warnings.map((m) => (
+            <div key={m} className="flex items-start gap-2 rounded border border-amber-500/40 bg-amber-500/10 p-2 text-[11px] text-amber-600 dark:text-amber-400">
+              <Info className="h-3.5 w-3.5 mt-0.5" /> {m}
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div className="flex justify-end">
+        <button
+          disabled={errors.length > 0 || save.isPending}
+          onClick={() => save.mutate()}
+          className="btn-gold inline-flex items-center gap-1 px-4 py-2 text-xs disabled:opacity-50"
+        >
+          <Save className="h-3.5 w-3.5" /> {save.isPending ? "Saving…" : "Save Rules"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+
 // keep tree-shake happy
 export { CheckCircle2 };
