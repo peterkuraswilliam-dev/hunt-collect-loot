@@ -192,21 +192,23 @@ export function LootTableDetail({ table, onClose }: { table: LootTable; onClose:
         </div>
 
         <div className="flex gap-1 border-b border-border px-3">
-          {(["entries", "overview"] as const).map((k) => (
+          {(["entries", "rules", "overview"] as const).map((k) => (
             <button
               key={k}
               onClick={() => setTab(k)}
               className={`px-3 py-2 text-xs font-semibold uppercase tracking-widest ${tab === k ? "border-b-2 border-primary text-primary" : "text-muted-foreground"}`}
             >
-              {k === "entries" ? `Loot Entries (${entries.length})` : "Overview"}
+              {k === "entries" ? `Loot Entries (${entries.length})` : k === "rules" ? "Rules" : "Overview"}
             </button>
           ))}
         </div>
 
         <div className="overflow-y-auto p-3 flex-1">
+          {tab === "rules" && <RulesTab table={table} onSaved={() => qc.invalidateQueries({ queryKey: ["loot_tables"] })} />}
           {tab === "overview" && (
             <div className="space-y-3">
               <div className="grid grid-cols-2 gap-2 md:grid-cols-6">
+
                 <SummaryCard label="Total" value={summary.total} />
                 <SummaryCard label="Enabled" value={summary.enabled} />
                 <SummaryCard label="Guaranteed" value={summary.guaranteed} />
