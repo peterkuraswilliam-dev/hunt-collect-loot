@@ -52,7 +52,7 @@ const SELECTION_LABELS: Record<string, string> = {
 
 export function LootTableDetail({ table, onClose }: { table: LootTable; onClose: () => void }) {
   const qc = useQueryClient();
-  const [tab, setTab] = useState<"overview" | "entries" | "rules">("entries");
+  const [tab, setTab] = useState<"overview" | "entries" | "rules" | "references" | "analytics" | "activity">("entries");
   const [picking, setPicking] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [editing, setEditing] = useState<LootTableEntry | null>(null);
