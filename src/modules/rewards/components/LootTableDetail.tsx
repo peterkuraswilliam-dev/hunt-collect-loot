@@ -389,7 +389,7 @@ export function LootTableDetail({ table, onClose }: { table: LootTable; onClose:
   );
 }
 
-function SummaryCard({ label, value }: { label: string; value: number }) {
+function SummaryCard({ label, value }: { label: string; value: number | string }) {
   return (
     <div className="panel p-2">
       <div className="text-[10px] uppercase tracking-widest text-muted-foreground">{label}</div>
