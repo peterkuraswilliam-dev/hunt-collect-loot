@@ -143,10 +143,57 @@ export function Dashboard() {
       </div>
 
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+        <Stat icon={Dice5} label="Total Loot Tables" value={lootTables.length} />
+        <Stat icon={CheckCircle2} label="Active Loot Tables" value={lootTables.filter((t) => t.enabled).length} />
         <Stat icon={Dice5} label="Total Loot Entries" value={lootEntryTotal} />
         <Stat icon={AlertTriangle} label="Tables Missing Entries" value={tablesMissingEntries} />
         <Stat icon={CircleSlash} label="Disabled Loot Entries" value={disabledLootEntries} />
         <Stat icon={AlertTriangle} label="Broken Loot Refs" value={brokenLootEntries} />
+      </div>
+
+      <div className="grid gap-3 lg:grid-cols-2">
+        <div className="panel p-3">
+          <div className="mb-2 flex items-center gap-1 text-[10px] uppercase tracking-widest text-primary">
+            <TrendingUp className="h-3 w-3" /> Most used loot tables
+          </div>
+          {(() => {
+            const tableById = new Map(lootTables.map((t) => [t.id, t]));
+            const ranked = [...refCounts]
+              .sort((a, b) => b.total - a.total)
+              .slice(0, 5)
+              .map((c) => ({ table: tableById.get(c.loot_table_id), total: c.total }))
+              .filter((x) => x.table);
+            if (ranked.length === 0) return <p className="text-xs text-muted-foreground">No references yet.</p>;
+            return (
+              <ul className="space-y-1 text-xs">
+                {ranked.map((x) => (
+                  <li key={x.table!.id} className="flex items-center justify-between border-b border-border/40 py-1 last:border-0">
+                    <span className="font-semibold truncate">{x.table!.name}</span>
+                    <span className="text-muted-foreground tabular-nums">{x.total} ref{x.total === 1 ? "" : "s"}</span>
+                  </li>
+                ))}
+              </ul>
+            );
+          })()}
+        </div>
+
+        <div className="panel p-3">
+          <div className="mb-2 flex items-center gap-1 text-[10px] uppercase tracking-widest text-primary">
+            <Clock className="h-3 w-3" /> Recently updated loot tables
+          </div>
+          {lootTables.length === 0 ? (
+            <p className="text-xs text-muted-foreground">No loot tables yet.</p>
+          ) : (
+            <ul className="space-y-1 text-xs">
+              {lootTables.slice(0, 5).map((t) => (
+                <li key={t.id} className="flex items-center justify-between border-b border-border/40 py-1 last:border-0">
+                  <span className="font-semibold truncate">{t.name}</span>
+                  <span className="text-muted-foreground">{t.category ?? "—"} · {new Date(t.updated_at).toLocaleDateString()}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
       </div>
 
       <div className="panel p-3">
