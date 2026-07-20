@@ -36,7 +36,8 @@ export function Dashboard() {
   const { data: bundleCounts = [] } = useQuery(rewardBundleItemCountsQuery);
   const { data: bundleItems = [] } = useQuery(bundleItemsAllQuery);
   const { data: lootEntries = [] } = useQuery(allLootTableEntriesQuery);
-  const { data: lootTables = [] } = useQuery(lootTablesLiteQuery);
+  const { data: lootTables = [] } = useQuery(lootTablesFullQuery);
+  const { data: refCounts = [] } = useQuery(lootTableReferenceCountsQuery);
 
   const rewardById = new Map(rewards.map((r) => [r.id, r]));
   const lootEntryTotal = lootEntries.length;
