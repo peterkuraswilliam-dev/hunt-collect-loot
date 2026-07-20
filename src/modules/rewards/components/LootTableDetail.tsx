@@ -196,20 +196,28 @@ export function LootTableDetail({ table, onClose }: { table: LootTable; onClose:
           <button onClick={onClose} className="rounded p-1 hover:bg-surface-2"><X className="h-4 w-4" /></button>
         </div>
 
-        <div className="flex gap-1 border-b border-border px-3">
-          {(["entries", "rules", "overview"] as const).map((k) => (
+        <div className="flex gap-1 border-b border-border px-3 overflow-x-auto">
+          {(["entries", "rules", "references", "analytics", "activity", "overview"] as const).map((k) => (
             <button
               key={k}
               onClick={() => setTab(k)}
-              className={`px-3 py-2 text-xs font-semibold uppercase tracking-widest ${tab === k ? "border-b-2 border-primary text-primary" : "text-muted-foreground"}`}
+              className={`whitespace-nowrap px-3 py-2 text-xs font-semibold uppercase tracking-widest ${tab === k ? "border-b-2 border-primary text-primary" : "text-muted-foreground"}`}
             >
-              {k === "entries" ? `Loot Entries (${entries.length})` : k === "rules" ? "Rules" : "Overview"}
+              {k === "entries" ? `Loot Entries (${entries.length})`
+                : k === "rules" ? "Rules"
+                : k === "references" ? "References"
+                : k === "analytics" ? "Analytics"
+                : k === "activity" ? "Activity"
+                : "Overview"}
             </button>
           ))}
         </div>
 
         <div className="overflow-y-auto p-3 flex-1">
           {tab === "rules" && <RulesTab table={table} onSaved={() => qc.invalidateQueries({ queryKey: ["loot_tables"] })} />}
+          {tab === "references" && <ReferencesTab tableId={table.id} />}
+          {tab === "analytics" && <AnalyticsTab tableId={table.id} entries={entries} rewardById={rewardById} />}
+          {tab === "activity" && <ActivityTab tableId={table.id} rewardById={rewardById} />}
           {tab === "overview" && (
             <div className="space-y-3">
               <div className="grid grid-cols-2 gap-2 md:grid-cols-6">
