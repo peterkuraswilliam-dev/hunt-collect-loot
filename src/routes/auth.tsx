@@ -50,7 +50,27 @@ function AuthPage() {
 
   async function google() {
     setBusy(true);
-    const res = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin });
+
+    const isLocalDevelopment = ["localhost", "127.0.0.1", "::1"].includes(window.location.hostname);
+
+    if (isLocalDevelopment) {
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      if (!supabaseUrl) {
+        toast.error("Missing VITE_SUPABASE_URL");
+        setBusy(false);
+        return;
+      }
+
+      const authorizeUrl = new URL("/auth/v1/authorize", supabaseUrl);
+      authorizeUrl.searchParams.set("provider", "google");
+      authorizeUrl.searchParams.set("redirect_to", window.location.origin);
+      window.location.href = authorizeUrl.toString();
+      return;
+    }
+
+    const res = await lovable.auth.signInWithOAuth("google", {
+      redirect_uri: window.location.origin,
+    });
     if (res.error) {
       toast.error(res.error.message);
       setBusy(false);
@@ -62,11 +82,17 @@ function AuthPage() {
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-background">
-      <img src={heroImg} alt="" className="absolute inset-0 h-full w-full object-cover opacity-40" />
+      <img
+        src={heroImg}
+        alt=""
+        className="absolute inset-0 h-full w-full object-cover opacity-40"
+      />
       <div className="absolute inset-0 bg-[var(--gradient-hero)]" />
       <div className="relative mx-auto flex min-h-screen max-w-md flex-col items-center justify-center px-6 py-10">
         <Brand size="lg" />
-        <p className="mt-2 text-center text-sm uppercase tracking-[0.3em] text-primary/80">Collect · Play · Own</p>
+        <p className="mt-2 text-center text-sm uppercase tracking-[0.3em] text-primary/80">
+          Collect · Play · Own
+        </p>
 
         <form onSubmit={submit} className="panel-gold mt-8 w-full space-y-3 p-5">
           <h1 className="font-display text-xl font-bold">
@@ -74,12 +100,19 @@ function AuthPage() {
           </h1>
           <div className="space-y-2">
             <input
-              type="email" required value={email} onChange={(e) => setEmail(e.target.value)}
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               placeholder="Email"
               className="w-full rounded-md border border-border bg-input px-3 py-2.5 text-sm outline-none focus:border-primary"
             />
             <input
-              type="password" required minLength={6} value={password} onChange={(e) => setPassword(e.target.value)}
+              type="password"
+              required
+              minLength={6}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               placeholder="Password"
               className="w-full rounded-md border border-border bg-input px-3 py-2.5 text-sm outline-none focus:border-primary"
             />
@@ -91,12 +124,19 @@ function AuthPage() {
             <span className="bg-card px-2 relative z-10">or</span>
             <div className="absolute inset-x-0 top-1/2 h-px bg-border" />
           </div>
-          <button type="button" onClick={google} disabled={busy}
-            className="w-full rounded-md border border-border bg-surface-2 py-2.5 text-sm font-semibold hover:bg-muted">
+          <button
+            type="button"
+            onClick={google}
+            disabled={busy}
+            className="w-full rounded-md border border-border bg-surface-2 py-2.5 text-sm font-semibold hover:bg-muted"
+          >
             Continue with Google
           </button>
-          <button type="button" onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
-            className="block w-full text-center text-xs text-muted-foreground underline-offset-4 hover:underline">
+          <button
+            type="button"
+            onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
+            className="block w-full text-center text-xs text-muted-foreground underline-offset-4 hover:underline"
+          >
             {mode === "signin" ? "New here? Create an account" : "Have an account? Sign in"}
           </button>
         </form>
