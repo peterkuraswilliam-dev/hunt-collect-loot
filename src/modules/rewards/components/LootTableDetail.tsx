@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { X, Plus, Trash2, Copy, GripVertical, Search, AlertTriangle, CheckCircle2, Package, Link2, Save, Info } from "lucide-react";
+import { X, Plus, Trash2, Copy, GripVertical, Search, AlertTriangle, CheckCircle2, Package, Link2, Save, Info, ExternalLink, Activity, BarChart3, LinkIcon, Pickaxe, TreePine, Fish, Sprout, ScrollText, Trophy, PartyPopper, Box, Skull, Layers, Gamepad2, User as UserIcon, Clock as ClockIcon } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Field, inputCls } from "@/components/admin/AdminTable";
@@ -11,7 +11,12 @@ import {
   assetsForImportQuery,
   collectionsLookupQuery,
   assetTypesLookupQuery,
+  lootTableReferencesQuery,
+  lootTableActivityQuery,
+  profilesLookupQuery,
   type LootTableEntry,
+  type LootTableReference,
+  type LootTableActivityRow,
   type Reward,
 } from "../queries";
 
