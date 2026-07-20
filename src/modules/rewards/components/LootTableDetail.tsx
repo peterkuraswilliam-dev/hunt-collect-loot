@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { X, Plus, Trash2, Copy, GripVertical, Search, AlertTriangle, CheckCircle2, Package, Link2, Save, Info } from "lucide-react";
+import { X, Plus, Trash2, Copy, GripVertical, Search, AlertTriangle, CheckCircle2, Package, Link2, Save, Info, ExternalLink, Activity, BarChart3, LinkIcon, Pickaxe, TreePine, Fish, Sprout, ScrollText, Trophy, PartyPopper, Box, Skull, Layers, Gamepad2, User as UserIcon, Clock as ClockIcon } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Field, inputCls } from "@/components/admin/AdminTable";
@@ -11,7 +11,12 @@ import {
   assetsForImportQuery,
   collectionsLookupQuery,
   assetTypesLookupQuery,
+  lootTableReferencesQuery,
+  lootTableActivityQuery,
+  profilesLookupQuery,
   type LootTableEntry,
+  type LootTableReference,
+  type LootTableActivityRow,
   type Reward,
 } from "../queries";
 
@@ -47,7 +52,7 @@ const SELECTION_LABELS: Record<string, string> = {
 
 export function LootTableDetail({ table, onClose }: { table: LootTable; onClose: () => void }) {
   const qc = useQueryClient();
-  const [tab, setTab] = useState<"overview" | "entries" | "rules">("entries");
+  const [tab, setTab] = useState<"overview" | "entries" | "rules" | "references" | "analytics" | "activity">("entries");
   const [picking, setPicking] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [editing, setEditing] = useState<LootTableEntry | null>(null);
@@ -191,20 +196,28 @@ export function LootTableDetail({ table, onClose }: { table: LootTable; onClose:
           <button onClick={onClose} className="rounded p-1 hover:bg-surface-2"><X className="h-4 w-4" /></button>
         </div>
 
-        <div className="flex gap-1 border-b border-border px-3">
-          {(["entries", "rules", "overview"] as const).map((k) => (
+        <div className="flex gap-1 border-b border-border px-3 overflow-x-auto">
+          {(["entries", "rules", "references", "analytics", "activity", "overview"] as const).map((k) => (
             <button
               key={k}
               onClick={() => setTab(k)}
-              className={`px-3 py-2 text-xs font-semibold uppercase tracking-widest ${tab === k ? "border-b-2 border-primary text-primary" : "text-muted-foreground"}`}
+              className={`whitespace-nowrap px-3 py-2 text-xs font-semibold uppercase tracking-widest ${tab === k ? "border-b-2 border-primary text-primary" : "text-muted-foreground"}`}
             >
-              {k === "entries" ? `Loot Entries (${entries.length})` : k === "rules" ? "Rules" : "Overview"}
+              {k === "entries" ? `Loot Entries (${entries.length})`
+                : k === "rules" ? "Rules"
+                : k === "references" ? "References"
+                : k === "analytics" ? "Analytics"
+                : k === "activity" ? "Activity"
+                : "Overview"}
             </button>
           ))}
         </div>
 
         <div className="overflow-y-auto p-3 flex-1">
           {tab === "rules" && <RulesTab table={table} onSaved={() => qc.invalidateQueries({ queryKey: ["loot_tables"] })} />}
+          {tab === "references" && <ReferencesTab tableId={table.id} />}
+          {tab === "analytics" && <AnalyticsTab tableId={table.id} entries={entries} rewardById={rewardById} />}
+          {tab === "activity" && <ActivityTab tableId={table.id} rewardById={rewardById} />}
           {tab === "overview" && (
             <div className="space-y-3">
               <div className="grid grid-cols-2 gap-2 md:grid-cols-6">
@@ -376,7 +389,7 @@ export function LootTableDetail({ table, onClose }: { table: LootTable; onClose:
   );
 }
 
-function SummaryCard({ label, value }: { label: string; value: number }) {
+function SummaryCard({ label, value }: { label: string; value: number | string }) {
   return (
     <div className="panel p-2">
       <div className="text-[10px] uppercase tracking-widest text-muted-foreground">{label}</div>
@@ -726,3 +739,232 @@ function RulesTab({ table, onSaved }: { table: LootTable; onSaved: () => void })
 
 // keep tree-shake happy
 export { CheckCircle2 };
+
+// ============ Phase 4D: References / Analytics / Activity ============
+
+const MODULE_META: Record<string, { label: string; icon: typeof Pickaxe; color: string }> = {
+  mining: { label: "Mining", icon: Pickaxe, color: "text-amber-500" },
+  woodcutting: { label: "Woodcutting", icon: TreePine, color: "text-emerald-500" },
+  fishing: { label: "Fishing", icon: Fish, color: "text-sky-500" },
+  farming: { label: "Farming", icon: Sprout, color: "text-lime-500" },
+  quests: { label: "Quests", icon: ScrollText, color: "text-violet-500" },
+  achievements: { label: "Achievements", icon: Trophy, color: "text-yellow-500" },
+  events: { label: "Events", icon: PartyPopper, color: "text-pink-500" },
+  chests: { label: "Chests", icon: Box, color: "text-orange-500" },
+  bosses: { label: "Bosses", icon: Skull, color: "text-red-500" },
+  collections: { label: "Collections", icon: Layers, color: "text-blue-500" },
+  mini_games: { label: "Mini-games", icon: Gamepad2, color: "text-fuchsia-500" },
+};
+
+function StatusBadge({ status }: { status: string }) {
+  const s = status?.toLowerCase() ?? "unknown";
+  const map: Record<string, string> = {
+    active: "bg-emerald-500/15 text-emerald-500",
+    draft: "bg-amber-500/15 text-amber-500",
+    archived: "bg-zinc-500/15 text-zinc-400",
+    disabled: "bg-red-500/15 text-red-500",
+  };
+  return <span className={`rounded px-1.5 py-0.5 text-[10px] uppercase ${map[s] ?? "bg-surface-2 text-muted-foreground"}`}>{s}</span>;
+}
+
+function ReferencesTab({ tableId }: { tableId: string }) {
+  const { data: refs = [], isLoading } = useQuery(lootTableReferencesQuery(tableId));
+  const grouped = useMemo(() => {
+    const m = new Map<string, LootTableReference[]>();
+    for (const r of refs) {
+      const list = m.get(r.module) ?? [];
+      list.push(r);
+      m.set(r.module, list);
+    }
+    return Array.from(m.entries()).sort((a, b) => a[0].localeCompare(b[0]));
+  }, [refs]);
+
+  if (isLoading) return <div className="p-4 text-xs text-muted-foreground">Loading references…</div>;
+
+  return (
+    <div className="space-y-3">
+      <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
+        <SummaryCard label="Total references" value={refs.length} />
+        <SummaryCard label="Modules" value={grouped.length} />
+        <SummaryCard label="Active" value={refs.filter((r) => r.status === "active").length} />
+        <SummaryCard label="Draft / Archived" value={refs.filter((r) => r.status !== "active").length} />
+      </div>
+
+      {refs.length === 0 ? (
+        <div className="panel p-6 text-center text-xs text-muted-foreground">
+          Not referenced anywhere yet.
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {grouped.map(([mod, rows]) => {
+            const meta = MODULE_META[mod] ?? { label: mod, icon: LinkIcon, color: "text-muted-foreground" };
+            const Icon = meta.icon;
+            return (
+              <div key={mod} className="panel overflow-hidden">
+                <div className="flex items-center gap-2 border-b border-border bg-surface-2 px-3 py-2">
+                  <Icon className={`h-3.5 w-3.5 ${meta.color}`} />
+                  <span className="text-xs font-semibold uppercase tracking-wider">{meta.label}</span>
+                  <span className="ml-auto text-[10px] text-muted-foreground">{rows.length} record{rows.length === 1 ? "" : "s"}</span>
+                </div>
+                <table className="w-full text-left text-xs">
+                  <thead className="text-[10px] uppercase tracking-widest text-muted-foreground">
+                    <tr>
+                      <th className="px-3 py-1.5">Record Name</th>
+                      <th className="px-3 py-1.5">Status</th>
+                      <th className="px-3 py-1.5">Last updated</th>
+                      <th className="px-3 py-1.5 text-right">Open</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {rows.map((r) => {
+                      const isLink = r.record_ref && r.record_ref.startsWith("/");
+                      return (
+                        <tr key={r.id} className="border-t border-border/40">
+                          <td className="px-3 py-1.5 font-semibold">{r.record_name}</td>
+                          <td className="px-3 py-1.5"><StatusBadge status={r.status} /></td>
+                          <td className="px-3 py-1.5 text-muted-foreground">{new Date(r.last_updated).toLocaleDateString()}</td>
+                          <td className="px-3 py-1.5 text-right">
+                            {isLink ? (
+                              <a href={r.record_ref!} className="inline-flex items-center gap-1 text-primary hover:underline">
+                                Open <ExternalLink className="h-3 w-3" />
+                              </a>
+                            ) : (
+                              <span className="text-[10px] text-muted-foreground italic">External</span>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function AnalyticsTab({ tableId, entries, rewardById }: { tableId: string; entries: LootTableEntry[]; rewardById: Map<string, Reward> }) {
+  const { data: tableRow } = useQuery({
+    queryKey: ["loot_table_row", tableId],
+    queryFn: async () => {
+      const { data, error } = await sb.from("loot_tables").select("total_rolls,total_rewards_granted,updated_at").eq("id", tableId).single();
+      if (error) throw error;
+      return data as { total_rolls: number; total_rewards_granted: number; updated_at: string };
+    },
+    staleTime: 15_000,
+  });
+  const { data: activity = [] } = useQuery(lootTableActivityQuery(tableId));
+
+  const ranked = useMemo(
+    () => [...entries]
+      .map((e) => ({ entry: e, reward: rewardById.get(e.reward_id) }))
+      .filter((x) => x.reward)
+      .sort((a, b) => Number(b.entry.times_awarded ?? 0) - Number(a.entry.times_awarded ?? 0)),
+    [entries, rewardById],
+  );
+  const most = ranked[0];
+  const nonZero = ranked.filter((r) => Number(r.entry.times_awarded ?? 0) > 0);
+  const least = nonZero[nonZero.length - 1];
+  const maxAwarded = Math.max(1, Number(most?.entry.times_awarded ?? 0));
+  const lastUsed = activity[0]?.created_at ?? tableRow?.updated_at ?? null;
+
+  return (
+    <div className="space-y-3">
+      <div className="panel border-primary/30 bg-primary/5 p-2 text-[11px] text-muted-foreground flex items-center gap-2">
+        <Info className="h-3.5 w-3.5 text-primary" />
+        Demo statistics — reward distribution is not live yet.
+      </div>
+
+      <div className="grid grid-cols-2 gap-2 md:grid-cols-5">
+        <SummaryCard label="Total Rolls" value={(tableRow?.total_rolls ?? 0).toLocaleString()} />
+        <SummaryCard label="Rewards Granted" value={(tableRow?.total_rewards_granted ?? 0).toLocaleString()} />
+        <SummaryCard label="Most Awarded" value={most?.reward?.name ?? "—"} />
+        <SummaryCard label="Least Awarded" value={least?.reward?.name ?? "—"} />
+        <SummaryCard label="Last Used" value={lastUsed ? new Date(lastUsed).toLocaleDateString() : "—"} />
+      </div>
+
+      <div className="panel p-3">
+        <div className="mb-2 flex items-center gap-1 text-[10px] uppercase tracking-widest text-primary">
+          <BarChart3 className="h-3 w-3" /> Top rewards by times awarded
+        </div>
+        {ranked.length === 0 ? (
+          <p className="text-xs text-muted-foreground">No entries yet.</p>
+        ) : (
+          <div className="space-y-1.5">
+            {ranked.slice(0, 8).map(({ entry, reward }) => {
+              const n = Number(entry.times_awarded ?? 0);
+              return (
+                <div key={entry.id} className="flex items-center gap-2 text-xs">
+                  <div className="w-40 truncate font-semibold">{reward!.name}</div>
+                  <div className="flex-1 h-2.5 rounded bg-surface-2 overflow-hidden">
+                    <div className="h-full bg-primary" style={{ width: `${(n / maxAwarded) * 100}%` }} />
+                  </div>
+                  <div className="w-16 text-right tabular-nums text-muted-foreground">{n.toLocaleString()}</div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+const ACTION_META: Record<string, { label: string; icon: typeof Plus; color: string }> = {
+  created: { label: "Created", icon: Plus, color: "text-emerald-500" },
+  updated: { label: "Updated", icon: Info, color: "text-primary" },
+  enabled: { label: "Enabled", icon: CheckCircle2, color: "text-emerald-500" },
+  disabled: { label: "Disabled", icon: AlertTriangle, color: "text-amber-500" },
+  entry_added: { label: "Loot Entry Added", icon: Plus, color: "text-emerald-500" },
+  entry_removed: { label: "Loot Entry Removed", icon: Trash2, color: "text-red-500" },
+};
+
+function ActivityTab({ tableId, rewardById }: { tableId: string; rewardById: Map<string, Reward> }) {
+  const { data: activity = [], isLoading } = useQuery(lootTableActivityQuery(tableId));
+  const actorIds = useMemo(() => Array.from(new Set(activity.map((a) => a.actor_id).filter((x): x is string => !!x))), [activity]);
+  const { data: profiles = [] } = useQuery(profilesLookupQuery(actorIds));
+  const profileById = useMemo(() => new Map(profiles.map((p) => [p.id, p])), [profiles]);
+
+  if (isLoading) return <div className="p-4 text-xs text-muted-foreground">Loading activity…</div>;
+  if (activity.length === 0) {
+    return <div className="panel p-6 text-center text-xs text-muted-foreground">No activity recorded.</div>;
+  }
+
+  return (
+    <div className="space-y-2">
+      {activity.map((row: LootTableActivityRow) => {
+        const meta = ACTION_META[row.action] ?? { label: row.action, icon: Activity, color: "text-muted-foreground" };
+        const Icon = meta.icon;
+        const actorName = row.actor_id ? (profileById.get(row.actor_id)?.username ?? row.actor_label ?? "User") : (row.actor_label ?? "System");
+        const rewardId = (row.detail as { reward_id?: string })?.reward_id;
+        const rewardName = rewardId ? rewardById.get(rewardId)?.name : undefined;
+        const extraDetail = Object.entries(row.detail ?? {})
+          .filter(([k]) => k !== "reward_id")
+          .map(([k, v]) => `${k}: ${String(v)}`)
+          .join(" · ");
+        return (
+          <div key={row.id} className="panel flex items-start gap-3 p-2 text-xs">
+            <div className={`mt-0.5 ${meta.color}`}><Icon className="h-4 w-4" /></div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="font-semibold">{meta.label}</span>
+                {rewardName && <span className="rounded bg-surface-2 px-1.5 py-0.5 text-[10px]">{rewardName}</span>}
+              </div>
+              {extraDetail && <div className="text-[11px] text-muted-foreground">{extraDetail}</div>}
+              <div className="mt-0.5 flex items-center gap-2 text-[10px] text-muted-foreground">
+                <UserIcon className="h-2.5 w-2.5" /> {actorName}
+                <span>·</span>
+                <ClockIcon className="h-2.5 w-2.5" />
+                <span title={new Date(row.created_at).toLocaleString()}>{new Date(row.created_at).toLocaleString()}</span>
+              </div>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+

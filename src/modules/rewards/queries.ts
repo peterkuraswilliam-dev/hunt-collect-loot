@@ -346,3 +346,100 @@ export const allLootTableEntriesQuery = queryOptions({
   },
   staleTime: 30_000,
 });
+
+// ---- Loot table references / activity / analytics ----
+export type LootTableReference = {
+  id: string;
+  loot_table_id: string;
+  module: string;
+  record_name: string;
+  record_ref: string | null;
+  status: string;
+  last_updated: string;
+  created_at: string;
+};
+
+export const lootTableReferencesQuery = (tableId: string | null) =>
+  queryOptions({
+    queryKey: ["loot_table_references", tableId],
+    enabled: !!tableId,
+    queryFn: async (): Promise<LootTableReference[]> => {
+      if (!tableId) return [];
+      const { data, error } = await sb
+        .from("loot_table_references")
+        .select("*")
+        .eq("loot_table_id", tableId)
+        .order("last_updated", { ascending: false });
+      if (error) throw error;
+      return data ?? [];
+    },
+    staleTime: 15_000,
+  });
+
+export const lootTableReferenceCountsQuery = queryOptions({
+  queryKey: ["loot_table_reference_counts"],
+  queryFn: async (): Promise<Array<{ loot_table_id: string; total: number }>> => {
+    const { data, error } = await sb.from("loot_table_references").select("loot_table_id");
+    if (error) throw error;
+    const map = new Map<string, number>();
+    for (const r of (data ?? []) as Array<{ loot_table_id: string }>) {
+      map.set(r.loot_table_id, (map.get(r.loot_table_id) ?? 0) + 1);
+    }
+    return Array.from(map.entries()).map(([loot_table_id, total]) => ({ loot_table_id, total }));
+  },
+  staleTime: 30_000,
+});
+
+export type LootTableActivityRow = {
+  id: string;
+  loot_table_id: string;
+  action: string;
+  actor_id: string | null;
+  actor_label: string | null;
+  detail: Record<string, unknown>;
+  created_at: string;
+};
+
+export const lootTableActivityQuery = (tableId: string | null) =>
+  queryOptions({
+    queryKey: ["loot_table_activity", tableId],
+    enabled: !!tableId,
+    queryFn: async (): Promise<LootTableActivityRow[]> => {
+      if (!tableId) return [];
+      const { data, error } = await sb
+        .from("loot_table_activity_log")
+        .select("*")
+        .eq("loot_table_id", tableId)
+        .order("created_at", { ascending: false })
+        .limit(100);
+      if (error) throw error;
+      return data ?? [];
+    },
+    staleTime: 15_000,
+  });
+
+export const lootTablesFullQuery = queryOptions({
+  queryKey: ["loot_tables_full"],
+  queryFn: async (): Promise<Array<{ id: string; name: string; enabled: boolean; category: string | null; updated_at: string; total_rolls: number; total_rewards_granted: number }>> => {
+    const { data, error } = await sb
+      .from("loot_tables")
+      .select("id,name,enabled,category,updated_at,total_rolls,total_rewards_granted")
+      .order("updated_at", { ascending: false });
+    if (error) throw error;
+    return data ?? [];
+  },
+  staleTime: 30_000,
+});
+
+export const profilesLookupQuery = (ids: string[]) =>
+  queryOptions({
+    queryKey: ["profiles_lookup", [...ids].sort().join(",")],
+    enabled: ids.length > 0,
+    queryFn: async (): Promise<Array<{ id: string; username: string | null }>> => {
+      if (ids.length === 0) return [];
+      const { data, error } = await sb.from("profiles").select("id,username").in("id", ids);
+      if (error) throw error;
+      return data ?? [];
+    },
+    staleTime: 60_000,
+  });
