@@ -41,6 +41,17 @@ export function Dashboard() {
   const { data: lootEntries = [] } = useQuery(allLootTableEntriesQuery);
   const { data: lootTables = [] } = useQuery(lootTablesFullQuery);
   const { data: refCounts = [] } = useQuery(lootTableReferenceCountsQuery);
+  const { data: distRequests = [] } = useQuery(distributionRequestsQuery);
+
+  const distCounts = { pending: 0, processing: 0, completed: 0, failed: 0, cancelled: 0 } as Record<string, number>;
+  for (const r of distRequests) distCounts[r.status] = (distCounts[r.status] ?? 0) + 1;
+  const distBySource = (() => {
+    const m = new Map<string, number>();
+    for (const r of distRequests) m.set(r.source_module, (m.get(r.source_module) ?? 0) + 1);
+    return Array.from(m.entries()).sort((a, b) => b[1] - a[1]).slice(0, 6);
+  })();
+  const recentDist = [...distRequests].slice(0, 8);
+
 
   const rewardById = new Map(rewards.map((r) => [r.id, r]));
   const lootEntryTotal = lootEntries.length;
