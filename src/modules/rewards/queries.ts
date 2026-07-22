@@ -443,3 +443,72 @@ export const profilesLookupQuery = (ids: string[]) =>
     },
     staleTime: 60_000,
   });
+
+// ---- Reward Distribution Engine ----
+export type DistributionStatus = "pending" | "processing" | "completed" | "failed" | "cancelled";
+export type DistributionType = "direct" | "bundle" | "loot_table";
+
+export type DistributionRequest = {
+  id: string;
+  source_module: string;
+  source_record_id: string | null;
+  source_record_name: string | null;
+  player_id: string | null;
+  request_type: DistributionType;
+  reward_id: string | null;
+  reward_bundle_id: string | null;
+  loot_table_id: string | null;
+  quantity: number;
+  status: DistributionStatus;
+  priority: number;
+  conditions: Record<string, unknown>;
+  resolved_rewards: Array<Record<string, unknown>>;
+  error_message: string | null;
+  metadata: Record<string, unknown>;
+  requested_by: string | null;
+  processed_at: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export const distributionRequestsQuery = queryOptions({
+  queryKey: ["distribution_requests"],
+  queryFn: async (): Promise<DistributionRequest[]> => {
+    const { data, error } = await sb
+      .from("reward_distribution_requests")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(500);
+    if (error) throw error;
+    return data ?? [];
+  },
+  staleTime: 15_000,
+});
+
+export type DistributionActivityRow = {
+  id: string;
+  request_id: string;
+  action: string;
+  actor_id: string | null;
+  actor_label: string | null;
+  detail: Record<string, unknown>;
+  created_at: string;
+};
+
+export const distributionActivityQuery = (requestId: string | null) =>
+  queryOptions({
+    queryKey: ["distribution_activity", requestId],
+    enabled: !!requestId,
+    queryFn: async (): Promise<DistributionActivityRow[]> => {
+      if (!requestId) return [];
+      const { data, error } = await sb
+        .from("reward_distribution_activity")
+        .select("*")
+        .eq("request_id", requestId)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data ?? [];
+    },
+    staleTime: 10_000,
+  });
+

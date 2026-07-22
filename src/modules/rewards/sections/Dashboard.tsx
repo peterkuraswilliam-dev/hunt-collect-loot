@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { Gift, Sparkles, CheckCircle2, CircleSlash, Boxes, Link2, RefreshCw, Download, Clock, TrendingUp, AlertTriangle, Archive, Dice5 } from "lucide-react";
+import { Gift, Sparkles, CheckCircle2, CircleSlash, Boxes, Link2, RefreshCw, Download, Clock, TrendingUp, AlertTriangle, Archive, Dice5, Send } from "lucide-react";
 
 import {
   rewardTypesQuery,
@@ -11,10 +11,13 @@ import {
   allLootTableEntriesQuery,
   lootTablesFullQuery,
   lootTableReferenceCountsQuery,
+  distributionRequestsQuery,
 } from "../queries";
+import { StatusBadge } from "../components/DistributionDetail";
 import { supabase } from "@/integrations/supabase/client";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const sb = supabase as any;
+
 
 function Stat({ icon: Icon, label, value }: { icon: typeof Gift; label: string; value: number | string }) {
   return (
@@ -38,6 +41,17 @@ export function Dashboard() {
   const { data: lootEntries = [] } = useQuery(allLootTableEntriesQuery);
   const { data: lootTables = [] } = useQuery(lootTablesFullQuery);
   const { data: refCounts = [] } = useQuery(lootTableReferenceCountsQuery);
+  const { data: distRequests = [] } = useQuery(distributionRequestsQuery);
+
+  const distCounts = { pending: 0, processing: 0, completed: 0, failed: 0, cancelled: 0 } as Record<string, number>;
+  for (const r of distRequests) distCounts[r.status] = (distCounts[r.status] ?? 0) + 1;
+  const distBySource = (() => {
+    const m = new Map<string, number>();
+    for (const r of distRequests) m.set(r.source_module, (m.get(r.source_module) ?? 0) + 1);
+    return Array.from(m.entries()).sort((a, b) => b[1] - a[1]).slice(0, 6);
+  })();
+  const recentDist = [...distRequests].slice(0, 8);
+
 
   const rewardById = new Map(rewards.map((r) => [r.id, r]));
   const lootEntryTotal = lootEntries.length;
@@ -151,6 +165,55 @@ export function Dashboard() {
         <Stat icon={AlertTriangle} label="Broken Loot Refs" value={brokenLootEntries} />
       </div>
 
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
+        <Stat icon={Send} label="Pending Requests" value={distCounts.pending ?? 0} />
+        <Stat icon={RefreshCw} label="Processing" value={distCounts.processing ?? 0} />
+        <Stat icon={CheckCircle2} label="Completed" value={distCounts.completed ?? 0} />
+        <Stat icon={AlertTriangle} label="Failed" value={distCounts.failed ?? 0} />
+        <Stat icon={CircleSlash} label="Cancelled" value={distCounts.cancelled ?? 0} />
+      </div>
+
+      <div className="grid gap-3 lg:grid-cols-2">
+        <div className="panel p-3">
+          <div className="mb-2 flex items-center gap-1 text-[10px] uppercase tracking-widest text-primary">
+            <Send className="h-3 w-3" /> Requests by source
+          </div>
+          {distBySource.length === 0 ? (
+            <p className="text-xs text-muted-foreground">No requests yet.</p>
+          ) : (
+            <ul className="space-y-1 text-xs">
+              {distBySource.map(([mod, n]) => (
+                <li key={mod} className="flex items-center justify-between border-b border-border/40 py-1 last:border-0">
+                  <span className="font-semibold">{mod}</span>
+                  <span className="tabular-nums text-muted-foreground">{n}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+
+        <div className="panel p-3">
+          <div className="mb-2 flex items-center gap-1 text-[10px] uppercase tracking-widest text-primary">
+            <Clock className="h-3 w-3" /> Recent distribution activity
+          </div>
+          {recentDist.length === 0 ? (
+            <p className="text-xs text-muted-foreground">No recent activity.</p>
+          ) : (
+            <ul className="space-y-1 text-xs">
+              {recentDist.map((r) => (
+                <li key={r.id} className="flex items-center justify-between gap-2 border-b border-border/40 py-1 last:border-0">
+                  <span className="truncate">
+                    <span className="mr-2 text-[10px] uppercase tracking-wider text-muted-foreground">{r.source_module}</span>
+                    <span className="font-semibold">{r.source_record_name ?? "—"}</span>
+                  </span>
+                  <StatusBadge status={r.status} />
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </div>
+
       <div className="grid gap-3 lg:grid-cols-2">
         <div className="panel p-3">
           <div className="mb-2 flex items-center gap-1 text-[10px] uppercase tracking-widest text-primary">
@@ -163,6 +226,7 @@ export function Dashboard() {
               .slice(0, 5)
               .map((c) => ({ table: tableById.get(c.loot_table_id), total: c.total }))
               .filter((x) => x.table);
+
             if (ranked.length === 0) return <p className="text-xs text-muted-foreground">No references yet.</p>;
             return (
               <ul className="space-y-1 text-xs">

@@ -1739,6 +1739,135 @@ export type Database = {
         }
         Relationships: []
       }
+      reward_distribution_activity: {
+        Row: {
+          action: string
+          actor_id: string | null
+          actor_label: string | null
+          created_at: string
+          detail: Json
+          id: string
+          request_id: string
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          actor_label?: string | null
+          created_at?: string
+          detail?: Json
+          id?: string
+          request_id: string
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          actor_label?: string | null
+          created_at?: string
+          detail?: Json
+          id?: string
+          request_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reward_distribution_activity_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "reward_distribution_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reward_distribution_requests: {
+        Row: {
+          conditions: Json
+          created_at: string
+          error_message: string | null
+          id: string
+          loot_table_id: string | null
+          metadata: Json
+          player_id: string | null
+          priority: number
+          processed_at: string | null
+          quantity: number
+          request_type: Database["public"]["Enums"]["reward_distribution_type"]
+          requested_by: string | null
+          resolved_rewards: Json
+          reward_bundle_id: string | null
+          reward_id: string | null
+          source_module: string
+          source_record_id: string | null
+          source_record_name: string | null
+          status: Database["public"]["Enums"]["reward_distribution_status"]
+          updated_at: string
+        }
+        Insert: {
+          conditions?: Json
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          loot_table_id?: string | null
+          metadata?: Json
+          player_id?: string | null
+          priority?: number
+          processed_at?: string | null
+          quantity?: number
+          request_type: Database["public"]["Enums"]["reward_distribution_type"]
+          requested_by?: string | null
+          resolved_rewards?: Json
+          reward_bundle_id?: string | null
+          reward_id?: string | null
+          source_module: string
+          source_record_id?: string | null
+          source_record_name?: string | null
+          status?: Database["public"]["Enums"]["reward_distribution_status"]
+          updated_at?: string
+        }
+        Update: {
+          conditions?: Json
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          loot_table_id?: string | null
+          metadata?: Json
+          player_id?: string | null
+          priority?: number
+          processed_at?: string | null
+          quantity?: number
+          request_type?: Database["public"]["Enums"]["reward_distribution_type"]
+          requested_by?: string | null
+          resolved_rewards?: Json
+          reward_bundle_id?: string | null
+          reward_id?: string | null
+          source_module?: string
+          source_record_id?: string | null
+          source_record_name?: string | null
+          status?: Database["public"]["Enums"]["reward_distribution_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reward_distribution_requests_loot_table_id_fkey"
+            columns: ["loot_table_id"]
+            isOneToOne: false
+            referencedRelation: "loot_tables"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reward_distribution_requests_reward_bundle_id_fkey"
+            columns: ["reward_bundle_id"]
+            isOneToOne: false
+            referencedRelation: "reward_bundles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reward_distribution_requests_reward_id_fkey"
+            columns: ["reward_id"]
+            isOneToOne: false
+            referencedRelation: "rewards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reward_log: {
         Row: {
           amount: number
@@ -3052,6 +3181,10 @@ export type Database = {
         Args: { p_patch: Json; p_reward_ids: string[] }
         Returns: Json
       }
+      cancel_reward_distribution_request: {
+        Args: { p_request_id: string }
+        Returns: Json
+      }
       claim_collection_bonus: {
         Args: { p_collection_id: string; p_threshold: number; p_user: string }
         Returns: Json
@@ -3118,6 +3251,10 @@ export type Database = {
         Args: { p_subject: string; p_type_id: string }
         Returns: Json
       }
+      process_reward_distribution_request: {
+        Args: { p_request_id: string }
+        Returns: Json
+      }
       progression_level_for_xp: {
         Args: { p_type_id: string; p_xp: number }
         Returns: number
@@ -3167,6 +3304,13 @@ export type Database = {
         | "min_level"
         | "max_level"
       rarity: "common" | "rare" | "epic" | "legendary"
+      reward_distribution_status:
+        | "pending"
+        | "processing"
+        | "completed"
+        | "failed"
+        | "cancelled"
+      reward_distribution_type: "direct" | "bundle" | "loot_table"
       tile_reward_type: "credits" | "xp" | "asset" | "pack" | "empty"
       xp_event_status: "processed" | "failed" | "replayed"
       xp_event_type: "xp_awarded" | "xp_removed" | "level_up" | "multi_level_up"
@@ -3309,6 +3453,14 @@ export const Constants = {
         "max_level",
       ],
       rarity: ["common", "rare", "epic", "legendary"],
+      reward_distribution_status: [
+        "pending",
+        "processing",
+        "completed",
+        "failed",
+        "cancelled",
+      ],
+      reward_distribution_type: ["direct", "bundle", "loot_table"],
       tile_reward_type: ["credits", "xp", "asset", "pack", "empty"],
       xp_event_status: ["processed", "failed", "replayed"],
       xp_event_type: ["xp_awarded", "xp_removed", "level_up", "multi_level_up"],
