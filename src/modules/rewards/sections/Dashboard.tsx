@@ -165,6 +165,55 @@ export function Dashboard() {
         <Stat icon={AlertTriangle} label="Broken Loot Refs" value={brokenLootEntries} />
       </div>
 
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
+        <Stat icon={Send} label="Pending Requests" value={distCounts.pending ?? 0} />
+        <Stat icon={RefreshCw} label="Processing" value={distCounts.processing ?? 0} />
+        <Stat icon={CheckCircle2} label="Completed" value={distCounts.completed ?? 0} />
+        <Stat icon={AlertTriangle} label="Failed" value={distCounts.failed ?? 0} />
+        <Stat icon={CircleSlash} label="Cancelled" value={distCounts.cancelled ?? 0} />
+      </div>
+
+      <div className="grid gap-3 lg:grid-cols-2">
+        <div className="panel p-3">
+          <div className="mb-2 flex items-center gap-1 text-[10px] uppercase tracking-widest text-primary">
+            <Send className="h-3 w-3" /> Requests by source
+          </div>
+          {distBySource.length === 0 ? (
+            <p className="text-xs text-muted-foreground">No requests yet.</p>
+          ) : (
+            <ul className="space-y-1 text-xs">
+              {distBySource.map(([mod, n]) => (
+                <li key={mod} className="flex items-center justify-between border-b border-border/40 py-1 last:border-0">
+                  <span className="font-semibold">{mod}</span>
+                  <span className="tabular-nums text-muted-foreground">{n}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+
+        <div className="panel p-3">
+          <div className="mb-2 flex items-center gap-1 text-[10px] uppercase tracking-widest text-primary">
+            <Clock className="h-3 w-3" /> Recent distribution activity
+          </div>
+          {recentDist.length === 0 ? (
+            <p className="text-xs text-muted-foreground">No recent activity.</p>
+          ) : (
+            <ul className="space-y-1 text-xs">
+              {recentDist.map((r) => (
+                <li key={r.id} className="flex items-center justify-between gap-2 border-b border-border/40 py-1 last:border-0">
+                  <span className="truncate">
+                    <span className="mr-2 text-[10px] uppercase tracking-wider text-muted-foreground">{r.source_module}</span>
+                    <span className="font-semibold">{r.source_record_name ?? "—"}</span>
+                  </span>
+                  <StatusBadge status={r.status} />
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </div>
+
       <div className="grid gap-3 lg:grid-cols-2">
         <div className="panel p-3">
           <div className="mb-2 flex items-center gap-1 text-[10px] uppercase tracking-widest text-primary">
@@ -177,6 +226,7 @@ export function Dashboard() {
               .slice(0, 5)
               .map((c) => ({ table: tableById.get(c.loot_table_id), total: c.total }))
               .filter((x) => x.table);
+
             if (ranked.length === 0) return <p className="text-xs text-muted-foreground">No references yet.</p>;
             return (
               <ul className="space-y-1 text-xs">
