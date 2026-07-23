@@ -183,6 +183,16 @@ export function Dashboard() {
         <Stat icon={CircleSlash} label="Cancelled" value={distCounts.cancelled ?? 0} />
       </div>
 
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
+        <Stat icon={Truck} label="Successful Deliveries" value={delCounts.delivered ?? 0} />
+        <Stat icon={AlertTriangle} label="Failed Deliveries" value={delCounts.failed ?? 0} />
+        <Stat icon={CircleSlash} label="Partial Deliveries" value={delCounts.partially_delivered ?? 0} />
+        <Stat icon={Clock} label="Pending Deliveries" value={(delCounts.pending ?? 0) + (delCounts.processing ?? 0)} />
+        <Stat icon={TrendingUp} label="Success Rate" value={totalDelAttempts ? `${successRate}%` : "—"} />
+      </div>
+
+
+
       <div className="grid gap-3 lg:grid-cols-2">
         <div className="panel p-3">
           <div className="mb-2 flex items-center gap-1 text-[10px] uppercase tracking-widest text-primary">
