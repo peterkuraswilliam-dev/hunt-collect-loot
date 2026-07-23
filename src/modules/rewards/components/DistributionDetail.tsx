@@ -135,11 +135,7 @@ export function DistributionDetail({ request, onClose }: { request: Distribution
       if (data?.error) throw new Error(data.error);
       return data;
     },
-    onSuccess: () => {
-      toast.success("Request processed");
-      qc.invalidateQueries({ queryKey: ["distribution_requests"] });
-      qc.invalidateQueries({ queryKey: ["distribution_activity", request.id] });
-    },
+    onSuccess: () => { toast.success("Request processed"); invalidateAll(); },
     onError: (e: Error) => toast.error(e.message),
   });
 
@@ -148,13 +144,10 @@ export function DistributionDetail({ request, onClose }: { request: Distribution
       const { error } = await sb.rpc("cancel_reward_distribution_request", { p_request_id: request.id });
       if (error) throw error;
     },
-    onSuccess: () => {
-      toast.success("Cancelled");
-      qc.invalidateQueries({ queryKey: ["distribution_requests"] });
-      qc.invalidateQueries({ queryKey: ["distribution_activity", request.id] });
-    },
+    onSuccess: () => { toast.success("Cancelled"); invalidateAll(); },
     onError: (e: Error) => toast.error(e.message),
   });
+
 
   const TypeIcon = TYPE_ICON[request.request_type] ?? Package;
 
