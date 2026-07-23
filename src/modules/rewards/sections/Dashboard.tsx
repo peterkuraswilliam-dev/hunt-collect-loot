@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { Gift, Sparkles, CheckCircle2, CircleSlash, Boxes, Link2, RefreshCw, Download, Clock, TrendingUp, AlertTriangle, Archive, Dice5, Send } from "lucide-react";
+import { Gift, Sparkles, CheckCircle2, CircleSlash, Boxes, Link2, RefreshCw, Download, Clock, TrendingUp, AlertTriangle, Archive, Dice5, Send, Truck } from "lucide-react";
 
 import {
   rewardTypesQuery,
@@ -12,7 +12,9 @@ import {
   lootTablesFullQuery,
   lootTableReferenceCountsQuery,
   distributionRequestsQuery,
+  deliveriesAllQuery,
 } from "../queries";
+
 import { StatusBadge } from "../components/DistributionDetail";
 import { supabase } from "@/integrations/supabase/client";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -42,6 +44,7 @@ export function Dashboard() {
   const { data: lootTables = [] } = useQuery(lootTablesFullQuery);
   const { data: refCounts = [] } = useQuery(lootTableReferenceCountsQuery);
   const { data: distRequests = [] } = useQuery(distributionRequestsQuery);
+  const { data: deliveries = [] } = useQuery(deliveriesAllQuery);
 
   const distCounts = { pending: 0, processing: 0, completed: 0, failed: 0, cancelled: 0 } as Record<string, number>;
   for (const r of distRequests) distCounts[r.status] = (distCounts[r.status] ?? 0) + 1;
@@ -51,6 +54,13 @@ export function Dashboard() {
     return Array.from(m.entries()).sort((a, b) => b[1] - a[1]).slice(0, 6);
   })();
   const recentDist = [...distRequests].slice(0, 8);
+
+  const delCounts = { delivered: 0, failed: 0, partially_delivered: 0, pending: 0, processing: 0, needs_review: 0, reversed: 0 } as Record<string, number>;
+  for (const d of deliveries) delCounts[d.status] = (delCounts[d.status] ?? 0) + 1;
+  const totalDelivered = delCounts.delivered;
+  const totalDelAttempts = deliveries.length;
+  const successRate = totalDelAttempts ? Math.round((totalDelivered / totalDelAttempts) * 100) : 0;
+
 
 
   const rewardById = new Map(rewards.map((r) => [r.id, r]));
@@ -172,6 +182,16 @@ export function Dashboard() {
         <Stat icon={AlertTriangle} label="Failed" value={distCounts.failed ?? 0} />
         <Stat icon={CircleSlash} label="Cancelled" value={distCounts.cancelled ?? 0} />
       </div>
+
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
+        <Stat icon={Truck} label="Successful Deliveries" value={delCounts.delivered ?? 0} />
+        <Stat icon={AlertTriangle} label="Failed Deliveries" value={delCounts.failed ?? 0} />
+        <Stat icon={CircleSlash} label="Partial Deliveries" value={delCounts.partially_delivered ?? 0} />
+        <Stat icon={Clock} label="Pending Deliveries" value={(delCounts.pending ?? 0) + (delCounts.processing ?? 0)} />
+        <Stat icon={TrendingUp} label="Success Rate" value={totalDelAttempts ? `${successRate}%` : "—"} />
+      </div>
+
+
 
       <div className="grid gap-3 lg:grid-cols-2">
         <div className="panel p-3">

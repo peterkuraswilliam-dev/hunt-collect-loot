@@ -512,3 +512,62 @@ export const distributionActivityQuery = (requestId: string | null) =>
     staleTime: 10_000,
   });
 
+// ---- Delivery layer ----
+export type DeliveryStatus =
+  | "pending" | "processing" | "delivered" | "failed"
+  | "partially_delivered" | "reversed" | "needs_review";
+export type DeliveryDestination =
+  | "inventory" | "wallet" | "experience" | "assets"
+  | "collections" | "titles" | "badges" | "cosmetics";
+
+export type RewardDelivery = {
+  id: string;
+  request_id: string;
+  player_id: string | null;
+  reward_id: string | null;
+  reward_name: string | null;
+  reward_type_slug: string | null;
+  destination: DeliveryDestination;
+  quantity: number;
+  status: DeliveryStatus;
+  delivered_at: string | null;
+  error_message: string | null;
+  retry_count: number;
+  last_retry_at: string | null;
+  dedupe_key: string;
+  detail: Record<string, unknown>;
+  created_at: string;
+  updated_at: string;
+};
+
+export const deliveriesForRequestQuery = (requestId: string | null) =>
+  queryOptions({
+    queryKey: ["reward_deliveries_request", requestId],
+    enabled: !!requestId,
+    queryFn: async (): Promise<RewardDelivery[]> => {
+      if (!requestId) return [];
+      const { data, error } = await sb
+        .from("reward_deliveries")
+        .select("*")
+        .eq("request_id", requestId)
+        .order("created_at", { ascending: true });
+      if (error) throw error;
+      return data ?? [];
+    },
+    staleTime: 10_000,
+  });
+
+export const deliveriesAllQuery = queryOptions({
+  queryKey: ["reward_deliveries_all"],
+  queryFn: async (): Promise<Array<Pick<RewardDelivery, "id" | "request_id" | "status" | "destination">>> => {
+    const { data, error } = await sb
+      .from("reward_deliveries")
+      .select("id,request_id,status,destination")
+      .limit(2000);
+    if (error) throw error;
+    return data ?? [];
+  },
+  staleTime: 20_000,
+});
+
+

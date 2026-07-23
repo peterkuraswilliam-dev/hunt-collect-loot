@@ -1,25 +1,33 @@
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { X, Play, Ban, CheckCircle2, XCircle, Clock, AlertTriangle, Package, Layers, Dice5, Zap } from "lucide-react";
+import { X, Play, Ban, CheckCircle2, XCircle, Clock, AlertTriangle, Package, Layers, Dice5, Zap, Truck, RefreshCw, Flag, Wallet, Hexagon, Boxes, Award, Sparkles, Shirt, Backpack } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import {
   distributionActivityQuery,
   rewardsQuery,
   rewardBundlesQuery,
+  deliveriesForRequestQuery,
   type DistributionRequest,
+  type DeliveryDestination,
+  type DeliveryStatus,
 } from "../queries";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const sb = supabase as any;
 
-const TABS = ["overview", "source", "conditions", "resolved", "errors", "activity"] as const;
+const TABS = ["overview", "source", "conditions", "resolved", "delivery", "errors", "activity"] as const;
 type Tab = (typeof TABS)[number];
+
 
 const STATUS_STYLE: Record<string, string> = {
   pending: "bg-amber-500/15 text-amber-600 border-amber-500/30",
   processing: "bg-blue-500/15 text-blue-600 border-blue-500/30",
   completed: "bg-emerald-500/15 text-emerald-600 border-emerald-500/30",
+  delivered: "bg-emerald-500/15 text-emerald-600 border-emerald-500/30",
+  partially_delivered: "bg-amber-500/15 text-amber-600 border-amber-500/30",
+  needs_review: "bg-purple-500/15 text-purple-600 border-purple-500/30",
+  reversed: "bg-muted text-muted-foreground border-border",
   failed: "bg-red-500/15 text-red-600 border-red-500/30",
   cancelled: "bg-muted text-muted-foreground border-border",
 };
@@ -30,13 +38,25 @@ const TYPE_ICON: Record<string, typeof Package> = {
   loot_table: Dice5,
 };
 
+const DEST_ICON: Record<DeliveryDestination, typeof Package> = {
+  inventory: Backpack,
+  wallet: Wallet,
+  experience: Hexagon,
+  assets: Boxes,
+  collections: Layers,
+  titles: Award,
+  badges: Sparkles,
+  cosmetics: Shirt,
+};
+
 export function StatusBadge({ status }: { status: string }) {
   return (
     <span className={`inline-flex items-center rounded border px-2 py-0.5 text-[10px] uppercase tracking-wider ${STATUS_STYLE[status] ?? ""}`}>
-      {status}
+      {status.replace(/_/g, " ")}
     </span>
   );
 }
+
 
 export function DistributionDetail({ request, onClose }: { request: DistributionRequest; onClose: () => void }) {
   const qc = useQueryClient();
@@ -44,9 +64,69 @@ export function DistributionDetail({ request, onClose }: { request: Distribution
   const { data: activity = [] } = useQuery(distributionActivityQuery(request.id));
   const { data: rewards = [] } = useQuery(rewardsQuery);
   const { data: bundles = [] } = useQuery(rewardBundlesQuery);
+  const { data: deliveries = [] } = useQuery(deliveriesForRequestQuery(request.id));
 
   const rewardName = useMemo(() => rewards.find((r) => r.id === request.reward_id)?.name, [rewards, request.reward_id]);
   const bundleName = useMemo(() => bundles.find((b) => b.id === request.reward_bundle_id)?.name, [bundles, request.reward_bundle_id]);
+
+  const invalidateAll = () => {
+    qc.invalidateQueries({ queryKey: ["distribution_requests"] });
+    qc.invalidateQueries({ queryKey: ["distribution_activity", request.id] });
+    qc.invalidateQueries({ queryKey: ["reward_deliveries_request", request.id] });
+    qc.invalidateQueries({ queryKey: ["reward_deliveries_all"] });
+  };
+
+  const deliverAll = useMutation({
+    mutationFn: async () => {
+      const { data, error } = await sb.rpc("deliver_distribution_request", { p_request_id: request.id });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      return data;
+    },
+    onSuccess: (d) => { toast.success(`Delivered ${d?.delivered ?? 0} · Failed ${d?.failed ?? 0}`); invalidateAll(); },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const retryFailed = useMutation({
+    mutationFn: async () => {
+      const { data, error } = await sb.rpc("retry_failed_deliveries", { p_request_id: request.id });
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (d) => { toast.success(`Retried ${d?.attempted ?? 0} · Delivered ${d?.delivered ?? 0}`); invalidateAll(); },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const retryOne = useMutation({
+    mutationFn: async (id: string) => {
+      const { data, error } = await sb.rpc("retry_reward_delivery", { p_delivery_id: id });
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => { toast.success("Retried"); invalidateAll(); },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const cancelDelivery = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await sb.rpc("cancel_reward_delivery", { p_delivery_id: id });
+      if (error) throw error;
+    },
+    onSuccess: () => { toast.success("Cancelled"); invalidateAll(); },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const markReview = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await sb.rpc("mark_delivery_for_review", { p_delivery_id: id, p_note: "flagged from admin" });
+      if (error) throw error;
+    },
+    onSuccess: () => { toast.success("Marked for review"); invalidateAll(); },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const failedCount = deliveries.filter((d) => d.status === "failed" || d.status === "partially_delivered" || d.status === "needs_review").length;
+
 
   const process = useMutation({
     mutationFn: async () => {
@@ -55,11 +135,7 @@ export function DistributionDetail({ request, onClose }: { request: Distribution
       if (data?.error) throw new Error(data.error);
       return data;
     },
-    onSuccess: () => {
-      toast.success("Request processed");
-      qc.invalidateQueries({ queryKey: ["distribution_requests"] });
-      qc.invalidateQueries({ queryKey: ["distribution_activity", request.id] });
-    },
+    onSuccess: () => { toast.success("Request processed"); invalidateAll(); },
     onError: (e: Error) => toast.error(e.message),
   });
 
@@ -68,13 +144,10 @@ export function DistributionDetail({ request, onClose }: { request: Distribution
       const { error } = await sb.rpc("cancel_reward_distribution_request", { p_request_id: request.id });
       if (error) throw error;
     },
-    onSuccess: () => {
-      toast.success("Cancelled");
-      qc.invalidateQueries({ queryKey: ["distribution_requests"] });
-      qc.invalidateQueries({ queryKey: ["distribution_activity", request.id] });
-    },
+    onSuccess: () => { toast.success("Cancelled"); invalidateAll(); },
     onError: (e: Error) => toast.error(e.message),
   });
+
 
   const TypeIcon = TYPE_ICON[request.request_type] ?? Package;
 
@@ -112,7 +185,26 @@ export function DistributionDetail({ request, onClose }: { request: Distribution
                 </button>
               </>
             )}
+            {request.status === "completed" && (
+              <button
+                onClick={() => deliverAll.mutate()}
+                disabled={deliverAll.isPending}
+                className="inline-flex items-center gap-1 rounded bg-primary px-2 py-1 text-xs font-semibold text-primary-foreground hover:opacity-90 disabled:opacity-50"
+              >
+                <Truck className="h-3 w-3" /> Deliver
+              </button>
+            )}
+            {failedCount > 0 && (
+              <button
+                onClick={() => retryFailed.mutate()}
+                disabled={retryFailed.isPending}
+                className="inline-flex items-center gap-1 rounded border border-border px-2 py-1 text-xs hover:bg-surface-2 disabled:opacity-50"
+              >
+                <RefreshCw className="h-3 w-3" /> Retry failed
+              </button>
+            )}
             <button onClick={onClose} className="rounded p-1 hover:bg-surface-2"><X className="h-4 w-4" /></button>
+
           </div>
         </div>
 
@@ -198,8 +290,75 @@ export function DistributionDetail({ request, onClose }: { request: Distribution
             </div>
           )}
 
+          {tab === "delivery" && (
+            <div className="space-y-2">
+              {deliveries.length === 0 ? (
+                <p className="text-xs text-muted-foreground">
+                  No deliveries yet. {request.status === "completed" ? "Click Deliver to send resolved rewards to their destinations." : "Process the request first, then deliver."}
+                </p>
+              ) : (
+                <>
+                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                    {(["delivered","failed","partially_delivered","pending"] as DeliveryStatus[]).map((s) => (
+                      <div key={s} className="panel px-3 py-2">
+                        <div className="text-[10px] uppercase tracking-widest text-muted-foreground">{s.replace(/_/g," ")}</div>
+                        <div className="font-display text-lg font-extrabold tabular-nums">{deliveries.filter((d) => d.status === s).length}</div>
+                      </div>
+                    ))}
+                  </div>
+                  <ul className="divide-y divide-border/40 rounded border border-border">
+                    {deliveries.map((d) => {
+                      const Icon = DEST_ICON[d.destination] ?? Package;
+                      return (
+                        <li key={d.id} className="flex items-center gap-2 p-2 text-xs">
+                          <Icon className="h-3.5 w-3.5 text-primary shrink-0" />
+                          <div className="min-w-0 flex-1">
+                            <div className="truncate font-semibold">{d.reward_name ?? "Unknown reward"}</div>
+                            <div className="text-[10px] text-muted-foreground truncate">
+                              {d.destination} · ×{d.quantity}
+                              {d.delivered_at ? ` · ${new Date(d.delivered_at).toLocaleString()}` : ""}
+                              {d.retry_count > 0 ? ` · retries ${d.retry_count}` : ""}
+                              {d.error_message ? ` · ${d.error_message}` : ""}
+                            </div>
+                          </div>
+                          <StatusBadge status={d.status} />
+                          {d.status !== "delivered" && d.status !== "reversed" && (
+                            <div className="flex gap-1">
+                              <button
+                                title="Retry"
+                                onClick={() => retryOne.mutate(d.id)}
+                                className="rounded border border-border p-1 hover:bg-surface-2"
+                              >
+                                <RefreshCw className="h-3 w-3" />
+                              </button>
+                              <button
+                                title="Mark for review"
+                                onClick={() => markReview.mutate(d.id)}
+                                className="rounded border border-border p-1 hover:bg-surface-2"
+                              >
+                                <Flag className="h-3 w-3" />
+                              </button>
+                              <button
+                                title="Cancel"
+                                onClick={() => cancelDelivery.mutate(d.id)}
+                                className="rounded border border-border p-1 hover:bg-surface-2"
+                              >
+                                <Ban className="h-3 w-3" />
+                              </button>
+                            </div>
+                          )}
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </>
+              )}
+            </div>
+          )}
+
           {tab === "errors" && (
             <div>
+
               {request.error_message ? (
                 <div className="panel border-red-500/30 bg-red-500/5 p-3 text-xs">
                   <div className="flex items-center gap-2 font-semibold text-red-600">
