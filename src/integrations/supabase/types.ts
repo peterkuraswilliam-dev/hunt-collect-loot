@@ -1739,6 +1739,81 @@ export type Database = {
         }
         Relationships: []
       }
+      reward_deliveries: {
+        Row: {
+          created_at: string
+          dedupe_key: string
+          delivered_at: string | null
+          destination: Database["public"]["Enums"]["delivery_destination"]
+          detail: Json
+          error_message: string | null
+          id: string
+          last_retry_at: string | null
+          player_id: string | null
+          quantity: number
+          request_id: string
+          retry_count: number
+          reward_id: string | null
+          reward_name: string | null
+          reward_type_slug: string | null
+          status: Database["public"]["Enums"]["delivery_status"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          dedupe_key: string
+          delivered_at?: string | null
+          destination: Database["public"]["Enums"]["delivery_destination"]
+          detail?: Json
+          error_message?: string | null
+          id?: string
+          last_retry_at?: string | null
+          player_id?: string | null
+          quantity?: number
+          request_id: string
+          retry_count?: number
+          reward_id?: string | null
+          reward_name?: string | null
+          reward_type_slug?: string | null
+          status?: Database["public"]["Enums"]["delivery_status"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          dedupe_key?: string
+          delivered_at?: string | null
+          destination?: Database["public"]["Enums"]["delivery_destination"]
+          detail?: Json
+          error_message?: string | null
+          id?: string
+          last_retry_at?: string | null
+          player_id?: string | null
+          quantity?: number
+          request_id?: string
+          retry_count?: number
+          reward_id?: string | null
+          reward_name?: string | null
+          reward_type_slug?: string | null
+          status?: Database["public"]["Enums"]["delivery_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reward_deliveries_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "reward_distribution_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reward_deliveries_reward_id_fkey"
+            columns: ["reward_id"]
+            isOneToOne: false
+            referencedRelation: "rewards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reward_distribution_activity: {
         Row: {
           action: string
@@ -3181,6 +3256,7 @@ export type Database = {
         Args: { p_patch: Json; p_reward_ids: string[] }
         Returns: Json
       }
+      cancel_reward_delivery: { Args: { p_delivery_id: string }; Returns: Json }
       cancel_reward_distribution_request: {
         Args: { p_request_id: string }
         Returns: Json
@@ -3205,6 +3281,10 @@ export type Database = {
             }
             Returns: number
           }
+      deliver_distribution_request: {
+        Args: { p_request_id: string }
+        Returns: Json
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -3219,6 +3299,10 @@ export type Database = {
           p_mode?: string
           p_reward_type_id: string
         }
+        Returns: Json
+      }
+      mark_delivery_for_review: {
+        Args: { p_delivery_id: string; p_note?: string }
         Returns: Json
       }
       open_pack: { Args: { p_pack_id: string; p_user: string }; Returns: Json }
@@ -3270,10 +3354,16 @@ export type Database = {
         Returns: number
       }
       replay_xp_event: { Args: { p_event_id: string }; Returns: Json }
+      resolve_delivery_destination: {
+        Args: { p_type_slug: string }
+        Returns: Database["public"]["Enums"]["delivery_destination"]
+      }
       resync_linked_rewards: {
         Args: { p_reward_ids?: string[] }
         Returns: Json
       }
+      retry_failed_deliveries: { Args: { p_request_id: string }; Returns: Json }
+      retry_reward_delivery: { Args: { p_delivery_id: string }; Returns: Json }
       spin_wheel: { Args: { p_user: string }; Returns: Json }
       submit_xp_event: {
         Args: {
@@ -3294,6 +3384,23 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "moderator" | "user" | "business_owner"
+      delivery_destination:
+        | "inventory"
+        | "wallet"
+        | "experience"
+        | "assets"
+        | "collections"
+        | "titles"
+        | "badges"
+        | "cosmetics"
+      delivery_status:
+        | "pending"
+        | "processing"
+        | "delivered"
+        | "failed"
+        | "partially_delivered"
+        | "reversed"
+        | "needs_review"
       progression_rule_type:
         | "global_multiplier"
         | "type_multiplier"
@@ -3442,6 +3549,25 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "moderator", "user", "business_owner"],
+      delivery_destination: [
+        "inventory",
+        "wallet",
+        "experience",
+        "assets",
+        "collections",
+        "titles",
+        "badges",
+        "cosmetics",
+      ],
+      delivery_status: [
+        "pending",
+        "processing",
+        "delivered",
+        "failed",
+        "partially_delivered",
+        "reversed",
+        "needs_review",
+      ],
       progression_rule_type: [
         "global_multiplier",
         "type_multiplier",
