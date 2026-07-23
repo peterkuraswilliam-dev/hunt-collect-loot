@@ -1,20 +1,24 @@
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { X, Play, Ban, CheckCircle2, XCircle, Clock, AlertTriangle, Package, Layers, Dice5, Zap } from "lucide-react";
+import { X, Play, Ban, CheckCircle2, XCircle, Clock, AlertTriangle, Package, Layers, Dice5, Zap, Truck, RefreshCw, Flag, Wallet, Hexagon, Boxes, Award, Sparkles, Shirt, Backpack } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import {
   distributionActivityQuery,
   rewardsQuery,
   rewardBundlesQuery,
+  deliveriesForRequestQuery,
   type DistributionRequest,
+  type DeliveryDestination,
+  type DeliveryStatus,
 } from "../queries";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const sb = supabase as any;
 
-const TABS = ["overview", "source", "conditions", "resolved", "errors", "activity"] as const;
+const TABS = ["overview", "source", "conditions", "resolved", "delivery", "errors", "activity"] as const;
 type Tab = (typeof TABS)[number];
+
 
 const STATUS_STYLE: Record<string, string> = {
   pending: "bg-amber-500/15 text-amber-600 border-amber-500/30",
