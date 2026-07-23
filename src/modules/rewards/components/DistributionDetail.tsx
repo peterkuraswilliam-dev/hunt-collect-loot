@@ -290,7 +290,73 @@ export function DistributionDetail({ request, onClose }: { request: Distribution
             </div>
           )}
 
-          {tab === "errors" && (
+          {tab === "delivery" && (
+            <div className="space-y-2">
+              {deliveries.length === 0 ? (
+                <p className="text-xs text-muted-foreground">
+                  No deliveries yet. {request.status === "completed" ? "Click Deliver to send resolved rewards to their destinations." : "Process the request first, then deliver."}
+                </p>
+              ) : (
+                <>
+                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                    {(["delivered","failed","partially_delivered","pending"] as DeliveryStatus[]).map((s) => (
+                      <div key={s} className="panel px-3 py-2">
+                        <div className="text-[10px] uppercase tracking-widest text-muted-foreground">{s.replace(/_/g," ")}</div>
+                        <div className="font-display text-lg font-extrabold tabular-nums">{deliveries.filter((d) => d.status === s).length}</div>
+                      </div>
+                    ))}
+                  </div>
+                  <ul className="divide-y divide-border/40 rounded border border-border">
+                    {deliveries.map((d) => {
+                      const Icon = DEST_ICON[d.destination] ?? Package;
+                      return (
+                        <li key={d.id} className="flex items-center gap-2 p-2 text-xs">
+                          <Icon className="h-3.5 w-3.5 text-primary shrink-0" />
+                          <div className="min-w-0 flex-1">
+                            <div className="truncate font-semibold">{d.reward_name ?? "Unknown reward"}</div>
+                            <div className="text-[10px] text-muted-foreground truncate">
+                              {d.destination} · ×{d.quantity}
+                              {d.delivered_at ? ` · ${new Date(d.delivered_at).toLocaleString()}` : ""}
+                              {d.retry_count > 0 ? ` · retries ${d.retry_count}` : ""}
+                              {d.error_message ? ` · ${d.error_message}` : ""}
+                            </div>
+                          </div>
+                          <StatusBadge status={d.status} />
+                          {d.status !== "delivered" && d.status !== "reversed" && (
+                            <div className="flex gap-1">
+                              <button
+                                title="Retry"
+                                onClick={() => retryOne.mutate(d.id)}
+                                className="rounded border border-border p-1 hover:bg-surface-2"
+                              >
+                                <RefreshCw className="h-3 w-3" />
+                              </button>
+                              <button
+                                title="Mark for review"
+                                onClick={() => markReview.mutate(d.id)}
+                                className="rounded border border-border p-1 hover:bg-surface-2"
+                              >
+                                <Flag className="h-3 w-3" />
+                              </button>
+                              <button
+                                title="Cancel"
+                                onClick={() => cancelDelivery.mutate(d.id)}
+                                className="rounded border border-border p-1 hover:bg-surface-2"
+                              >
+                                <Ban className="h-3 w-3" />
+                              </button>
+                            </div>
+                          )}
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </>
+              )}
+            </div>
+          )}
+
+
             <div>
               {request.error_message ? (
                 <div className="panel border-red-500/30 bg-red-500/5 p-3 text-xs">
