@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { Gift, Sparkles, CheckCircle2, CircleSlash, Boxes, Link2, RefreshCw, Download, Clock, TrendingUp, AlertTriangle, Archive, Dice5, Send } from "lucide-react";
+import { Gift, Sparkles, CheckCircle2, CircleSlash, Boxes, Link2, RefreshCw, Download, Clock, TrendingUp, AlertTriangle, Archive, Dice5, Send, Truck } from "lucide-react";
 
 import {
   rewardTypesQuery,
@@ -12,7 +12,9 @@ import {
   lootTablesFullQuery,
   lootTableReferenceCountsQuery,
   distributionRequestsQuery,
+  deliveriesAllQuery,
 } from "../queries";
+
 import { StatusBadge } from "../components/DistributionDetail";
 import { supabase } from "@/integrations/supabase/client";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
