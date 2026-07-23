@@ -44,6 +44,7 @@ export function Dashboard() {
   const { data: lootTables = [] } = useQuery(lootTablesFullQuery);
   const { data: refCounts = [] } = useQuery(lootTableReferenceCountsQuery);
   const { data: distRequests = [] } = useQuery(distributionRequestsQuery);
+  const { data: deliveries = [] } = useQuery(deliveriesAllQuery);
 
   const distCounts = { pending: 0, processing: 0, completed: 0, failed: 0, cancelled: 0 } as Record<string, number>;
   for (const r of distRequests) distCounts[r.status] = (distCounts[r.status] ?? 0) + 1;
@@ -53,6 +54,13 @@ export function Dashboard() {
     return Array.from(m.entries()).sort((a, b) => b[1] - a[1]).slice(0, 6);
   })();
   const recentDist = [...distRequests].slice(0, 8);
+
+  const delCounts = { delivered: 0, failed: 0, partially_delivered: 0, pending: 0, processing: 0, needs_review: 0, reversed: 0 } as Record<string, number>;
+  for (const d of deliveries) delCounts[d.status] = (delCounts[d.status] ?? 0) + 1;
+  const totalDelivered = delCounts.delivered;
+  const totalDelAttempts = deliveries.length;
+  const successRate = totalDelAttempts ? Math.round((totalDelivered / totalDelAttempts) * 100) : 0;
+
 
 
   const rewardById = new Map(rewards.map((r) => [r.id, r]));
