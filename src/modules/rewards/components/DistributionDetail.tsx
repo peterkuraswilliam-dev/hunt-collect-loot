@@ -64,9 +64,69 @@ export function DistributionDetail({ request, onClose }: { request: Distribution
   const { data: activity = [] } = useQuery(distributionActivityQuery(request.id));
   const { data: rewards = [] } = useQuery(rewardsQuery);
   const { data: bundles = [] } = useQuery(rewardBundlesQuery);
+  const { data: deliveries = [] } = useQuery(deliveriesForRequestQuery(request.id));
 
   const rewardName = useMemo(() => rewards.find((r) => r.id === request.reward_id)?.name, [rewards, request.reward_id]);
   const bundleName = useMemo(() => bundles.find((b) => b.id === request.reward_bundle_id)?.name, [bundles, request.reward_bundle_id]);
+
+  const invalidateAll = () => {
+    qc.invalidateQueries({ queryKey: ["distribution_requests"] });
+    qc.invalidateQueries({ queryKey: ["distribution_activity", request.id] });
+    qc.invalidateQueries({ queryKey: ["reward_deliveries_request", request.id] });
+    qc.invalidateQueries({ queryKey: ["reward_deliveries_all"] });
+  };
+
+  const deliverAll = useMutation({
+    mutationFn: async () => {
+      const { data, error } = await sb.rpc("deliver_distribution_request", { p_request_id: request.id });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      return data;
+    },
+    onSuccess: (d) => { toast.success(`Delivered ${d?.delivered ?? 0} · Failed ${d?.failed ?? 0}`); invalidateAll(); },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const retryFailed = useMutation({
+    mutationFn: async () => {
+      const { data, error } = await sb.rpc("retry_failed_deliveries", { p_request_id: request.id });
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (d) => { toast.success(`Retried ${d?.attempted ?? 0} · Delivered ${d?.delivered ?? 0}`); invalidateAll(); },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const retryOne = useMutation({
+    mutationFn: async (id: string) => {
+      const { data, error } = await sb.rpc("retry_reward_delivery", { p_delivery_id: id });
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => { toast.success("Retried"); invalidateAll(); },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const cancelDelivery = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await sb.rpc("cancel_reward_delivery", { p_delivery_id: id });
+      if (error) throw error;
+    },
+    onSuccess: () => { toast.success("Cancelled"); invalidateAll(); },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const markReview = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await sb.rpc("mark_delivery_for_review", { p_delivery_id: id, p_note: "flagged from admin" });
+      if (error) throw error;
+    },
+    onSuccess: () => { toast.success("Marked for review"); invalidateAll(); },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const failedCount = deliveries.filter((d) => d.status === "failed" || d.status === "partially_delivered" || d.status === "needs_review").length;
+
 
   const process = useMutation({
     mutationFn: async () => {
