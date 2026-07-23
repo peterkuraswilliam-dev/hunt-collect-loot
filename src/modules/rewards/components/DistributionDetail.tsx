@@ -185,7 +185,26 @@ export function DistributionDetail({ request, onClose }: { request: Distribution
                 </button>
               </>
             )}
+            {request.status === "completed" && (
+              <button
+                onClick={() => deliverAll.mutate()}
+                disabled={deliverAll.isPending}
+                className="inline-flex items-center gap-1 rounded bg-primary px-2 py-1 text-xs font-semibold text-primary-foreground hover:opacity-90 disabled:opacity-50"
+              >
+                <Truck className="h-3 w-3" /> Deliver
+              </button>
+            )}
+            {failedCount > 0 && (
+              <button
+                onClick={() => retryFailed.mutate()}
+                disabled={retryFailed.isPending}
+                className="inline-flex items-center gap-1 rounded border border-border px-2 py-1 text-xs hover:bg-surface-2 disabled:opacity-50"
+              >
+                <RefreshCw className="h-3 w-3" /> Retry failed
+              </button>
+            )}
             <button onClick={onClose} className="rounded p-1 hover:bg-surface-2"><X className="h-4 w-4" /></button>
+
           </div>
         </div>
 
