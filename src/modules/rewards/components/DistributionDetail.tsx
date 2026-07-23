@@ -356,8 +356,9 @@ export function DistributionDetail({ request, onClose }: { request: Distribution
             </div>
           )}
 
-
+          {tab === "errors" && (
             <div>
+
               {request.error_message ? (
                 <div className="panel border-red-500/30 bg-red-500/5 p-3 text-xs">
                   <div className="flex items-center gap-2 font-semibold text-red-600">
