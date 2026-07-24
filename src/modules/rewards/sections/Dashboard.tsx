@@ -47,6 +47,18 @@ export function Dashboard() {
   const { data: refCounts = [] } = useQuery(lootTableReferenceCountsQuery);
   const { data: distRequests = [] } = useQuery(distributionRequestsQuery);
   const { data: deliveries = [] } = useQuery(deliveriesAllQuery);
+  const { data: inbox = [] } = useQuery(inboxAllQuery);
+
+  const inboxCounts = { available: 0, claimed: 0, expired: 0, failed: 0, pending: 0, cancelled: 0 } as Record<string, number>;
+  for (const r of inbox) inboxCounts[r.status] = (inboxCounts[r.status] ?? 0) + 1;
+  const claimAttempts = inboxCounts.claimed + inboxCounts.failed;
+  const claimSuccessRate = claimAttempts ? Math.round((inboxCounts.claimed / claimAttempts) * 100) : 0;
+  const claimedRows = inbox.filter((r) => r.status === "claimed" && r.claimed_at);
+  const avgClaimMs = claimedRows.length
+    ? claimedRows.reduce((s, r) => s + (new Date(r.claimed_at!).getTime() - new Date(r.created_at).getTime()), 0) / claimedRows.length
+    : 0;
+  const avgClaim = !avgClaimMs ? "—" : avgClaimMs < 3600_000 ? `${Math.round(avgClaimMs / 60000)}m` : avgClaimMs < 86400_000 ? `${Math.round(avgClaimMs / 3600_000)}h` : `${Math.round(avgClaimMs / 86400_000)}d`;
+
 
   const distCounts = { pending: 0, processing: 0, completed: 0, failed: 0, cancelled: 0 } as Record<string, number>;
   for (const r of distRequests) distCounts[r.status] = (distCounts[r.status] ?? 0) + 1;
