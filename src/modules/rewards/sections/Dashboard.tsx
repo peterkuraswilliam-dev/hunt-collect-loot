@@ -205,6 +205,15 @@ export function Dashboard() {
         <Stat icon={TrendingUp} label="Success Rate" value={totalDelAttempts ? `${successRate}%` : "—"} />
       </div>
 
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
+        <Stat icon={Inbox} label="Unclaimed Rewards" value={(inboxCounts.available ?? 0) + (inboxCounts.pending ?? 0)} />
+        <Stat icon={CheckCircle2} label="Claimed Rewards" value={inboxCounts.claimed ?? 0} />
+        <Stat icon={Clock} label="Expired Rewards" value={inboxCounts.expired ?? 0} />
+        <Stat icon={TrendingUp} label="Claim Success Rate" value={claimAttempts ? `${claimSuccessRate}%` : "—"} />
+        <Stat icon={Clock} label="Avg Claim Time" value={avgClaim} />
+      </div>
+
+
 
 
       <div className="grid gap-3 lg:grid-cols-2">
