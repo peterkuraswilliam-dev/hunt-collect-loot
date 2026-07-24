@@ -570,4 +570,62 @@ export const deliveriesAllQuery = queryOptions({
   staleTime: 20_000,
 });
 
+// ---- Reward Inbox (claiming) ----
+export type ClaimStatus = "pending" | "available" | "claimed" | "expired" | "failed" | "cancelled";
+export type ClaimMode = "instant" | "manual" | "claim_all" | "auto_login" | "scheduled";
+
+export type RewardInboxRow = {
+  id: string;
+  request_id: string;
+  delivery_id: string | null;
+  player_id: string | null;
+  reward_id: string | null;
+  reward_name: string | null;
+  reward_type_slug: string | null;
+  quantity: number;
+  source_module: string | null;
+  source_record_name: string | null;
+  source_item: Record<string, unknown>;
+  item_index: number;
+  status: ClaimStatus;
+  expires_at: string | null;
+  claimed_at: string | null;
+  cancelled_at: string | null;
+  claim_error: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export const playerInboxQuery = (playerId: string | null | undefined) =>
+  queryOptions({
+    queryKey: ["reward_inbox_player", playerId ?? null],
+    enabled: !!playerId,
+    queryFn: async (): Promise<RewardInboxRow[]> => {
+      if (!playerId) return [];
+      const { data, error } = await sb
+        .from("reward_inbox")
+        .select("*")
+        .eq("player_id", playerId)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data ?? [];
+    },
+    staleTime: 10_000,
+  });
+
+export const inboxAllQuery = queryOptions({
+  queryKey: ["reward_inbox_all"],
+  queryFn: async (): Promise<RewardInboxRow[]> => {
+    const { data, error } = await sb
+      .from("reward_inbox")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(500);
+    if (error) throw error;
+    return data ?? [];
+  },
+  staleTime: 15_000,
+});
+
+
 
