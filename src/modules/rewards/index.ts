@@ -1,4 +1,4 @@
-import { Gift, Gauge, Sparkles, Library, Settings, Boxes, Dice5, Send } from "lucide-react";
+import { Gift, Gauge, Sparkles, Library, Settings, Boxes, Dice5, Send, Inbox } from "lucide-react";
 import type { AssetOSModule } from "../contract";
 import { Dashboard } from "./sections/Dashboard";
 import { RewardTypes } from "./sections/RewardTypes";
@@ -6,6 +6,7 @@ import { RewardsLibrary } from "./sections/RewardsLibrary";
 import { Bundles } from "./sections/Bundles";
 import { LootTables } from "./sections/LootTables";
 import { Distribution } from "./sections/Distribution";
+import { PlayerInboxes } from "./sections/PlayerInboxes";
 import { SettingsSection } from "./sections/SettingsSection";
 
 export const rewardsModule: AssetOSModule = {
@@ -20,7 +21,9 @@ export const rewardsModule: AssetOSModule = {
     { key: "bundles", label: "Reward Bundles", icon: Boxes, component: Bundles },
     { key: "loot", label: "Loot Tables", icon: Dice5, component: LootTables },
     { key: "distribution", label: "Reward Distribution", icon: Send, component: Distribution },
+    { key: "inboxes", label: "Player Inboxes", icon: Inbox, component: PlayerInboxes },
     { key: "settings", label: "Settings", icon: Settings, component: SettingsSection },
   ],
 };
+
 

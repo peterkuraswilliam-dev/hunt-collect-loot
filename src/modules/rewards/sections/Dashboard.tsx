@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { Gift, Sparkles, CheckCircle2, CircleSlash, Boxes, Link2, RefreshCw, Download, Clock, TrendingUp, AlertTriangle, Archive, Dice5, Send, Truck } from "lucide-react";
+import { Gift, Sparkles, CheckCircle2, CircleSlash, Boxes, Link2, RefreshCw, Download, Clock, TrendingUp, AlertTriangle, Archive, Dice5, Send, Truck, Inbox } from "lucide-react";
 
 import {
   rewardTypesQuery,
@@ -13,7 +13,9 @@ import {
   lootTableReferenceCountsQuery,
   distributionRequestsQuery,
   deliveriesAllQuery,
+  inboxAllQuery,
 } from "../queries";
+
 
 import { StatusBadge } from "../components/DistributionDetail";
 import { supabase } from "@/integrations/supabase/client";
@@ -45,6 +47,18 @@ export function Dashboard() {
   const { data: refCounts = [] } = useQuery(lootTableReferenceCountsQuery);
   const { data: distRequests = [] } = useQuery(distributionRequestsQuery);
   const { data: deliveries = [] } = useQuery(deliveriesAllQuery);
+  const { data: inbox = [] } = useQuery(inboxAllQuery);
+
+  const inboxCounts = { available: 0, claimed: 0, expired: 0, failed: 0, pending: 0, cancelled: 0 } as Record<string, number>;
+  for (const r of inbox) inboxCounts[r.status] = (inboxCounts[r.status] ?? 0) + 1;
+  const claimAttempts = inboxCounts.claimed + inboxCounts.failed;
+  const claimSuccessRate = claimAttempts ? Math.round((inboxCounts.claimed / claimAttempts) * 100) : 0;
+  const claimedRows = inbox.filter((r) => r.status === "claimed" && r.claimed_at);
+  const avgClaimMs = claimedRows.length
+    ? claimedRows.reduce((s, r) => s + (new Date(r.claimed_at!).getTime() - new Date(r.created_at).getTime()), 0) / claimedRows.length
+    : 0;
+  const avgClaim = !avgClaimMs ? "—" : avgClaimMs < 3600_000 ? `${Math.round(avgClaimMs / 60000)}m` : avgClaimMs < 86400_000 ? `${Math.round(avgClaimMs / 3600_000)}h` : `${Math.round(avgClaimMs / 86400_000)}d`;
+
 
   const distCounts = { pending: 0, processing: 0, completed: 0, failed: 0, cancelled: 0 } as Record<string, number>;
   for (const r of distRequests) distCounts[r.status] = (distCounts[r.status] ?? 0) + 1;
@@ -190,6 +204,15 @@ export function Dashboard() {
         <Stat icon={Clock} label="Pending Deliveries" value={(delCounts.pending ?? 0) + (delCounts.processing ?? 0)} />
         <Stat icon={TrendingUp} label="Success Rate" value={totalDelAttempts ? `${successRate}%` : "—"} />
       </div>
+
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
+        <Stat icon={Inbox} label="Unclaimed Rewards" value={(inboxCounts.available ?? 0) + (inboxCounts.pending ?? 0)} />
+        <Stat icon={CheckCircle2} label="Claimed Rewards" value={inboxCounts.claimed ?? 0} />
+        <Stat icon={Clock} label="Expired Rewards" value={inboxCounts.expired ?? 0} />
+        <Stat icon={TrendingUp} label="Claim Success Rate" value={claimAttempts ? `${claimSuccessRate}%` : "—"} />
+        <Stat icon={Clock} label="Avg Claim Time" value={avgClaim} />
+      </div>
+
 
 
 

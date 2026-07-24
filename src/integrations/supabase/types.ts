@@ -1854,9 +1854,12 @@ export type Database = {
       }
       reward_distribution_requests: {
         Row: {
+          claim_mode: string
           conditions: Json
           created_at: string
           error_message: string | null
+          expires_at: string | null
+          expiry_policy: Json
           id: string
           loot_table_id: string | null
           metadata: Json
@@ -1876,9 +1879,12 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          claim_mode?: string
           conditions?: Json
           created_at?: string
           error_message?: string | null
+          expires_at?: string | null
+          expiry_policy?: Json
           id?: string
           loot_table_id?: string | null
           metadata?: Json
@@ -1898,9 +1904,12 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          claim_mode?: string
           conditions?: Json
           created_at?: string
           error_message?: string | null
+          expires_at?: string | null
+          expiry_policy?: Json
           id?: string
           loot_table_id?: string | null
           metadata?: Json
@@ -1936,6 +1945,97 @@ export type Database = {
           },
           {
             foreignKeyName: "reward_distribution_requests_reward_id_fkey"
+            columns: ["reward_id"]
+            isOneToOne: false
+            referencedRelation: "rewards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reward_inbox: {
+        Row: {
+          cancelled_at: string | null
+          claim_error: string | null
+          claimed_at: string | null
+          created_at: string
+          delivery_id: string | null
+          detail: Json
+          expires_at: string | null
+          id: string
+          item_index: number
+          player_id: string | null
+          quantity: number
+          request_id: string
+          reward_id: string | null
+          reward_name: string | null
+          reward_type_slug: string | null
+          source_item: Json
+          source_module: string | null
+          source_record_name: string | null
+          status: Database["public"]["Enums"]["claim_status"]
+          updated_at: string
+        }
+        Insert: {
+          cancelled_at?: string | null
+          claim_error?: string | null
+          claimed_at?: string | null
+          created_at?: string
+          delivery_id?: string | null
+          detail?: Json
+          expires_at?: string | null
+          id?: string
+          item_index?: number
+          player_id?: string | null
+          quantity?: number
+          request_id: string
+          reward_id?: string | null
+          reward_name?: string | null
+          reward_type_slug?: string | null
+          source_item?: Json
+          source_module?: string | null
+          source_record_name?: string | null
+          status?: Database["public"]["Enums"]["claim_status"]
+          updated_at?: string
+        }
+        Update: {
+          cancelled_at?: string | null
+          claim_error?: string | null
+          claimed_at?: string | null
+          created_at?: string
+          delivery_id?: string | null
+          detail?: Json
+          expires_at?: string | null
+          id?: string
+          item_index?: number
+          player_id?: string | null
+          quantity?: number
+          request_id?: string
+          reward_id?: string | null
+          reward_name?: string | null
+          reward_type_slug?: string | null
+          source_item?: Json
+          source_module?: string | null
+          source_record_name?: string | null
+          status?: Database["public"]["Enums"]["claim_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reward_inbox_delivery_id_fkey"
+            columns: ["delivery_id"]
+            isOneToOne: false
+            referencedRelation: "reward_deliveries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reward_inbox_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "reward_distribution_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reward_inbox_reward_id_fkey"
             columns: ["reward_id"]
             isOneToOne: false
             referencedRelation: "rewards"
@@ -3215,6 +3315,23 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_cancel_inbox: { Args: { p_inbox_id: string }; Returns: Json }
+      admin_grant_reward: {
+        Args: {
+          p_claim_mode?: string
+          p_expiry_policy?: Json
+          p_player_id: string
+          p_quantity?: number
+          p_reward_id: string
+          p_source_note?: string
+        }
+        Returns: Json
+      }
+      admin_reopen_inbox: {
+        Args: { p_inbox_id: string; p_new_expires_at?: string }
+        Returns: Json
+      }
+      admin_retry_failed_claim: { Args: { p_inbox_id: string }; Returns: Json }
       apply_automation_rules: {
         Args: { p_asset_id: string }
         Returns: undefined
@@ -3261,10 +3378,12 @@ export type Database = {
         Args: { p_request_id: string }
         Returns: Json
       }
+      claim_all_inbox_rewards: { Args: never; Returns: Json }
       claim_collection_bonus: {
         Args: { p_collection_id: string; p_threshold: number; p_user: string }
         Returns: Json
       }
+      claim_inbox_reward: { Args: { p_inbox_id: string }; Returns: Json }
       clone_reward: { Args: { p_reward_id: string }; Returns: string }
       collect_production: { Args: { p_user: string }; Returns: Json }
       compute_effective_xp:
@@ -3281,10 +3400,12 @@ export type Database = {
             }
             Returns: number
           }
+      compute_inbox_expiry: { Args: { p_policy: Json }; Returns: string }
       deliver_distribution_request: {
         Args: { p_request_id: string }
         Returns: Json
       }
+      expire_inbox_rewards: { Args: never; Returns: number }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -3384,6 +3505,13 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "moderator" | "user" | "business_owner"
+      claim_status:
+        | "pending"
+        | "available"
+        | "claimed"
+        | "expired"
+        | "failed"
+        | "cancelled"
       delivery_destination:
         | "inventory"
         | "wallet"
@@ -3549,6 +3677,14 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "moderator", "user", "business_owner"],
+      claim_status: [
+        "pending",
+        "available",
+        "claimed",
+        "expired",
+        "failed",
+        "cancelled",
+      ],
       delivery_destination: [
         "inventory",
         "wallet",
